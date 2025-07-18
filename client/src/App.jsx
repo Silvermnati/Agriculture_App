@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Provider } from 'react-redux';
+import { Provider, useSelector } from 'react-redux';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -12,18 +12,29 @@ import Home from './pages/Home/Home';
 
 import './App.css';
 
+// Create a separate component for routes that needs access to Redux state
+const AppRoutes = () => {
+  // Get authentication state from Redux store
+  const { isAuthenticated } = useSelector(state => state.auth);
+
+  return (
+    <Layout>
+      <Routes>
+        {/* Redirect to login if not authenticated, otherwise show home page */}
+        <Route path="/" element={isAuthenticated ? <Home /> : <Navigate to="/login" />} />
+        <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <Login />} />
+        <Route path="/register" element={isAuthenticated ? <Navigate to="/" /> : <Register />} />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </Layout>
+  );
+};
+
 function App() {
   return (
     <Provider store={store}>
       <Router>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </Layout>
+        <AppRoutes />
         <ToastContainer position="top-right" autoClose={3000} />
       </Router>
     </Provider>
