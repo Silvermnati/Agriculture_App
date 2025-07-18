@@ -1,0 +1,148 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  user-select: none;
+  border: 1px solid transparent;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  border-radius: 0.25rem;
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+}
+
+/* Button variants */
+.btn-primary {
+  background-color: #4CAF50;
+  color: white;
+  border-color: #4CAF50;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #45a049;
+  border-color: #45a049;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+  border-color: #6c757d;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #5a6268;
+  border-color: #5a6268;
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: white;
+  border-color: #28a745;
+}
+
+.btn-success:hover:not(:disabled) {
+  background-color: #218838;
+  border-color: #218838;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+  border-color: #dc3545;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: #c82333;
+  border-color: #c82333;
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: #4CAF50;
+  border-color: #4CAF50;
+}
+
+.btn-outline:hover:not(:disabled) {
+  background-color: #4CAF50;
+  color: white;
+}
+
+/* Button sizes */
+.btn-small {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  border-radius: 0.2rem;
+}
+
+.btn-medium {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+}
+
+.btn-large {
+  padding: 0.75rem 1.5rem;
+  font-size: 1.125rem;
+  border-radius: 0.3rem;
+}
+
+/* Full width button */
+.btn-full-width {
+  display: block;
+  width: 100%;
+}
+
+/* Disabled state */
+.btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Button with icon */
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-icon svg,
+.btn-icon img {
+  margin-right: 0.5rem;
+}
+
+/* Agricultural themed buttons */
+.btn-harvest {
+  background-color: #ff9800;
+  color: white;
+  border-color: #ff9800;
+}
+
+.btn-harvest:hover:not(:disabled) {
+  background-color: #e68a00;
+  border-color: #e68a00;
+}
+
+.btn-soil {
+  background-color: #795548;
+  color: white;
+  border-color: #795548;
+}
+
+.btn-soil:hover:not(:disabled) {
+  background-color: #6d4c41;
+  border-color: #6d4c41;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .btn {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .btn-large {
+    padding: 0.75rem 1.25rem;
+  }
+}
