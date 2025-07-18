@@ -87,8 +87,8 @@ const LoginForm = () => {
       </form>
       
       <div className="auth-links">
-        <p>Don't have an account? <a href="#register">Register</a></p>
-        <p><a href="#forgot-password">Forgot password?</a></p>
+        <p>Don't have an account? <a href="/register">Register</a></p>
+        <p><a href="/forgot-password">Forgot password?</a></p>
       </div>
       
       <div className="auth-demo">

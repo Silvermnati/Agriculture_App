@@ -9,29 +9,31 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.2s ease-out;
+  padding: 1rem;
 }
 
 .modal-container {
-  background-color: #fff;
+  background-color: #ffffff;
   border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: 100%;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  animation: slideIn 0.3s ease-out;
+  animation: modal-fade-in 0.3s ease;
 }
 
+/* Modal sizes */
 .modal-small {
-  width: 400px;
+  max-width: 400px;
 }
 
 .modal-medium {
-  width: 600px;
+  max-width: 600px;
 }
 
 .modal-large {
-  width: 800px;
+  max-width: 800px;
 }
 
 .modal-header {
@@ -39,7 +41,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .modal-title {
@@ -55,49 +57,55 @@
   cursor: pointer;
   color: #666;
   padding: 0;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: background-color 0.2s;
+  line-height: 1;
 }
 
 .modal-close:hover {
-  background-color: #f0f0f0;
+  color: #333;
 }
 
 .modal-content {
   padding: 1.5rem;
   overflow-y: auto;
+  flex: 1;
 }
 
-@keyframes fadeIn {
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+/* Modal animation */
+@keyframes modal-fade-in {
   from {
     opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideIn {
-  from {
     transform: translateY(-20px);
-    opacity: 0;
   }
   to {
-    transform: translateY(0);
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
+/* Responsive adjustments */
 @media (max-width: 768px) {
-  .modal-small,
-  .modal-medium,
-  .modal-large {
-    width: 90%;
-    max-width: 500px;
+  .modal-container {
+    width: 95%;
+    max-height: 80vh;
+  }
+  
+  .modal-header {
+    padding: 0.75rem 1rem;
+  }
+  
+  .modal-content {
+    padding: 1rem;
+  }
+  
+  .modal-footer {
+    padding: 0.75rem 1rem;
   }
 }

@@ -1,7 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-
-const API_URL = 'http://localhost:5000/api';
+import { authAPI } from '../../utils/api';
 
 // Get user from localStorage
 const user = JSON.parse(localStorage.getItem('user'));
@@ -12,7 +10,7 @@ export const register = createAsyncThunk(
   'auth/register',
   async (userData, thunkAPI) => {
     try {
-      const response = await axios.post(`${API_URL}/auth/register`, userData);
+      const response = await authAPI.register(userData);
       
       if (response.data) {
         localStorage.setItem('user', JSON.stringify(response.data.user));
@@ -21,8 +19,29 @@ export const register = createAsyncThunk(
       
       return response.data;
     } catch (error) {
-      const message = error.response?.data?.message || error.message || error.toString();
-      return thunkAPI.rejectWithValue(message);
+      // Enhanced error handling with more specific messages
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        const serverMessage = error.response.data?.message || 'Server error';
+        
+        // Handle specific error codes
+        if (error.response.status === 409) {
+          return thunkAPI.rejectWithValue('Email already exists. Please use a different email address.');
+        } else if (error.response.status === 400) {
+          return thunkAPI.rejectWithValue(`Validation error: ${serverMessage}`);
+        } else if (error.response.status === 500) {
+          return thunkAPI.rejectWithValue('Server error. Please try again later.');
+        }
+        
+        return thunkAPI.rejectWithValue(serverMessage);
+      } else if (error.request) {
+        // The request was made but no response was received
+        return thunkAPI.rejectWithValue('No response from server. Please check your internet connection.');
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        return thunkAPI.rejectWithValue('Error setting up request. Please try again.');
+      }
     }
   }
 );
@@ -32,7 +51,7 @@ export const login = createAsyncThunk(
   'auth/login',
   async (userData, thunkAPI) => {
     try {
-      const response = await axios.post(`${API_URL}/auth/login`, userData);
+      const response = await authAPI.login(userData);
       
       if (response.data) {
         localStorage.setItem('user', JSON.stringify(response.data.user));
@@ -41,8 +60,24 @@ export const login = createAsyncThunk(
       
       return response.data;
     } catch (error) {
-      const message = error.response?.data?.message || error.message || error.toString();
-      return thunkAPI.rejectWithValue(message);
+      // Enhanced error handling
+      if (error.response) {
+        const serverMessage = error.response.data?.message || 'Server error';
+        
+        if (error.response.status === 404) {
+          return thunkAPI.rejectWithValue('User not found. Please check your email address.');
+        } else if (error.response.status === 401) {
+          return thunkAPI.rejectWithValue('Invalid credentials. Please check your email and password.');
+        } else if (error.response.status === 500) {
+          return thunkAPI.rejectWithValue('Server error. Please try again later.');
+        }
+        
+        return thunkAPI.rejectWithValue(serverMessage);
+      } else if (error.request) {
+        return thunkAPI.rejectWithValue('No response from server. Please check your internet connection.');
+      } else {
+        return thunkAPI.rejectWithValue('Error setting up request. Please try again.');
+      }
     }
   }
 );
@@ -52,14 +87,7 @@ export const getProfile = createAsyncThunk(
   'auth/getProfile',
   async (_, thunkAPI) => {
     try {
-      const token = localStorage.getItem('token');
-      
-      const response = await axios.get(`${API_URL}/auth/profile`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      
+      const response = await authAPI.getProfile();
       return response.data;
     } catch (error) {
       const message = error.response?.data?.message || error.message || error.toString();
@@ -73,13 +101,7 @@ export const updateProfile = createAsyncThunk(
   'auth/updateProfile',
   async (profileData, thunkAPI) => {
     try {
-      const token = localStorage.getItem('token');
-      
-      const response = await axios.put(`${API_URL}/auth/profile`, profileData, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const response = await authAPI.updateProfile(profileData);
       
       if (response.data) {
         localStorage.setItem('user', JSON.stringify(response.data.user));

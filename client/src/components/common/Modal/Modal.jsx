@@ -1,58 +1,58 @@
 import React, { useEffect } from 'react';
 import './Modal.css';
 
-const Modal = ({
-  isOpen,
-  onClose,
-  title,
-  children,
+/**
+ * Modal component for displaying content in an overlay
+ * 
+ * @param {Object} props - Component props
+ * @param {boolean} props.isOpen - Whether the modal is open
+ * @param {Function} props.onClose - Function to call when modal is closed
+ * @param {string} props.title - Modal title
+ * @param {React.ReactNode} props.children - Modal content
+ * @param {string} props.size - Modal size (small, medium, large)
+ * @returns {React.ReactElement|null} Modal component or null if closed
+ */
+const Modal = ({ 
+  isOpen, 
+  onClose, 
+  title, 
+  children, 
   size = 'medium',
-  showCloseButton = true,
-  className = '',
+  showCloseButton = true
 }) => {
+  // Close modal when Escape key is pressed
   useEffect(() => {
-    // Prevent body scrolling when modal is open
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-
-    // Cleanup function
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen]);
-
-  // Close modal when clicking outside
-  const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
-  // Close modal when pressing Escape key
-  useEffect(() => {
-    const handleEscKey = (e) => {
-      if (e.key === 'Escape' && isOpen) {
+    const handleEscKey = (event) => {
+      if (event.key === 'Escape' && isOpen) {
         onClose();
       }
     };
 
     if (isOpen) {
       document.addEventListener('keydown', handleEscKey);
+      // Prevent body scrolling when modal is open
+      document.body.style.overflow = 'hidden';
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscKey);
+      // Restore body scrolling when modal is closed
+      document.body.style.overflow = 'auto';
     };
   }, [isOpen, onClose]);
+
+  // Close modal when clicking outside
+  const handleBackdropClick = (event) => {
+    if (event.target === event.currentTarget) {
+      onClose();
+    }
+  };
 
   if (!isOpen) return null;
 
   return (
     <div className="modal-backdrop" onClick={handleBackdropClick}>
-      <div className={`modal-container modal-${size} ${className}`}>
+      <div className={`modal-container modal-${size}`}>
         <div className="modal-header">
           <h2 className="modal-title">{title}</h2>
           {showCloseButton && (
@@ -61,7 +61,9 @@ const Modal = ({
             </button>
           )}
         </div>
-        <div className="modal-content">{children}</div>
+        <div className="modal-content">
+          {children}
+        </div>
       </div>
     </div>
   );

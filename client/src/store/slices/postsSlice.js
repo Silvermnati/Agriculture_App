@@ -1,25 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-
-const API_URL = 'http://localhost:5000/api';
+import { postsAPI } from '../../utils/api';
 
 // Get all posts with pagination and filters
 export const getPosts = createAsyncThunk(
   'posts/getPosts',
   async (params, thunkAPI) => {
     try {
-      // Build query string from params
-      const queryParams = new URLSearchParams();
-      
-      if (params) {
-        Object.keys(params).forEach(key => {
-          if (params[key] !== undefined && params[key] !== null) {
-            queryParams.append(key, params[key]);
-          }
-        });
-      }
-      
-      const response = await axios.get(`${API_URL}/posts?${queryParams.toString()}`);
+      const response = await postsAPI.getPosts(params);
       return response.data;
     } catch (error) {
       const message = error.response?.data?.message || error.message || error.toString();
@@ -33,7 +20,7 @@ export const getPost = createAsyncThunk(
   'posts/getPost',
   async (postId, thunkAPI) => {
     try {
-      const response = await axios.get(`${API_URL}/posts/${postId}`);
+      const response = await postsAPI.getPost(postId);
       return response.data;
     } catch (error) {
       const message = error.response?.data?.message || error.message || error.toString();
@@ -47,14 +34,7 @@ export const createPost = createAsyncThunk(
   'posts/createPost',
   async (postData, thunkAPI) => {
     try {
-      const token = localStorage.getItem('token');
-      
-      const response = await axios.post(`${API_URL}/posts`, postData, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      
+      const response = await postsAPI.createPost(postData);
       return response.data;
     } catch (error) {
       const message = error.response?.data?.message || error.message || error.toString();
@@ -68,14 +48,7 @@ export const updatePost = createAsyncThunk(
   'posts/updatePost',
   async ({ postId, postData }, thunkAPI) => {
     try {
-      const token = localStorage.getItem('token');
-      
-      const response = await axios.put(`${API_URL}/posts/${postId}`, postData, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      
+      const response = await postsAPI.updatePost(postId, postData);
       return response.data;
     } catch (error) {
       const message = error.response?.data?.message || error.message || error.toString();
@@ -89,14 +62,7 @@ export const deletePost = createAsyncThunk(
   'posts/deletePost',
   async (postId, thunkAPI) => {
     try {
-      const token = localStorage.getItem('token');
-      
-      const response = await axios.delete(`${API_URL}/posts/${postId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      
+      const response = await postsAPI.deletePost(postId);
       return { postId, message: response.data.message };
     } catch (error) {
       const message = error.response?.data?.message || error.message || error.toString();
@@ -110,14 +76,7 @@ export const addComment = createAsyncThunk(
   'posts/addComment',
   async ({ postId, commentData }, thunkAPI) => {
     try {
-      const token = localStorage.getItem('token');
-      
-      const response = await axios.post(`${API_URL}/posts/${postId}/comments`, commentData, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      
+      const response = await postsAPI.addComment(postId, commentData);
       return response.data;
     } catch (error) {
       const message = error.response?.data?.message || error.message || error.toString();
@@ -131,14 +90,7 @@ export const toggleLike = createAsyncThunk(
   'posts/toggleLike',
   async (postId, thunkAPI) => {
     try {
-      const token = localStorage.getItem('token');
-      
-      const response = await axios.post(`${API_URL}/posts/${postId}/like`, {}, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      
+      const response = await postsAPI.toggleLike(postId);
       return { postId, message: response.data.message };
     } catch (error) {
       const message = error.response?.data?.message || error.message || error.toString();

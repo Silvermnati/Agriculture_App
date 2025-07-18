@@ -1,138 +1,127 @@
+import { VALIDATION } from './constants';
+
 /**
- * Format date to a readable string
- * @param {string|Date} date - Date to format
- * @param {string} format - Format to use (default: 'short')
- * @returns {string} Formatted date string
+ * Validate email format
+ * @param {string} email - Email to validate
+ * @returns {boolean} - True if valid
  */
-export const formatDate = (date, format = 'short') => {
-  if (!date) return '';
-  
-  const dateObj = new Date(date);
-  
-  if (format === 'short') {
-    return dateObj.toLocaleDateString();
-  }
-  
-  if (format === 'long') {
-    return dateObj.toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  }
-  
-  if (format === 'relative') {
-    const now = new Date();
-    const diffInSeconds = Math.floor((now - dateObj) / 1000);
-    
-    if (diffInSeconds < 60) {
-      return 'just now';
-    }
-    
-    const diffInMinutes = Math.floor(diffInSeconds / 60);
-    if (diffInMinutes < 60) {
-      return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
-    }
-    
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) {
-      return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
-    }
-    
-    const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays < 30) {
-      return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
-    }
-    
-    const diffInMonths = Math.floor(diffInDays / 30);
-    if (diffInMonths < 12) {
-      return `${diffInMonths} month${diffInMonths > 1 ? 's' : ''} ago`;
-    }
-    
-    const diffInYears = Math.floor(diffInMonths / 12);
-    return `${diffInYears} year${diffInYears > 1 ? 's' : ''} ago`;
-  }
-  
-  return dateObj.toLocaleDateString();
+export const isValidEmail = (email) => {
+  return VALIDATION.EMAIL.PATTERN.test(email);
 };
 
 /**
- * Truncate text to a specific length
+ * Validate password strength
+ * @param {string} password - Password to validate
+ * @returns {boolean} - True if valid
+ */
+export const isValidPassword = (password) => {
+  return password && password.length >= VALIDATION.PASSWORD.MIN_LENGTH && 
+         VALIDATION.PASSWORD.PATTERN.test(password);
+};
+
+/**
+ * Validate farm size
+ * @param {number} size - Farm size to validate
+ * @returns {boolean} - True if valid
+ */
+export const isValidFarmSize = (size) => {
+  const numSize = parseFloat(size);
+  return !isNaN(numSize) && numSize >= VALIDATION.FARM_SIZE.MIN && numSize <= VALIDATION.FARM_SIZE.MAX;
+};
+
+/**
+ * Validate farming experience
+ * @param {number} years - Years of experience to validate
+ * @returns {boolean} - True if valid
+ */
+export const isValidFarmingExperience = (years) => {
+  const numYears = parseInt(years);
+  return !isNaN(numYears) && numYears >= VALIDATION.FARMING_EXPERIENCE.MIN && 
+         numYears <= VALIDATION.FARMING_EXPERIENCE.MAX;
+};
+
+/**
+ * Validate name (first name, last name)
+ * @param {string} name - Name to validate
+ * @returns {boolean} - True if valid
+ */
+export const isValidName = (name) => {
+  return name && name.length >= VALIDATION.NAME.MIN_LENGTH && 
+         name.length <= VALIDATION.NAME.MAX_LENGTH;
+};
+
+/**
+ * Format date to locale string
+ * @param {string} dateString - ISO date string
+ * @returns {string} - Formatted date
+ */
+export const formatDate = (dateString) => {
+  if (!dateString) return '';
+  
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+};
+
+/**
+ * Calculate read time for content
+ * @param {string} content - Content to calculate read time for
+ * @returns {number} - Read time in minutes
+ */
+export const calculateReadTime = (content) => {
+  if (!content) return 1;
+  
+  // Average reading speed: 200 words per minute
+  const words = content.trim().split(/\s+/).length;
+  const readTime = Math.ceil(words / 200);
+  
+  return readTime < 1 ? 1 : readTime;
+};
+
+/**
+ * Truncate text with ellipsis
  * @param {string} text - Text to truncate
- * @param {number} length - Maximum length
- * @returns {string} Truncated text
+ * @param {number} maxLength - Maximum length
+ * @returns {string} - Truncated text
  */
-export const truncateText = (text, length = 100) => {
-  if (!text) return '';
-  if (text.length <= length) return text;
+export const truncateText = (text, maxLength = 100) => {
+  if (!text || text.length <= maxLength) return text;
   
-  return text.substring(0, length) + '...';
+  return text.substring(0, maxLength) + '...';
 };
 
 /**
- * Format file size to a readable string
- * @param {number} bytes - File size in bytes
- * @returns {string} Formatted file size
+ * Format number with commas
+ * @param {number} number - Number to format
+ * @returns {string} - Formatted number
  */
-export const formatFileSize = (bytes) => {
-  if (bytes === 0) return '0 Bytes';
-  
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+export const formatNumber = (number) => {
+  return number?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') || '0';
 };
 
 /**
- * Get initials from a name
- * @param {string} name - Full name
- * @returns {string} Initials
+ * Get error message for form validation
+ * @param {string} field - Field name
+ * @param {any} value - Field value
+ * @returns {string|null} - Error message or null if valid
  */
-export const getInitials = (name) => {
-  if (!name) return '';
-  
-  return name
-    .split(' ')
-    .map(part => part[0])
-    .join('')
-    .toUpperCase()
-    .substring(0, 2);
-};
-
-/**
- * Capitalize first letter of a string
- * @param {string} string - String to capitalize
- * @returns {string} Capitalized string
- */
-export const capitalizeFirstLetter = (string) => {
-  if (!string) return '';
-  return string.charAt(0).toUpperCase() + string.slice(1);
-};
-
-/**
- * Format farming experience to a readable string
- * @param {number} years - Years of experience
- * @returns {string} Formatted experience
- */
-export const formatFarmingExperience = (years) => {
-  if (!years && years !== 0) return 'Not specified';
-  
-  if (years === 0) return 'New to farming';
-  if (years === 1) return '1 year';
-  if (years < 5) return `${years} years`;
-  if (years < 10) return `${years} years (Experienced)`;
-  return `${years} years (Expert)`;
-};
-
-/**
- * Format farm size to a readable string
- * @param {number} size - Farm size
- * @param {string} unit - Unit of measurement
- * @returns {string} Formatted farm size
- */
-export const formatFarmSize = (size, unit = 'hectares') => {
-  if (!size && size !== 0) return 'Not specified';
-  
-  return `${size} ${unit}`;
+export const getValidationError = (field, value) => {
+  switch (field) {
+    case 'email':
+      return isValidEmail(value) ? null : VALIDATION.EMAIL.MESSAGE;
+    case 'password':
+      return isValidPassword(value) ? null : VALIDATION.PASSWORD.MESSAGE;
+    case 'farm_size':
+      return isValidFarmSize(value) ? null : VALIDATION.FARM_SIZE.MESSAGE;
+    case 'farming_experience':
+      return isValidFarmingExperience(value) ? null : VALIDATION.FARMING_EXPERIENCE.MESSAGE;
+    case 'first_name':
+    case 'last_name':
+      return isValidName(value) ? null : VALIDATION.NAME.MESSAGE;
+    default:
+      return null;
+  }
 };

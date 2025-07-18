@@ -8,18 +8,18 @@
   vertical-align: middle;
   user-select: none;
   border: 1px solid transparent;
-  padding: 0.75rem 1.5rem;
+  padding: 0.5rem 1rem;
   font-size: 1rem;
   line-height: 1.5;
-  border-radius: 4px;
+  border-radius: 0.25rem;
   transition: all 0.15s ease-in-out;
   cursor: pointer;
 }
 
-/* Variants */
+/* Button variants */
 .btn-primary {
-  color: #ffffff;
   background-color: #4CAF50;
+  color: white;
   border-color: #4CAF50;
 }
 
@@ -29,56 +29,68 @@
 }
 
 .btn-secondary {
-  color: #4CAF50;
-  background-color: transparent;
-  border-color: #4CAF50;
+  background-color: #6c757d;
+  color: white;
+  border-color: #6c757d;
 }
 
 .btn-secondary:hover:not(:disabled) {
-  color: #ffffff;
-  background-color: #4CAF50;
+  background-color: #5a6268;
+  border-color: #5a6268;
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: white;
+  border-color: #28a745;
+}
+
+.btn-success:hover:not(:disabled) {
+  background-color: #218838;
+  border-color: #218838;
 }
 
 .btn-danger {
-  color: #ffffff;
-  background-color: #f44336;
-  border-color: #f44336;
+  background-color: #dc3545;
+  color: white;
+  border-color: #dc3545;
 }
 
 .btn-danger:hover:not(:disabled) {
-  background-color: #d32f2f;
-  border-color: #d32f2f;
+  background-color: #c82333;
+  border-color: #c82333;
 }
 
-.btn-text {
-  color: #4CAF50;
+.btn-outline {
   background-color: transparent;
-  border-color: transparent;
-  padding: 0.5rem;
+  color: #4CAF50;
+  border-color: #4CAF50;
 }
 
-.btn-text:hover:not(:disabled) {
-  color: #45a049;
-  text-decoration: underline;
+.btn-outline:hover:not(:disabled) {
+  background-color: #4CAF50;
+  color: white;
 }
 
-/* Sizes */
+/* Button sizes */
 .btn-small {
-  padding: 0.5rem 1rem;
+  padding: 0.25rem 0.5rem;
   font-size: 0.875rem;
+  border-radius: 0.2rem;
 }
 
 .btn-medium {
-  padding: 0.75rem 1.5rem;
+  padding: 0.5rem 1rem;
   font-size: 1rem;
 }
 
 .btn-large {
-  padding: 1rem 2rem;
+  padding: 0.75rem 1.5rem;
   font-size: 1.125rem;
+  border-radius: 0.3rem;
 }
 
-/* Full width */
+/* Full width button */
 .btn-full-width {
   display: block;
   width: 100%;
@@ -90,9 +102,47 @@
   cursor: not-allowed;
 }
 
-/* With icon */
+/* Button with icon */
 .btn-icon {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+}
+
+.btn-icon svg,
+.btn-icon img {
+  margin-right: 0.5rem;
+}
+
+/* Agricultural themed buttons */
+.btn-harvest {
+  background-color: #ff9800;
+  color: white;
+  border-color: #ff9800;
+}
+
+.btn-harvest:hover:not(:disabled) {
+  background-color: #e68a00;
+  border-color: #e68a00;
+}
+
+.btn-soil {
+  background-color: #795548;
+  color: white;
+  border-color: #795548;
+}
+
+.btn-soil:hover:not(:disabled) {
+  background-color: #6d4c41;
+  border-color: #6d4c41;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .btn {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .btn-large {
+    padding: 0.75rem 1.25rem;
+  }
 }

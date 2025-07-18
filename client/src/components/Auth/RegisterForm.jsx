@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { register, reset } from '../../store/slices/authSlice';
-import { FARMING_TYPES, USER_ROLES } from '../../utils/constants';
+import { FARMING_TYPES, USER_ROLES, FARM_SIZE_UNITS } from '../../utils/constants';
+import { getValidationError } from '../../utils/helpers';
 import './Auth.css';
 
 const RegisterForm = () => {
@@ -20,6 +21,7 @@ const RegisterForm = () => {
   
   const [showPassword, setShowPassword] = useState(false);
   const [passwordMatch, setPasswordMatch] = useState(true);
+  const [validationErrors, setValidationErrors] = useState({});
 
   const dispatch = useDispatch();
   const { isLoading, isError, isSuccess, message } = useSelector((state) => state.auth);
@@ -45,6 +47,21 @@ const RegisterForm = () => {
       } else {
         setPasswordMatch(formData.confirmPassword === value);
       }
+    }
+    
+    // Validate field
+    const error = getValidationError(name, value);
+    if (error) {
+      setValidationErrors(prev => ({
+        ...prev,
+        [name]: error
+      }));
+    } else {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
     }
   };
 
@@ -107,8 +124,12 @@ const RegisterForm = () => {
             value={formData.email}
             onChange={handleChange}
             placeholder="Enter your email"
+            className={validationErrors.email ? 'input-error' : ''}
             required
           />
+          {validationErrors.email && (
+            <div className="field-error">{validationErrors.email}</div>
+          )}
         </div>
         
         <div className="form-row">
@@ -245,7 +266,7 @@ const RegisterForm = () => {
       </form>
       
       <div className="auth-links">
-        <p>Already have an account? <a href="#login">Login</a></p>
+        <p>Already have an account? <a href="/login">Login</a></p>
       </div>
     </div>
   );

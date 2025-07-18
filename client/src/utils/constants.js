@@ -1,23 +1,28 @@
-// API URL
-export const API_URL = 'http://localhost:5000/api';
-
 // User roles
-export const USER_ROLES = {
-  FARMER: 'farmer',
-  EXPERT: 'expert',
-  SUPPLIER: 'supplier',
-  RESEARCHER: 'researcher',
-  STUDENT: 'student',
-  ADMIN: 'admin',
-};
+export const USER_ROLES = [
+  { value: 'farmer', label: 'Farmer' },
+  { value: 'expert', label: 'Agricultural Expert' },
+  { value: 'supplier', label: 'Supplier' },
+  { value: 'researcher', label: 'Researcher' },
+  { value: 'student', label: 'Student' }
+];
 
 // Farming types
 export const FARMING_TYPES = [
   { value: 'organic', label: 'Organic' },
   { value: 'conventional', label: 'Conventional' },
   { value: 'mixed', label: 'Mixed' },
-  { value: 'subsistence', label: 'Subsistence' },
-  { value: 'commercial', label: 'Commercial' },
+  { value: 'permaculture', label: 'Permaculture' },
+  { value: 'biodynamic', label: 'Biodynamic' },
+  { value: 'hydroponic', label: 'Hydroponic' },
+  { value: 'aquaponic', label: 'Aquaponic' }
+];
+
+// Farm size units
+export const FARM_SIZE_UNITS = [
+  { value: 'hectares', label: 'Hectares' },
+  { value: 'acres', label: 'Acres' },
+  { value: 'square_meters', label: 'Square Meters' }
 ];
 
 // Seasons
@@ -26,38 +31,57 @@ export const SEASONS = [
   { value: 'summer', label: 'Summer' },
   { value: 'fall', label: 'Fall' },
   { value: 'winter', label: 'Winter' },
-  { value: 'year-round', label: 'Year-round' },
+  { value: 'year_round', label: 'Year-round' }
 ];
 
-// Post status options
-export const POST_STATUS = {
-  DRAFT: 'draft',
-  PUBLISHED: 'published',
-  ARCHIVED: 'archived',
+// API endpoints
+export const API_ENDPOINTS = {
+  AUTH: {
+    REGISTER: '/auth/register',
+    LOGIN: '/auth/login',
+    PROFILE: '/auth/profile',
+    CHANGE_PASSWORD: '/auth/change-password'
+  },
+  POSTS: {
+    BASE: '/posts',
+    COMMENTS: (postId) => `/posts/${postId}/comments`,
+    LIKE: (postId) => `/posts/${postId}/like`
+  },
+  COMMUNITIES: {
+    BASE: '/communities',
+    JOIN: (communityId) => `/communities/${communityId}/join`,
+    POSTS: (communityId) => `/communities/${communityId}/posts`
+  },
+  EXPERTS: {
+    BASE: '/experts',
+    CONSULTATIONS: '/consultations'
+  }
 };
 
-// Community types
-export const COMMUNITY_TYPES = [
-  { value: 'general', label: 'General' },
-  { value: 'crop_specific', label: 'Crop Specific' },
-  { value: 'location_based', label: 'Location Based' },
-  { value: 'expert_group', label: 'Expert Group' },
-];
-
-// Expert availability status
-export const AVAILABILITY_STATUS = {
-  AVAILABLE: 'available',
-  BUSY: 'busy',
-  UNAVAILABLE: 'unavailable',
+// Form validation
+export const VALIDATION = {
+  PASSWORD: {
+    MIN_LENGTH: 8,
+    PATTERN: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/,
+    MESSAGE: 'Password must be at least 8 characters and include uppercase, lowercase, and numbers'
+  },
+  EMAIL: {
+    PATTERN: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    MESSAGE: 'Please enter a valid email address'
+  },
+  FARM_SIZE: {
+    MIN: 0.01,
+    MAX: 100000,
+    MESSAGE: 'Farm size must be greater than 0'
+  },
+  FARMING_EXPERIENCE: {
+    MIN: 0,
+    MAX: 100,
+    MESSAGE: 'Farming experience must be between 0 and 100 years'
+  },
+  NAME: {
+    MIN_LENGTH: 2,
+    MAX_LENGTH: 50,
+    MESSAGE: 'Name must be between 2 and 50 characters'
+  }
 };
-
-// Consultation types
-export const CONSULTATION_TYPES = [
-  { value: 'video', label: 'Video Call' },
-  { value: 'audio', label: 'Audio Call' },
-  { value: 'chat', label: 'Chat' },
-  { value: 'field_visit', label: 'Field Visit' },
-];
-
-// Pagination defaults
-export const DEFAULT_PAGE_SIZE = 10;

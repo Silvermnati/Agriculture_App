@@ -1,49 +1,65 @@
-.loading-spinner {
+.spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner {
   display: inline-block;
   position: relative;
+  width: 40px;
+  height: 40px;
 }
 
-.spinner-circle {
-  border-radius: 50%;
-  border-style: solid;
-  border-color: #ddd;
+/* Spinner sizes */
+.spinner-small {
+  width: 24px;
+  height: 24px;
+}
+
+.spinner-medium {
+  width: 40px;
+  height: 40px;
+}
+
+.spinner-large {
+  width: 64px;
+  height: 64px;
+}
+
+/* Agricultural themed spinner (leaf shape) */
+.spinner-leaf {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50% 0 50% 50%;
+  border: 4px solid transparent;
+  animation: spin 1.2s linear infinite;
+}
+
+/* Spinner colors */
+.spinner-primary .spinner-leaf {
   border-top-color: #4CAF50;
-  animation: spin 1s linear infinite;
-  box-sizing: border-box;
+  border-left-color: #4CAF50;
+  border-bottom-color: #4CAF50;
 }
 
-/* Sizes */
-.spinner-small .spinner-circle {
-  width: 20px;
-  height: 20px;
-  border-width: 2px;
+.spinner-secondary .spinner-leaf {
+  border-top-color: #6c757d;
+  border-left-color: #6c757d;
+  border-bottom-color: #6c757d;
 }
 
-.spinner-medium .spinner-circle {
-  width: 30px;
-  height: 30px;
-  border-width: 3px;
-}
-
-.spinner-large .spinner-circle {
-  width: 50px;
-  height: 50px;
-  border-width: 4px;
-}
-
-/* Colors */
-.spinner-primary .spinner-circle {
-  border-top-color: #4CAF50;
-}
-
-.spinner-secondary .spinner-circle {
-  border-top-color: #2c5530;
-}
-
-.spinner-white .spinner-circle {
+.spinner-white .spinner-leaf {
   border-top-color: #ffffff;
+  border-left-color: #ffffff;
+  border-bottom-color: #ffffff;
 }
 
+/* Spinner animation */
 @keyframes spin {
   0% {
     transform: rotate(0deg);
@@ -53,14 +69,30 @@
   }
 }
 
-/* Centered spinner with overlay */
+/* Spinner text */
+.spinner-text {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  color: #666;
+}
+
+/* Spinner sizes adjustments */
+.spinner-small .spinner-leaf {
+  border-width: 2px;
+}
+
+.spinner-large .spinner-leaf {
+  border-width: 6px;
+}
+
+/* Full page spinner overlay */
 .spinner-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(255, 255, 255, 0.7);
+  background-color: rgba(255, 255, 255, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;

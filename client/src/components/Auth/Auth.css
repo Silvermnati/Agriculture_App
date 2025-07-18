@@ -60,6 +60,20 @@
   box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
 }
 
+.form-group input.input-error {
+  border-color: #f44336;
+}
+
+.form-group input.input-error:focus {
+  box-shadow: 0 0 0 2px rgba(244, 67, 54, 0.2);
+}
+
+.field-error {
+  color: #f44336;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
 .password-input {
   position: relative;
   display: flex;
