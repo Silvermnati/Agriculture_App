@@ -1,178 +1,337 @@
+#!/usr/bin/env python3
 """
-Seed script to populate the database with initial data.
-Run this after initializing the database with init_db.py.
+Seed script to populate the database with initial data for development.
 """
+
+import os
+import sys
+from datetime import datetime
+from flask import Flask
 from server import create_app
 from server.database import db
 from server.models.user import User
 from server.models.location import Country, StateProvince, Location
-from server.models.crop import Crop, Livestock
-from server.models.post import Category, Tag
-import uuid
+from server.models.crop import Crop, Livestock, UserCrop
 
-def seed_data():
-    """Seed the database with initial data."""
-    app = create_app('development')
+def seed_countries():
+    """Seed countries table."""
+    print("Seeding countries...")
+    countries = [
+        {"name": "United States", "code": "US"},
+        {"name": "Canada", "code": "CA"},
+        {"name": "United Kingdom", "code": "GB"},
+        {"name": "Australia", "code": "AU"},
+        {"name": "Nigeria", "code": "NG"},
+        {"name": "Kenya", "code": "KE"},
+        {"name": "South Africa", "code": "ZA"},
+        {"name": "India", "code": "IN"}
+    ]
+    
+    # Use session.no_autoflush to prevent premature flushing
+    with db.session.no_autoflush:
+        added_count = 0
+        for country_data in countries:
+            # Check if country exists by code
+            existing = Country.query.filter_by(code=country_data["code"]).first()
+            if not existing:
+                try:
+                    country = Country(**country_data)
+                    db.session.add(country)
+                    added_count += 1
+                except Exception as e:
+                    print(f"Error adding country {country_data['name']}: {e}")
+                    db.session.rollback()
+    
+    try:
+        db.session.commit()
+        print(f"Added {added_count} countries")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error committing countries: {e}")
+
+def seed_states():
+    """Seed states/provinces table."""
+    print("Seeding states/provinces...")
+    us = Country.query.filter_by(code="US").first()
+    
+    if not us:
+        print("Error: US country not found")
+        return
+    
+    states = [
+        {"name": "California", "code": "CA", "country_id": us.country_id},
+        {"name": "Texas", "code": "TX", "country_id": us.country_id},
+        {"name": "New York", "code": "NY", "country_id": us.country_id},
+        {"name": "Florida", "code": "FL", "country_id": us.country_id},
+        {"name": "Illinois", "code": "IL", "country_id": us.country_id}
+    ]
+    
+    with db.session.no_autoflush:
+        added_count = 0
+        for state_data in states:
+            existing = StateProvince.query.filter_by(code=state_data["code"]).first()
+            if not existing:
+                try:
+                    state = StateProvince(**state_data)
+                    db.session.add(state)
+                    added_count += 1
+                except Exception as e:
+                    print(f"Error adding state {state_data['name']}: {e}")
+                    db.session.rollback()
+    
+    try:
+        db.session.commit()
+        print(f"Added {added_count} states")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error committing states: {e}")
+
+def seed_locations():
+    """Seed locations table."""
+    print("Seeding locations...")
+    us = Country.query.filter_by(code="US").first()
+    ca = StateProvince.query.filter_by(code="CA").first()
+    tx = StateProvince.query.filter_by(code="TX").first()
+    
+    if not us or not ca or not tx:
+        print("Error: Required country or states not found")
+        return
+    
+    locations = [
+        {
+            "country_id": us.country_id,
+            "state_id": ca.state_id,
+            "city": "San Francisco",
+            "latitude": 37.7749,
+            "longitude": -122.4194,
+            "climate_zone": "Mediterranean"
+        },
+        {
+            "country_id": us.country_id,
+            "state_id": tx.state_id,
+            "city": "Austin",
+            "latitude": 30.2672,
+            "longitude": -97.7431,
+            "climate_zone": "Humid subtropical"
+        }
+    ]
+    
+    with db.session.no_autoflush:
+        added_count = 0
+        for location_data in locations:
+            # Check if location already exists
+            existing = Location.query.filter_by(
+                country_id=location_data["country_id"],
+                state_id=location_data["state_id"],
+                city=location_data["city"]
+            ).first()
+            
+            if not existing:
+                try:
+                    location = Location(**location_data)
+                    db.session.add(location)
+                    added_count += 1
+                except Exception as e:
+                    print(f"Error adding location {location_data['city']}: {e}")
+                    db.session.rollback()
+    
+    try:
+        db.session.commit()
+        print(f"Added {added_count} locations")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error committing locations: {e}")
+
+def seed_crops():
+    """Seed crops table."""
+    print("Seeding crops...")
+    crops = [
+        {
+            "name": "Corn",
+            "scientific_name": "Zea mays",
+            "category": "cereal",
+            "growing_season": "summer",
+            "climate_requirements": "Warm, sunny conditions with moderate rainfall",
+            "water_requirements": "medium",
+            "soil_type": "Well-drained loamy soil",
+            "maturity_days": 90
+        },
+        {
+            "name": "Wheat",
+            "scientific_name": "Triticum aestivum",
+            "category": "cereal",
+            "growing_season": "winter",
+            "climate_requirements": "Cool to moderate temperatures",
+            "water_requirements": "medium",
+            "soil_type": "Loamy soil with good drainage",
+            "maturity_days": 120
+        },
+        {
+            "name": "Tomato",
+            "scientific_name": "Solanum lycopersicum",
+            "category": "vegetable",
+            "growing_season": "summer",
+            "climate_requirements": "Warm, sunny conditions",
+            "water_requirements": "high",
+            "soil_type": "Well-drained, fertile soil",
+            "maturity_days": 70
+        }
+    ]
+    
+    with db.session.no_autoflush:
+        added_count = 0
+        for crop_data in crops:
+            existing = Crop.query.filter_by(name=crop_data["name"]).first()
+            if not existing:
+                try:
+                    crop = Crop(**crop_data)
+                    db.session.add(crop)
+                    added_count += 1
+                except Exception as e:
+                    print(f"Error adding crop {crop_data['name']}: {e}")
+                    db.session.rollback()
+    
+    try:
+        db.session.commit()
+        print(f"Added {added_count} crops")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error committing crops: {e}")
+
+def seed_users():
+    """Seed users table with demo accounts."""
+    print("Seeding users...")
+    
+    # Get a location for the users
+    sf_location = Location.query.filter_by(city="San Francisco").first()
+    austin_location = Location.query.filter_by(city="Austin").first()
+    
+    if not sf_location or not austin_location:
+        print("Error: Required locations not found")
+        return
+    
+    added_count = 0
+    with db.session.no_autoflush:
+        # Create demo farmer user
+        if not User.query.filter_by(email="farmer@example.com").first():
+            try:
+                farmer = User(
+                    email="farmer@example.com",
+                    password="farmerpassword",
+                    first_name="John",
+                    last_name="Farmer",
+                    role="farmer",
+                    location_id=sf_location.location_id,
+                    farm_size=25.5,
+                    farm_size_unit="hectares",
+                    farming_experience=10,
+                    farming_type="organic",
+                    bio="Experienced organic farmer specializing in sustainable practices.",
+                    is_verified=True
+                )
+                db.session.add(farmer)
+                added_count += 1
+            except Exception as e:
+                print(f"Error adding farmer user: {e}")
+                db.session.rollback()
+        
+        # Create demo expert user
+        if not User.query.filter_by(email="expert@example.com").first():
+            try:
+                expert = User(
+                    email="expert@example.com",
+                    password="expertpassword",
+                    first_name="Jane",
+                    last_name="Expert",
+                    role="expert",
+                    location_id=austin_location.location_id,
+                    bio="Agricultural scientist with 15 years of experience in sustainable farming practices.",
+                    is_verified=True
+                )
+                db.session.add(expert)
+                added_count += 1
+            except Exception as e:
+                print(f"Error adding expert user: {e}")
+                db.session.rollback()
+    
+    try:
+        db.session.commit()
+        print(f"Added {added_count} demo users")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error committing users: {e}")
+
+def seed_user_crops():
+    """Seed user_crops table."""
+    print("Seeding user crops...")
+    
+    farmer = User.query.filter_by(email="farmer@example.com").first()
+    corn = Crop.query.filter_by(name="Corn").first()
+    tomato = Crop.query.filter_by(name="Tomato").first()
+    
+    if not farmer or not corn or not tomato:
+        print("Error: Required user or crops not found")
+        return
+    
+    added_count = 0
+    with db.session.no_autoflush:
+        # Add corn to farmer
+        if not UserCrop.query.filter_by(user_id=farmer.user_id, crop_id=corn.crop_id).first():
+            try:
+                user_crop1 = UserCrop(
+                    user_id=farmer.user_id,
+                    crop_id=corn.crop_id,
+                    area_planted=10.5,
+                    area_unit="hectares",
+                    planting_date=datetime(2023, 4, 15),
+                    expected_harvest=datetime(2023, 7, 15),
+                    season="summer2023"
+                )
+                db.session.add(user_crop1)
+                added_count += 1
+            except Exception as e:
+                print(f"Error adding corn to farmer: {e}")
+                db.session.rollback()
+        
+        # Add tomato to farmer
+        if not UserCrop.query.filter_by(user_id=farmer.user_id, crop_id=tomato.crop_id).first():
+            try:
+                user_crop2 = UserCrop(
+                    user_id=farmer.user_id,
+                    crop_id=tomato.crop_id,
+                    area_planted=5.2,
+                    area_unit="hectares",
+                    planting_date=datetime(2023, 5, 1),
+                    expected_harvest=datetime(2023, 7, 10),
+                    season="summer2023"
+                )
+                db.session.add(user_crop2)
+                added_count += 1
+            except Exception as e:
+                print(f"Error adding tomato to farmer: {e}")
+                db.session.rollback()
+    
+    try:
+        db.session.commit()
+        print(f"Added {added_count} user crops")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error committing user crops: {e}")
+
+def main():
+    """Main function to seed the database."""
+    app = create_app()
     
     with app.app_context():
-        print("Seeding database with initial data...")
+        # Seed data in order of dependencies
+        seed_countries()
+        seed_states()
+        seed_locations()
+        seed_crops()
+        seed_users()
+        seed_user_crops()
         
-        # Create countries
-        countries = [
-            {'name': 'United States', 'code': 'USA'},
-            {'name': 'Kenya', 'code': 'KEN'},
-            {'name': 'India', 'code': 'IND'},
-            {'name': 'Brazil', 'code': 'BRA'},
-            {'name': 'Nigeria', 'code': 'NGA'}
-        ]
-        
-        for country_data in countries:
-            country = Country(**country_data)
-            db.session.add(country)
-        
-        db.session.commit()
-        print("Countries added successfully!")
-        
-        # Create states/provinces
-        states = [
-            {'country_id': 1, 'name': 'California', 'code': 'CA'},
-            {'country_id': 1, 'name': 'Texas', 'code': 'TX'},
-            {'country_id': 2, 'name': 'Nairobi', 'code': 'NBO'},
-            {'country_id': 3, 'name': 'Maharashtra', 'code': 'MH'},
-            {'country_id': 4, 'name': 'São Paulo', 'code': 'SP'},
-            {'country_id': 5, 'name': 'Lagos', 'code': 'LAG'}
-        ]
-        
-        for state_data in states:
-            state = StateProvince(**state_data)
-            db.session.add(state)
-        
-        db.session.commit()
-        print("States/Provinces added successfully!")
-        
-        # Create locations
-        locations = [
-            {'country_id': 1, 'state_id': 1, 'city': 'San Francisco'},
-            {'country_id': 1, 'state_id': 2, 'city': 'Austin'},
-            {'country_id': 2, 'state_id': 3, 'city': 'Nairobi'},
-            {'country_id': 3, 'state_id': 4, 'city': 'Mumbai'},
-            {'country_id': 4, 'state_id': 5, 'city': 'São Paulo'},
-            {'country_id': 5, 'state_id': 6, 'city': 'Lagos'}
-        ]
-        
-        for location_data in locations:
-            location = Location(**location_data)
-            db.session.add(location)
-        
-        db.session.commit()
-        print("Locations added successfully!")
-        
-        # Create crops
-        crops = [
-            {'name': 'Corn', 'category': 'cereal', 'growing_season': 'summer'},
-            {'name': 'Wheat', 'category': 'cereal', 'growing_season': 'winter'},
-            {'name': 'Rice', 'category': 'cereal', 'growing_season': 'summer'},
-            {'name': 'Tomatoes', 'category': 'vegetable', 'growing_season': 'spring'},
-            {'name': 'Coffee', 'category': 'beverage', 'growing_season': 'year-round'}
-        ]
-        
-        for crop_data in crops:
-            crop = Crop(**crop_data)
-            db.session.add(crop)
-        
-        db.session.commit()
-        print("Crops added successfully!")
-        
-        # Create livestock
-        livestock = [
-            {'name': 'Cattle', 'category': 'bovine', 'purpose': 'meat, dairy'},
-            {'name': 'Chicken', 'category': 'poultry', 'purpose': 'meat, eggs'},
-            {'name': 'Goat', 'category': 'caprine', 'purpose': 'meat, milk'},
-            {'name': 'Sheep', 'category': 'ovine', 'purpose': 'meat, wool'},
-            {'name': 'Pig', 'category': 'porcine', 'purpose': 'meat'}
-        ]
-        
-        for livestock_data in livestock:
-            animal = Livestock(**livestock_data)
-            db.session.add(animal)
-        
-        db.session.commit()
-        print("Livestock added successfully!")
-        
-        # Create categories
-        categories = [
-            {'name': 'Crop Management', 'description': 'Tips and advice for managing crops'},
-            {'name': 'Livestock Care', 'description': 'Information about livestock health and management'},
-            {'name': 'Organic Farming', 'description': 'Organic farming methods and certification'},
-            {'name': 'Market Trends', 'description': 'Agricultural market trends and prices'},
-            {'name': 'Technology', 'description': 'Agricultural technology and innovation'}
-        ]
-        
-        for category_data in categories:
-            category = Category(**category_data)
-            db.session.add(category)
-        
-        db.session.commit()
-        print("Categories added successfully!")
-        
-        # Create tags
-        tags = [
-            {'name': 'organic', 'category': 'technique'},
-            {'name': 'irrigation', 'category': 'technique'},
-            {'name': 'fertilizer', 'category': 'input'},
-            {'name': 'pest-control', 'category': 'problem'},
-            {'name': 'drought-resistant', 'category': 'trait'}
-        ]
-        
-        for tag_data in tags:
-            tag = Tag(**tag_data)
-            db.session.add(tag)
-        
-        db.session.commit()
-        print("Tags added successfully!")
-        
-        # Create admin user
-        admin = User(
-            email='admin@agriapp.com',
-            password='adminpassword',
-            first_name='Admin',
-            last_name='User',
-            role='admin',
-            is_verified=True
-        )
-        
-        # Create farmer user
-        farmer = User(
-            email='farmer@example.com',
-            password='farmerpassword',
-            first_name='John',
-            last_name='Farmer',
-            role='farmer',
-            location_id=1,
-            farm_size=25.5,
-            farming_experience=10,
-            farming_type='organic'
-        )
-        
-        # Create expert user
-        expert = User(
-            email='expert@example.com',
-            password='expertpassword',
-            first_name='Jane',
-            last_name='Expert',
-            role='expert',
-            location_id=2,
-            bio='Agricultural scientist with 15 years of experience in sustainable farming practices.'
-        )
-        
-        db.session.add(admin)
-        db.session.add(farmer)
-        db.session.add(expert)
-        
-        db.session.commit()
-        print("Users added successfully!")
-        
-        print("Database seeded successfully!")
+        print("Database seeding completed successfully!")
 
-if __name__ == '__main__':
-    seed_data()
+if __name__ == "__main__":
+    main()
