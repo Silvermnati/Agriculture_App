@@ -6,6 +6,8 @@ from server.config import config
 from server.database import init_db
 from server.routes.auth_routes import auth_bp
 from server.routes.post_routes import post_bp
+from server.routes.community_routes import community_bp
+from server.routes.expert_routes import expert_bp, consultation_bp
 
 def create_app(config_name='default'):
     """Create and configure the Flask application."""
@@ -23,6 +25,9 @@ def create_app(config_name='default'):
     # Register blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(post_bp)
+    app.register_blueprint(community_bp)
+    app.register_blueprint(expert_bp)
+    app.register_blueprint(consultation_bp)
     
     # Create upload directory if it doesn't exist
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
