@@ -12,7 +12,18 @@ const CommunityForm = ({ onSubmit, initialData = null }) => {
   });
 
   const handleSubmit = () => {
-    onSubmit(formData);
+    // Format the data to match the backend API structure
+    const formattedData = {
+      name: formData.name,
+      description: formData.description,
+      community_type: formData.community_type,
+      focus_crops: formData.focus_crops.filter(crop => crop.trim() !== ""),
+      location_city: formData.location_city,
+      location_country: formData.location_country,
+      is_private: formData.is_private
+    };
+    
+    onSubmit(formattedData);
   };
 
   const addCrop = () => {

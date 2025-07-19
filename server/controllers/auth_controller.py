@@ -71,7 +71,7 @@ def register():
     token = jwt.encode({
         'user_id': str(user.user_id),
         'exp': datetime.utcnow() + timedelta(days=1)
-    }, current_app.config['JWT_SECRET_KEY'])
+    }, current_app.config['JWT_SECRET_KEY'], algorithm='HS256')
     
     return jsonify({
         'message': 'User registered successfully',
@@ -111,7 +111,7 @@ def login():
     token = jwt.encode({
         'user_id': str(user.user_id),
         'exp': datetime.utcnow() + timedelta(days=1)
-    }, current_app.config['JWT_SECRET_KEY'])
+    }, current_app.config['JWT_SECRET_KEY'], algorithm='HS256')
     
     return jsonify({
         'message': 'Login successful',
