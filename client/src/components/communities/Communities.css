@@ -1,0 +1,210 @@
+/* Global Styles */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f3f4f6;
+    color: #1f2937;
+  }
+  
+  /* Card Styling */
+  .card-agri {
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    background-color: #ffffff;
+  }
+  
+  .card-agri:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .card-header img {
+    width: 100%;
+    height: 12rem;
+    object-fit: cover;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+  
+  .card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #065f46;
+    margin-bottom: 0.5rem;
+  }
+  
+  .card-description {
+    font-size: 0.95rem;
+    color: #4b5563;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+  
+  .badge-agri {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-weight: 500;
+    display: inline-block;
+  }
+  
+  .badge-regional {
+    background-color: #bfdbfe;
+    color: #1e40af;
+  }
+  
+  .badge-crop {
+    background-color: #bbf7d0;
+    color: #15803d;
+  }
+  
+  .badge-urban {
+    background-color: #e9d5ff;
+    color: #6b21a8;
+  }
+  
+  .badge-professional {
+    background-color: #fef3c7;
+    color: #92400e;
+  }
+  
+  /* Button Styles */
+  .btn-agri {
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.3s;
+    cursor: pointer;
+  }
+  
+  .btn-join {
+    background-color: #16a34a;
+    color: #ffffff;
+  }
+  
+  .btn-join:hover {
+    background-color: #15803d;
+  }
+  
+  .btn-leave {
+    background-color: #e5e7eb;
+    color: #374151;
+  }
+  
+  .btn-leave:hover {
+    background-color: #d1d5db;
+  }
+  
+  /* Tabs */
+  .tab-button {
+    padding: 1rem;
+    font-weight: 600;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+  }
+  
+  .tab-button.active {
+    border-color: #16a34a;
+    color: #16a34a;
+  }
+  
+  .tab-button:hover {
+    color: #15803d;
+  }
+  
+  /* Responsive Layout */
+  @media (max-width: 768px) {
+    .grid-cols-3 {
+      grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+  
+    .grid-cols-2 {
+      grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+  
+    .card-header img {
+      height: 10rem;
+    }
+  
+    .tab-button {
+      font-size: 0.875rem;
+      padding: 0.75rem;
+    }
+  }
+  
+  /* Animations */
+  .pulse-green {
+    animation: pulse 1.5s infinite;
+    background-color: #16a34a;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 9999px;
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.5;
+      transform: scale(1.2);
+    }
+  }
+  
+  /* Member List */
+  .member-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s;
+  }
+  
+  .member-card:hover {
+    background-color: #f9fafb;
+  }
+  
+  .role-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-weight: 500;
+    text-transform: capitalize;
+  }
+  
+  .role-admin {
+    background-color: #fef3c7;
+    color: #92400e;
+  }
+  
+  .role-moderator {
+    background-color: #dbeafe;
+    color: #1e40af;
+  }
+  
+  .role-member {
+    background-color: #f3f4f6;
+    color: #374151;
+  }
+  
+  /* Search Input */
+  .search-input {
+    padding: 0.5rem 2.5rem 0.5rem 2.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    width: 100%;
+    background-color: white;
+    transition: border-color 0.3s;
+  }
+  
+  .search-input:focus {
+    border-color: #16a34a;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
+  }
+  

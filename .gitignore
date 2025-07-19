@@ -72,3 +72,8 @@ logs
 
 # Environment variables
 .env
+
+# Task planning files
+AGRICULTURAL_SUPER_APP_TASKS.md
+frontend_tasks.md
+backend_tasks.md
