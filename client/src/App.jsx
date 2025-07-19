@@ -9,6 +9,8 @@ import Layout from './components/Layout/Layout';
 import Login from './pages/Login/Login';
 import Register from './pages/Register/Register';
 import Home from './pages/Home/Home';
+import CommunitiesPage from './pages/Communities/CommunitiesPage';
+import CommunityDetailPage from './pages/Communities/CommunityDetailPage';
 
 import './App.css';
 
@@ -24,6 +26,11 @@ const AppRoutes = () => {
         <Route path="/" element={isAuthenticated ? <Home /> : <Navigate to="/login" />} />
         <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <Login />} />
         <Route path="/register" element={isAuthenticated ? <Navigate to="/" /> : <Register />} />
+        
+        {/* Communities routes */}
+        <Route path="/communities" element={isAuthenticated ? <CommunitiesPage /> : <Navigate to="/login" />} />
+        <Route path="/communities/:communityId" element={isAuthenticated ? <CommunityDetailPage /> : <Navigate to="/login" />} />
+        
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Layout>

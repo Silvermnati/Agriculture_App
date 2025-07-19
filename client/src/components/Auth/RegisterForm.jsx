@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { register, reset } from '../../store/slices/authSlice';
 import { FARMING_TYPES, USER_ROLES, FARM_SIZE_UNITS } from '../../utils/constants';
 import { getValidationError } from '../../utils/helpers';
@@ -12,6 +13,7 @@ const RegisterForm = () => {
     confirmPassword: '',
     first_name: '',
     last_name: '',
+    gender: 'male',
     role: 'farmer',
     farm_size: '',
     farm_size_unit: 'hectares',
@@ -23,15 +25,25 @@ const RegisterForm = () => {
   const [passwordMatch, setPasswordMatch] = useState(true);
   const [validationErrors, setValidationErrors] = useState({});
 
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const { isLoading, isError, isSuccess, message } = useSelector((state) => state.auth);
 
   useEffect(() => {
+    // Redirect to home page if registration is successful
+    if (isSuccess) {
+      const timer = setTimeout(() => {
+        navigate('/');
+      }, 1500); // Redirect after 1.5 seconds to show success message
+      
+      return () => clearTimeout(timer);
+    }
+    
     // Reset auth state when component unmounts
     return () => {
       dispatch(reset());
     };
-  }, [dispatch]);
+  }, [isSuccess, dispatch, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -113,6 +125,20 @@ const RegisterForm = () => {
               required
             />
           </div>
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="gender">Gender</label>
+          <select
+            id="gender"
+            name="gender"
+            value={formData.gender}
+            onChange={handleChange}
+          >
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
         </div>
         
         <div className="form-group">

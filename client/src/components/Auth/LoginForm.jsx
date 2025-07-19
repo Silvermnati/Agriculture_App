@@ -44,6 +44,16 @@ const LoginForm = () => {
     dispatch(login(formData));
   };
 
+  // Quick login with demo accounts
+  const handleQuickLogin = (email) => {
+    // For demo purposes, we'll use a simple password
+    const demoData = {
+      email,
+      password: 'password' // In mock mode, any password works for demo accounts
+    };
+    dispatch(login(demoData));
+  };
+
   return (
     <div className="auth-form-container">
       <h2>Login to Agricultural Super App</h2>
@@ -103,11 +113,53 @@ const LoginForm = () => {
       </div>
       
       <div className="auth-demo">
-        <p>Demo accounts:</p>
-        <ul>
-          <li>Farmer: farmer@example.com / farmerpassword</li>
-          <li>Expert: expert@example.com / expertpassword</li>
-        </ul>
+        <p>Quick login with demo accounts:</p>
+        <div className="demo-buttons">
+          <button 
+            onClick={() => handleQuickLogin('farmer@example.com')}
+            className="demo-button farmer"
+            disabled={isLoading}
+          >
+            Login as Farmer
+          </button>
+          <button 
+            onClick={() => handleQuickLogin('expert@example.com')}
+            className="demo-button expert"
+            disabled={isLoading}
+          >
+            Login as Expert
+          </button>
+        </div>
+        <div className="demo-buttons">
+          <button 
+            onClick={() => handleQuickLogin('supplier@example.com')}
+            className="demo-button supplier"
+            disabled={isLoading}
+          >
+            Login as Supplier
+          </button>
+          <button 
+            onClick={() => handleQuickLogin('admin@example.com')}
+            className="demo-button admin"
+            disabled={isLoading}
+          >
+            Login as Admin
+          </button>
+        </div>
+        <div className="demo-accounts">
+          <p className="demo-note">
+            <small>Available demo accounts:</small>
+          </p>
+          <ul className="demo-account-list">
+            <li><strong>Farmer:</strong> farmer@example.com</li>
+            <li><strong>Expert:</strong> expert@example.com</li>
+            <li><strong>Supplier:</strong> supplier@example.com</li>
+            <li><strong>Admin:</strong> admin@example.com</li>
+          </ul>
+          <p className="demo-note">
+            <small>Note: In demo mode, any password will work for these accounts</small>
+          </p>
+        </div>
       </div>
     </div>
   );
