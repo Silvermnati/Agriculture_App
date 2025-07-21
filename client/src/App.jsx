@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Provider, useSelector } from 'react-redux';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ExpertsPage from './pages/Experts/ExpertsPage';
 
 import store from './store';
 import Layout from './components/Layout/Layout';
@@ -30,8 +31,8 @@ const AppRoutes = () => {
         {/* Communities routes */}
         <Route path="/communities" element={isAuthenticated ? <CommunitiesPage /> : <Navigate to="/login" />} />
         <Route path="/communities/:communityId" element={isAuthenticated ? <CommunityDetailPage /> : <Navigate to="/login" />} />
-        
-        <Route path="*" element={<Navigate to="/" />} />
+
+        <Route path="/experts" element={isAuthenticated ? <ExpertsPage /> : <Navigate to="/login" />} />
       </Routes>
     </Layout>
   );
