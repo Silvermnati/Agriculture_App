@@ -358,8 +358,7 @@ def create_community_post(current_user, community_id):
         'message': 'Post created successfully',
         'post': post.to_dict()
     }), 201
-@token
-_required
+@token_required
 def get_community_post(current_user, community_id, post_id):
     """
     Get a specific post with comments.
