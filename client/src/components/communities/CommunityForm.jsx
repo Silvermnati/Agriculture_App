@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import PropTypes from 'prop-types';
 
 const CommunityForm = ({ onSubmit, initialData = null }) => {
   const [formData, setFormData] = useState({
@@ -212,6 +213,11 @@ const CommunityForm = ({ onSubmit, initialData = null }) => {
       </div>
     </div>
   );
+};
+
+CommunityForm.propTypes = {
+    onSubmit: PropTypes.func.isRequired,
+    initialData: PropTypes.object,
 };
 
 export default CommunityForm;

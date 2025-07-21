@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from 'prop-types';
 import { Users, MapPin, Lock, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -121,6 +122,11 @@ const CommunityCard = ({ community, onJoin }) => {
       </div>
     </div>
   );
+};
+
+CommunityCard.propTypes = {
+    community: PropTypes.object.isRequired,
+    onJoin: PropTypes.func.isRequired,
 };
 
 export default CommunityCard;

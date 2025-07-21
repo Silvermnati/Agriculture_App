@@ -1,0 +1,19 @@
+import React from "react";
+import ExpertCard from "./ExpertCard";
+
+const ExpertList = ({ experts, onFollow, onMessage }) => {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {experts.map((expert) => (
+        <ExpertCard
+          key={expert.id}
+          expert={expert}
+          onFollow={onFollow}
+          onMessage={onMessage}
+        />
+      ))}
+    </div>
+  );
+};
+
+export default ExpertList;

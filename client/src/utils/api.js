@@ -1,8 +1,9 @@
 import axios from 'axios';
 import { API_ENDPOINTS } from './constants';
 
-// Create axios instance with base URL
-const API_URL = 'http://localhost:5001/api';
+// Create axios instance. The base URL is relative to the current domain,
+// which allows the Vite proxy to work in development.
+const API_URL = '/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -59,12 +60,32 @@ export const authAPI = {
 
 // Posts API calls
 export const postsAPI = {
-  getPosts: (params) => api.get(API_ENDPOINTS.POSTS.BASE, { params }),
+  getPosts: (params) => {
+    // Create a new params object to avoid mutating the original state
+    const processedParams = { ...params };
+
+    // Convert array values to comma-separated strings for the backend
+    if (Array.isArray(processedParams.crop) && processedParams.crop.length > 0) {
+      processedParams.crop = processedParams.crop.join(',');
+    } else if (Array.isArray(processedParams.crop)) {
+      delete processedParams.crop; // Don't send empty array
+    }
+
+    if (Array.isArray(processedParams.location) && processedParams.location.length > 0) {
+      processedParams.location = processedParams.location.join(',');
+    } else if (Array.isArray(processedParams.location)) {
+      delete processedParams.location; // Don't send empty array
+    }
+
+    // Assuming API_ENDPOINTS.POSTS.BASE is '/posts'
+    return api.get(API_ENDPOINTS.POSTS.BASE, { params: processedParams });
+  },
   getPost: (postId) => api.get(`${API_ENDPOINTS.POSTS.BASE}/${postId}`),
   createPost: (postData) => api.post(API_ENDPOINTS.POSTS.BASE, postData),
   updatePost: (postId, postData) => api.put(`${API_ENDPOINTS.POSTS.BASE}/${postId}`, postData),
   deletePost: (postId) => api.delete(`${API_ENDPOINTS.POSTS.BASE}/${postId}`),
   addComment: (postId, commentData) => api.post(API_ENDPOINTS.POSTS.COMMENTS(postId), commentData),
+  getComments: (postId) => api.get(API_ENDPOINTS.POSTS.COMMENTS(postId)),
   toggleLike: (postId) => api.post(API_ENDPOINTS.POSTS.LIKE(postId))
 };
 

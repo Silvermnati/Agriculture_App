@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import PropTypes from 'prop-types';
 import './Modal.css';
 
 /**
@@ -67,6 +68,15 @@ const Modal = ({
       </div>
     </div>
   );
+};
+
+Modal.propTypes = {
+    isOpen: PropTypes.bool.isRequired,
+    onClose: PropTypes.func.isRequired,
+    title: PropTypes.string.isRequired,
+    children: PropTypes.node.isRequired,
+    size: PropTypes.string,
+    showCloseButton: PropTypes.bool,
 };
 
 export default Modal;
