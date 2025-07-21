@@ -2,7 +2,8 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { mockUsers } from '../../utils/mockData';
 
 // Get user from localStorage
-const user = JSON.parse(localStorage.getItem('user'));
+const userJSON = localStorage.getItem('user');
+const user = userJSON && userJSON !== 'undefined' ? JSON.parse(userJSON) : null;
 const token = localStorage.getItem('token');
 
 // Mock authentication functions
