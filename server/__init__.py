@@ -37,3 +37,5 @@ def create_app(config_name='default'):
         return {'message': 'Agricultural Super App API'}
     
     return app
+
+from server.database import db

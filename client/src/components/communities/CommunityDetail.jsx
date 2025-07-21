@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import PropTypes from 'prop-types';
 import { Lock, Plus, MessageSquare, Users } from "lucide-react";
 import { mockUsers } from "../../utils/mockData";
 
@@ -275,6 +276,12 @@ const CommunityDetail = ({ community, posts, onCreatePost }) => {
       </div>
     </div>
   );
+};
+
+CommunityDetail.propTypes = {
+    community: PropTypes.object.isRequired,
+    posts: PropTypes.array.isRequired,
+    onCreatePost: PropTypes.func,
 };
 
 export default CommunityDetail;

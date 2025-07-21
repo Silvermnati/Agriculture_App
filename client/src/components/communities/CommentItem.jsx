@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import PropTypes from 'prop-types';
 import { MoreHorizontal } from "lucide-react";
 
 const CommentItem = ({ comment, currentUserId, onEdit, onDelete }) => {
@@ -100,6 +101,13 @@ const CommentItem = ({ comment, currentUserId, onEdit, onDelete }) => {
       </div>
     </div>
   );
+};
+
+CommentItem.propTypes = {
+    comment: PropTypes.object.isRequired,
+    currentUserId: PropTypes.number.isRequired,
+    onEdit: PropTypes.func.isRequired,
+    onDelete: PropTypes.func.isRequired,
 };
 
 export default CommentItem;

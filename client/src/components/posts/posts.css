@@ -1,0 +1,126 @@
+/* components/Posts/Posts.css */
+
+.post-card {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  margin-bottom: 16px;
+  background: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.post-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.post-content {
+  padding: 16px;
+}
+
+.badges {
+  margin-top: 8px;
+}
+
+.badge {
+  display: inline-block;
+  background: #eef;
+  padding: 4px 8px;
+  margin: 2px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+}
+
+.post-stats, .post-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.pagination button {
+  margin: 0 10px;
+}
+
+.post-filters {
+  display: flex;
+  gap: 24px;
+  padding: 16px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-group label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: normal;
+}
+
+.post-form input, .post-form textarea, .post-form select {
+  display: block;
+  width: 100%;
+  margin: 8px 0;
+  padding: 8px;
+}
+
+.post-detail {
+  max-width: 800px;
+  margin: auto;
+  padding: 20px;
+}
+
+.author-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 100%;
+}
+
+.comment-item {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.comment-date {
+  font-size: 0.8rem;
+  color: #888;
+  margin-left: 8px;
+}
+
+.reply-form {
+  margin-top: 8px;
+}

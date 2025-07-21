@@ -12,6 +12,7 @@ from server.database import db
 from server.models.user import User
 from server.models.location import Country, StateProvince, Location
 from server.models.crop import Crop, Livestock, UserCrop
+from server.models.post import Post, Category, Tag
 
 def seed_countries():
     """Seed countries table."""
@@ -330,8 +331,72 @@ def main():
         seed_crops()
         seed_users()
         seed_user_crops()
+        seed_posts()
         
         print("Database seeding completed successfully!")
+
+##################################################################
+
+def seed_posts():
+    # Fetch an existing user to assign as author
+    user = User.query.first()
+    if not user:
+        print("No user found to assign posts.")
+        return
+
+    # Create a default category if none exist
+    category = Category.query.filter_by(name='General').first()
+    if not category:
+        category = Category(name='General', description='General agricultural topics.')
+        db.session.add(category)
+
+    # Create a default tag if none exist
+    tag = Tag.query.filter_by(name='farming').first()
+    if not tag:
+        tag = Tag(name='farming')
+        db.session.add(tag)
+    
+    # Flush to get IDs if they were just created
+    db.session.flush()
+
+    # Check if posts already exist to avoid duplicates
+    if Post.query.count() > 0:
+        print("Posts already exist, skipping seeding.")
+        return
+
+    post1 = Post(
+        title="How to Start Organic Farming in Kenya",
+        content="A step-by-step guide on starting organic farming in the Kenyan highlands. Focus on soil preparation and water management.",
+        excerpt="Learn the fundamentals of organic farming, from soil health to choosing the right crops for the Kenyan climate.",
+        author=user,
+        category=category,
+        tags=[tag],
+        related_crops=['maize', 'beans', 'kale'],
+        applicable_locations=['nairobi', 'nakuru', 'eldoret'],
+        season_relevance='spring',
+        status='published',
+        published_at=datetime.utcnow(),
+        read_time=5
+    )
+
+    post2 = Post(
+        title="Benefits of Crop Rotation for Maize",
+        content="Crop rotation is a crucial practice for maintaining soil fertility and reducing pest and disease pressure. This article explores a 3-year rotation cycle involving maize, legumes, and root vegetables.",
+        excerpt="Discover how crop rotation can boost your maize yield and improve long-term soil health on your farm.",
+        author=user,
+        category=category,
+        tags=[tag],
+        related_crops=['maize', 'corn'],
+        applicable_locations=['kitale', 'trans-nzoia'],
+        season_relevance='summer',
+        status='published',
+        published_at=datetime.utcnow(),
+        read_time=4
+    )
+
+    db.session.add_all([post1, post2])
+    db.session.commit()
+    print("Posts seeded successfully.")
 
 if __name__ == "__main__":
     main()
