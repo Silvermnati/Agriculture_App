@@ -15,6 +15,7 @@ import CommunityDetailPage from './pages/Communities/CommunityDetailPage';
 import CreatePostPage from './pages/posts/CreatePostPage';
 import PostDetailPage from './pages/posts/PostDetailPage';
 import PostsPage from './pages/posts/PostsPage';
+import ProfilePage from './pages/Profile/ProfilePage';
 
 import './App.css';
 
@@ -41,6 +42,7 @@ const AppRoutes = () => {
         <Route path="/posts" element={isAuthenticated ? <PostsPage /> : <Navigate to="/login" />} />
         <Route path="/posts/:postId" element={isAuthenticated ? <PostDetailPage /> : <Navigate to="/login" />} />
         <Route path="/create-post" element={isAuthenticated ? <CreatePostPage /> : <Navigate to="/login" />} />
+        <Route path="/profile" element={isAuthenticated ? <ProfilePage /> : <Navigate to="/login" />} />
       </Routes>
     </Layout>
   );

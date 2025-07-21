@@ -19,8 +19,10 @@ const CommunityForm = ({ onSubmit, initialData = null }) => {
       description: formData.description,
       community_type: formData.community_type,
       focus_crops: formData.focus_crops.filter(crop => crop.trim() !== ""),
-      location_city: formData.location_city,
-      location_country: formData.location_country,
+      location: {
+        city: formData.location_city,
+        country: formData.location_country
+      },
       is_private: formData.is_private
     };
     
