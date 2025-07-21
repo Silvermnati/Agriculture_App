@@ -157,9 +157,9 @@ class Comment(db.Model):
         }
 
 
-class PostLike(db.Model):
-    """Post like model."""
-    __tablename__ = 'post_likes'
+class ArticlePostLike(db.Model):
+    """Article post like model."""
+    __tablename__ = 'article_post_likes'
     
     post_id = db.Column(UUID(as_uuid=True), db.ForeignKey('posts.post_id'), primary_key=True)
     user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.user_id'), primary_key=True)
@@ -167,4 +167,4 @@ class PostLike(db.Model):
     
     # Relationships
     post = db.relationship('Post', backref=db.backref('likes', lazy=True))
-    user = db.relationship('User', backref=db.backref('post_likes', lazy=True))
+    user = db.relationship('User', backref=db.backref('article_likes', lazy=True))

@@ -7,7 +7,7 @@ from server.database import db
 from server.models.user import User, UserExpertise, UserFollow
 from server.models.location import Country, StateProvince, Location
 from server.models.crop import Crop, Livestock, UserCrop
-from server.models.post import Category, Tag, Post, Comment, PostLike
+from server.models.post import Category, Tag, Post, Comment, ArticlePostLike
 from server.models.community import Community, CommunityMember, CommunityPost, PostLike, PostComment
 from server.models.expert import ExpertProfile, Consultation, ExpertReview
 from server.models.article import Article

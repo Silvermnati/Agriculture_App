@@ -8,7 +8,7 @@ import bleach
 from sqlalchemy.orm import joinedload, subqueryload, aliased
 
 
-from server.models.post import Post, Category, Tag, Comment, PostLike, post_tags
+from server.models.post import Post, Category, Tag, Comment, ArticlePostLike as PostLike, post_tags
 from server.database import db
 from server.models.crop import Crop
 from server.utils.auth import token_required
