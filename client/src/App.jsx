@@ -12,6 +12,9 @@ import Register from './pages/Register/Register';
 import Home from './pages/Home/Home';
 import CommunitiesPage from './pages/Communities/CommunitiesPage';
 import CommunityDetailPage from './pages/Communities/CommunityDetailPage';
+import CreatePostPage from './pages/posts/CreatePostPage';
+import PostDetailPage from './pages/posts/PostDetailPage';
+import PostsPage from './pages/posts/PostsPage';
 
 import './App.css';
 
@@ -33,6 +36,11 @@ const AppRoutes = () => {
         <Route path="/communities/:communityId" element={isAuthenticated ? <CommunityDetailPage /> : <Navigate to="/login" />} />
 
         <Route path="/experts" element={isAuthenticated ? <ExpertsPage /> : <Navigate to="/login" />} />
+
+        {/* Posts routes */}
+        <Route path="/posts" element={isAuthenticated ? <PostsPage /> : <Navigate to="/login" />} />
+        <Route path="/posts/:postId" element={isAuthenticated ? <PostDetailPage /> : <Navigate to="/login" />} />
+        <Route path="/create-post" element={isAuthenticated ? <CreatePostPage /> : <Navigate to="/login" />} />
       </Routes>
     </Layout>
   );

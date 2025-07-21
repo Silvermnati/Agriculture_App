@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import './Input.css';
 
 const Input = ({
@@ -38,6 +39,20 @@ const Input = ({
       {error && <div className="input-error">{error}</div>}
     </div>
   );
+};
+
+Input.propTypes = {
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    type: PropTypes.string,
+    label: PropTypes.string,
+    value: PropTypes.any.isRequired,
+    onChange: PropTypes.func.isRequired,
+    placeholder: PropTypes.string,
+    error: PropTypes.string,
+    required: PropTypes.bool,
+    disabled: PropTypes.bool,
+    className: PropTypes.string,
 };
 
 export default Input;

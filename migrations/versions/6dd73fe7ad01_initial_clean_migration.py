@@ -1,8 +1,8 @@
-"""Initial migration with agricultural models
+"""initial clean migration
 
-Revision ID: 4eb7154a3a02
+Revision ID: 6dd73fe7ad01
 Revises: 
-Create Date: 2025-07-18 14:14:41.760818
+Create Date: 2025-07-20 11:28:36.659131
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '4eb7154a3a02'
+revision = '6dd73fe7ad01'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -126,6 +126,64 @@ def upgrade():
     sa.PrimaryKeyConstraint('user_id'),
     sa.UniqueConstraint('email')
     )
+    op.create_table('communities',
+    sa.Column('community_id', sa.UUID(), nullable=False),
+    sa.Column('name', sa.String(length=100), nullable=False),
+    sa.Column('description', sa.Text(), nullable=True),
+    sa.Column('community_type', sa.String(length=50), nullable=False),
+    sa.Column('focus_crops', postgresql.ARRAY(sa.String()), nullable=True),
+    sa.Column('location_city', sa.String(length=100), nullable=True),
+    sa.Column('location_country', sa.String(length=100), nullable=False),
+    sa.Column('is_private', sa.Boolean(), nullable=True),
+    sa.Column('created_by', sa.UUID(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['created_by'], ['users.user_id'], ),
+    sa.PrimaryKeyConstraint('community_id')
+    )
+    op.create_table('consultations',
+    sa.Column('consultation_id', sa.UUID(), nullable=False),
+    sa.Column('expert_id', sa.UUID(), nullable=False),
+    sa.Column('farmer_id', sa.UUID(), nullable=False),
+    sa.Column('consultation_type', sa.String(length=20), nullable=False),
+    sa.Column('scheduled_start', sa.DateTime(), nullable=False),
+    sa.Column('scheduled_end', sa.DateTime(), nullable=False),
+    sa.Column('topic', sa.String(length=255), nullable=False),
+    sa.Column('description', sa.Text(), nullable=True),
+    sa.Column('related_crops', postgresql.ARRAY(sa.Integer()), nullable=True),
+    sa.Column('farm_location_id', sa.Integer(), nullable=True),
+    sa.Column('status', sa.String(length=20), nullable=True),
+    sa.Column('payment_status', sa.String(length=20), nullable=True),
+    sa.Column('amount', sa.Numeric(precision=10, scale=2), nullable=True),
+    sa.Column('currency', sa.String(length=3), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['expert_id'], ['users.user_id'], ),
+    sa.ForeignKeyConstraint(['farm_location_id'], ['locations.location_id'], ),
+    sa.ForeignKeyConstraint(['farmer_id'], ['users.user_id'], ),
+    sa.PrimaryKeyConstraint('consultation_id')
+    )
+    op.create_table('expert_profiles',
+    sa.Column('profile_id', sa.UUID(), nullable=False),
+    sa.Column('user_id', sa.UUID(), nullable=False),
+    sa.Column('title', sa.String(length=100), nullable=False),
+    sa.Column('specializations', postgresql.ARRAY(sa.String()), nullable=False),
+    sa.Column('certification', sa.String(length=255), nullable=True),
+    sa.Column('education', sa.String(length=255), nullable=True),
+    sa.Column('years_experience', sa.Integer(), nullable=False),
+    sa.Column('hourly_rate', sa.Numeric(precision=10, scale=2), nullable=True),
+    sa.Column('currency', sa.String(length=3), nullable=True),
+    sa.Column('availability_status', sa.String(length=20), nullable=True),
+    sa.Column('languages_spoken', postgresql.ARRAY(sa.String()), nullable=True),
+    sa.Column('service_areas', postgresql.ARRAY(sa.Integer()), nullable=True),
+    sa.Column('rating', sa.Numeric(precision=3, scale=2), nullable=True),
+    sa.Column('review_count', sa.Integer(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['user_id'], ['users.user_id'], ),
+    sa.PrimaryKeyConstraint('profile_id'),
+    sa.UniqueConstraint('user_id')
+    )
     op.create_table('posts',
     sa.Column('post_id', sa.UUID(), nullable=False),
     sa.Column('title', sa.String(length=255), nullable=False),
@@ -134,10 +192,9 @@ def upgrade():
     sa.Column('author_id', sa.UUID(), nullable=False),
     sa.Column('category_id', sa.Integer(), nullable=True),
     sa.Column('featured_image_url', sa.String(length=255), nullable=True),
-    sa.Column('related_crops', postgresql.ARRAY(sa.Integer()), nullable=True),
-    sa.Column('related_livestock', postgresql.ARRAY(sa.Integer()), nullable=True),
-    sa.Column('applicable_locations', postgresql.ARRAY(sa.Integer()), nullable=True),
     sa.Column('season_relevance', sa.String(length=50), nullable=True),
+    sa.Column('applicable_locations', postgresql.ARRAY(sa.String()), nullable=True),
+    sa.Column('related_crops', postgresql.ARRAY(sa.String()), nullable=True),
     sa.Column('status', sa.String(length=20), nullable=True),
     sa.Column('view_count', sa.Integer(), nullable=True),
     sa.Column('read_time', sa.Integer(), nullable=True),
@@ -204,6 +261,42 @@ def upgrade():
     sa.ForeignKeyConstraint(['user_id'], ['users.user_id'], ),
     sa.PrimaryKeyConstraint('comment_id')
     )
+    op.create_table('community_members',
+    sa.Column('community_id', sa.UUID(), nullable=False),
+    sa.Column('user_id', sa.UUID(), nullable=False),
+    sa.Column('role', sa.String(length=20), nullable=True),
+    sa.Column('status', sa.String(length=20), nullable=True),
+    sa.Column('joined_at', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['community_id'], ['communities.community_id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['users.user_id'], ),
+    sa.PrimaryKeyConstraint('community_id', 'user_id')
+    )
+    op.create_table('community_posts',
+    sa.Column('post_id', sa.UUID(), nullable=False),
+    sa.Column('community_id', sa.UUID(), nullable=False),
+    sa.Column('user_id', sa.UUID(), nullable=False),
+    sa.Column('content', sa.Text(), nullable=False),
+    sa.Column('image_url', sa.String(length=255), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['community_id'], ['communities.community_id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['users.user_id'], ),
+    sa.PrimaryKeyConstraint('post_id')
+    )
+    op.create_table('expert_reviews',
+    sa.Column('review_id', sa.UUID(), nullable=False),
+    sa.Column('expert_id', sa.UUID(), nullable=False),
+    sa.Column('reviewer_id', sa.UUID(), nullable=False),
+    sa.Column('consultation_id', sa.UUID(), nullable=True),
+    sa.Column('rating', sa.Integer(), nullable=False),
+    sa.Column('comment', sa.Text(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['consultation_id'], ['consultations.consultation_id'], ),
+    sa.ForeignKeyConstraint(['expert_id'], ['users.user_id'], ),
+    sa.ForeignKeyConstraint(['reviewer_id'], ['users.user_id'], ),
+    sa.PrimaryKeyConstraint('review_id')
+    )
     op.create_table('post_likes',
     sa.Column('post_id', sa.UUID(), nullable=False),
     sa.Column('user_id', sa.UUID(), nullable=False),
@@ -226,11 +319,17 @@ def downgrade():
     # ### commands auto generated by Alembic - please adjust! ###
     op.drop_table('post_tags')
     op.drop_table('post_likes')
+    op.drop_table('expert_reviews')
+    op.drop_table('community_posts')
+    op.drop_table('community_members')
     op.drop_table('comments')
     op.drop_table('user_follows')
     op.drop_table('user_expertise')
     op.drop_table('user_crops')
     op.drop_table('posts')
+    op.drop_table('expert_profiles')
+    op.drop_table('consultations')
+    op.drop_table('communities')
     op.drop_table('users')
     op.drop_table('locations')
     op.drop_table('states_provinces')

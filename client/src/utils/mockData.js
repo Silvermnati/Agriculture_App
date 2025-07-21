@@ -182,7 +182,7 @@ export const mockCommunities = [
 // Mock Community Posts
 export const mockCommunityPosts = [
   {
-    id: "post1",
+    id: 1,
     title: "Best practices for organic corn pest management",
     content: "I've been struggling with corn borers this season and wanted to share some organic solutions that have worked for me. I've found that introducing beneficial insects like ladybugs and lacewings has significantly reduced the pest population without chemicals.\n\nHas anyone tried neem oil spray? What concentration works best?",
     author: {
@@ -206,7 +206,7 @@ export const mockCommunityPosts = [
     userHasLiked: true
   },
   {
-    id: "post2",
+    id: 2,
     title: "Water conservation techniques for the dry season",
     content: "With the dry season approaching, I wanted to share some water conservation techniques that have helped me maintain crop health while reducing water usage:\n\n1. Mulching around plants to retain moisture\n2. Drip irrigation instead of sprinklers\n3. Watering during early morning or evening to reduce evaporation\n\nWhat other methods are you using to conserve water?",
     author: {
@@ -229,7 +229,7 @@ export const mockCommunityPosts = [
     userHasLiked: false
   },
   {
-    id: "post3",
+    id: 3,
     title: "Soil health analysis results - Need advice",
     content: "I just received my soil analysis results and I'm concerned about the low nitrogen levels. The pH is 6.2 which seems okay, but phosphorus is also on the lower side.\n\nCan anyone recommend organic amendments to improve these levels before planting? I'm trying to avoid synthetic fertilizers if possible.",
     author: {
@@ -252,7 +252,7 @@ export const mockCommunityPosts = [
     userHasLiked: true
   },
   {
-    id: "post4",
+    id: 4,
     title: "New corn variety trial results",
     content: "I've been testing three drought-resistant corn varieties this season and wanted to share my results. The 'Resilient Gold' variety has shown the best performance with 15% higher yield despite the reduced rainfall.\n\nI've attached some photos comparing the three varieties at 10 weeks. The difference in cob development is quite noticeable.",
     author: {

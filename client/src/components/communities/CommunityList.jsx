@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from 'prop-types';
 import CommunityCard from "./CommunityCard";
 
 const CommunityList = ({
@@ -58,6 +59,14 @@ const CommunityList = ({
       ))}
     </div>
   );
+};
+
+CommunityList.propTypes = {
+    communities: PropTypes.array.isRequired,
+    onJoin: PropTypes.func.isRequired,
+    searchTerm: PropTypes.string,
+    selectedType: PropTypes.string,
+    selectedCrop: PropTypes.string,
 };
 
 export default CommunityList;
