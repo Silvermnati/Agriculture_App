@@ -19,6 +19,7 @@ const CommunityPost = ({
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [comments, setComments] = useState([]);
+  const [commentCount, setCommentCount] = useState(post.comments);
   const [isLoading, setIsLoading] = useState(false);
 
   // Check if user has already liked the post
@@ -73,6 +74,7 @@ const CommunityPost = ({
     // Update local state
     setComments([newComment, ...comments]);
     setCommentText("");
+    setCommentCount(commentCount + 1);
     
     // In a real app, this would be an API call
     if (onComment) {
@@ -113,6 +115,7 @@ const CommunityPost = ({
   const handleDeleteComment = (commentId) => {
     // Update local state
     setComments(comments.filter(comment => comment.id !== commentId));
+    setCommentCount(commentCount - 1);
     
     // In a real app, this would be an API call
     console.log(`Delete comment ${commentId}`);
@@ -159,7 +162,7 @@ const CommunityPost = ({
             className="flex items-center space-x-2 text-gray-500 hover:text-green-600"
           >
             <MessageSquare className="w-5 h-5" />
-            <span>{post.comments}</span>
+            <span>{commentCount}</span>
           </button>
 
           <button
