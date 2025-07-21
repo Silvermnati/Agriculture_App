@@ -1,18 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { getExperts } from '../../store/slices/expertsSlice';
 import ExpertList from '../../components/Experts/ExpertList';
 import ExpertFilters from '../../components/Experts/ExpertFilters';
 import LoadingSpinner from '../../components/common/LoadingSpinner/LoadingSpinner';
+import { mockExperts } from '../../utils/mockData';
 
 const ExpertsPage = () => {
-  const dispatch = useDispatch();
-  const { experts, isLoading, isError, message } = useSelector((state) => state.experts);
+  const [experts, setExperts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
+  const [message, setMessage] = useState('');
   const [filters, setFilters] = useState({});
 
   useEffect(() => {
-    dispatch(getExperts(filters));
-  }, [dispatch, filters]);
+    setIsLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      try {
+        // Apply filters to mock data
+        const filteredExperts = mockExperts.filter(expert => {
+          const { specialization, location, rating, availability } = filters;
+          if (specialization && !expert.specializations.some(s => s.toLowerCase().includes(specialization.toLowerCase()))) {
+            return false;
+          }
+          if (location && !expert.service_areas.some(a => a.toLowerCase().includes(location.toLowerCase()))) {
+            return false;
+          }
+          if (rating && expert.rating < parseFloat(rating)) {
+            return false;
+          }
+          if (availability && expert.availability_status.toLowerCase() !== availability.toLowerCase()) {
+            return false;
+          }
+          return true;
+        });
+        setExperts(filteredExperts);
+        setIsLoading(false);
+      } catch (error) {
+        setIsError(true);
+        setMessage('Failed to load experts data.');
+        setIsLoading(false);
+      }
+    }, 500);
+  }, [filters]);
 
   const handleFilterChange = (name, value) => {
     setFilters((prev) => ({ ...prev, [name]: value }));
