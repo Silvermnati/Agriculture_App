@@ -83,18 +83,89 @@ class CommunityPost(db.Model):
     community = db.relationship('Community', backref=db.backref('posts', lazy=True))
     user = db.relationship('User', backref=db.backref('community_posts', lazy=True))
     
-    def to_dict(self):
+    def to_dict(self, include_likes=False, include_comments=False):
         """Convert community post to dictionary."""
-        return {
+        post_dict = {
             'post_id': str(self.post_id),
             'community_id': str(self.community_id),
             'user': {
                 'user_id': str(self.user.user_id),
                 'name': f"{self.user.first_name} {self.user.last_name}",
-                'avatar_url': self.user.avatar_url
+                'avatar_url': self.user.avatar_url,
+                'role': self.user.role
             } if self.user else None,
             'content': self.content,
             'image_url': self.image_url,
             'created_at': self.created_at.isoformat(),
-            'updated_at': self.updated_at.isoformat()
+            'updated_at': self.updated_at.isoformat(),
+            'like_count': PostLike.query.filter_by(post_id=self.post_id).count(),
+            'comment_count': PostComment.query.filter_by(post_id=self.post_id).count()
+        }
+        
+        if include_likes:
+            likes = PostLike.query.filter_by(post_id=self.post_id).all()
+            post_dict['likes'] = [like.to_dict() for like in likes]
+            
+        if include_comments:
+            comments = PostComment.query.filter_by(post_id=self.post_id).order_by(PostComment.created_at).all()
+            post_dict['comments'] = [comment.to_dict() for comment in comments]
+            
+        return post_dict
+
+
+class PostLike(db.Model):
+    """Post like model."""
+    __tablename__ = 'post_likes'
+    
+    post_id = db.Column(UUID(as_uuid=True), db.ForeignKey('community_posts.post_id'), primary_key=True)
+    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.user_id'), primary_key=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    post = db.relationship('CommunityPost', backref=db.backref('likes', lazy=True))
+    user = db.relationship('User', backref=db.backref('post_likes', lazy=True))
+    
+    def to_dict(self):
+        """Convert post like to dictionary."""
+        return {
+            'post_id': str(self.post_id),
+            'user': {
+                'user_id': str(self.user.user_id),
+                'name': f"{self.user.first_name} {self.user.last_name}",
+                'avatar_url': self.user.avatar_url
+            } if self.user else None,
+            'created_at': self.created_at.isoformat()
+        }
+
+
+class PostComment(db.Model):
+    """Post comment model."""
+    __tablename__ = 'post_comments'
+    
+    comment_id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    post_id = db.Column(UUID(as_uuid=True), db.ForeignKey('community_posts.post_id'), nullable=False)
+    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.user_id'), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    post = db.relationship('CommunityPost', backref=db.backref('comments', lazy=True))
+    user = db.relationship('User', backref=db.backref('post_comments', lazy=True))
+    
+    def to_dict(self):
+        """Convert comment to dictionary."""
+        return {
+            'comment_id': str(self.comment_id),
+            'post_id': str(self.post_id),
+            'user': {
+                'user_id': str(self.user.user_id),
+                'name': f"{self.user.first_name} {self.user.last_name}",
+                'avatar_url': self.user.avatar_url,
+                'role': self.user.role
+            } if self.user else None,
+            'content': self.content,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat(),
+            'is_edited': self.created_at != self.updated_at
         }
