@@ -13,7 +13,9 @@ from server.models.expert import ExpertProfile, Consultation, ExpertReview
 from server.models.article import Article
 
 # Create the Flask application
-app = create_app('testing')
+import os
+config_name = os.environ.get('FLASK_CONFIG', 'development')
+app = create_app(config_name)
 
 # Initialize Flask-Migrate
 migrate = Migrate(app, db)
