@@ -1,15 +1,15 @@
-from server import create_app
-from server.database import db
+from . import create_app
+from .database import db
 from flask_migrate import Migrate
 
 # Import all models to ensure they're included
-from server.models.user import User, UserExpertise, UserFollow
-from server.models.location import Country, StateProvince, Location
-from server.models.crop import Crop, Livestock, UserCrop
-from server.models.post import Category, Tag, Post, Comment, ArticlePostLike
-from server.models.community import Community, CommunityMember, CommunityPost, PostLike, PostComment
-from server.models.expert import ExpertProfile, Consultation, ExpertReview
-from server.models.article import Article
+from .models.user import User, UserExpertise, UserFollow
+from .models.location import Country, StateProvince, Location
+from .models.crop import Crop, Livestock, UserCrop
+from .models.post import Category, Tag, Post, Comment, ArticlePostLike
+from .models.community import Community, CommunityMember, CommunityPost, PostLike, PostComment
+from .models.expert import ExpertProfile, Consultation, ExpertReview
+from .models.article import Article
 
 # Create the Flask application with production configuration
 app = create_app('production')
@@ -22,3 +22,7 @@ with app.app_context():
     db.create_all()
     print("Production database tables created successfully!")
     print("Production database initialization complete!")
+
+# This allows the script to be run directly
+if __name__ == "__main__":
+    print("Script executed directly")
