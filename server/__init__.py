@@ -9,6 +9,7 @@ from server.routes.post_routes import post_bp
 from server.routes.community_routes import community_bp
 from server.routes.expert_routes import expert_bp, consultation_bp
 from server.routes.upload_routes import upload_bp
+from server.models import *
 
 def create_app(config_name='default'):
     """Create and configure the Flask application."""
@@ -27,7 +28,6 @@ def create_app(config_name='default'):
     
     # Initialize Flask-Migrate
     from flask_migrate import Migrate
-    from server.models import * # Import all models
     migrate = Migrate(app, db)
     
     # Register blueprints
