@@ -74,8 +74,8 @@ class User(db.Model):
             'bio': self.bio,
             'avatar_url': self.avatar_url,
             'phone_number': self.phone_number,
-            'country': self.country,
-            'city': self.city,
+            'country': getattr(self, 'country', None),  # Safe access for new field
+            'city': getattr(self, 'city', None),        # Safe access for new field
             'farm_size': float(self.farm_size) if self.farm_size else None,
             'farm_size_unit': self.farm_size_unit,
             'farming_experience': self.farming_experience,
