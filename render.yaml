@@ -11,6 +11,8 @@ services:
     envVars:
       - key: FLASK_ENV
         value: production
+      - key: ENV
+        value: production
       - key: FLASK_APP
         value: wsgi.py
       - key: SECRET_KEY
