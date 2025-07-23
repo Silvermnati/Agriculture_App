@@ -25,6 +25,11 @@ def create_app(config_name='default'):
     # Initialize database
     init_db(app)
     
+    # Initialize Flask-Migrate
+    from flask_migrate import Migrate
+    from server.models import * # Import all models
+    migrate = Migrate(app, db)
+    
     # Register blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(post_bp)
