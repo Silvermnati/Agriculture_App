@@ -26,6 +26,7 @@ MANIFEST
 
 # Virtual environments
 venv/
+venv_agri/
 env/
 ENV/
 env.bak/

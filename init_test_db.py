@@ -11,13 +11,16 @@ from server.models.community import Community, CommunityMember, CommunityPost, P
 from server.models.expert import ExpertProfile, Consultation, ExpertReview
 from server.models.article import Article
 
-app = create_app('development')
+# Create the Flask application with testing configuration
+app = create_app('testing')
+
+# Initialize Flask-Migrate
 migrate = Migrate(app, db)
 
 with app.app_context():
     # Create all tables
     db.create_all()
-    print("Database tables created successfully!")
+    print("Database tables created successfully in the test database!")
 
     # Create initial data if needed
     # For example, create a default admin user
@@ -45,4 +48,4 @@ with app.app_context():
         db.session.commit()
         print("Default state created!")
 
-    print("Database initialization complete!")
+    print("Test database initialization complete!")

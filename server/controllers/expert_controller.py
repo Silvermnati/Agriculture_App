@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from datetime import datetime
+from datetime import datetime, timedelta
 import uuid
 
 from server.models.expert import ExpertProfile, Consultation, ExpertReview
@@ -91,7 +91,7 @@ def get_expert(current_user, expert_id):
     # Add availability calendar (simplified for now)
     expert_data['availability_calendar'] = [
         {
-            'date': (datetime.utcnow().date() + datetime.timedelta(days=i)).isoformat(),
+            'date': (datetime.utcnow().date() + timedelta(days=i)).isoformat(),
             'available_slots': ['09:00-10:00', '14:00-15:00']
         }
         for i in range(7)  # Next 7 days

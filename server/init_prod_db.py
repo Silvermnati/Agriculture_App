@@ -1,9 +1,8 @@
-from flask import Flask
-from flask_migrate import Migrate
 from server import create_app
 from server.database import db
+from flask_migrate import Migrate
 
-# Import all models to ensure they're included in migrations
+# Import all models to ensure they're included
 from server.models.user import User, UserExpertise, UserFollow
 from server.models.location import Country, StateProvince, Location
 from server.models.crop import Crop, Livestock, UserCrop
@@ -12,14 +11,14 @@ from server.models.community import Community, CommunityMember, CommunityPost, P
 from server.models.expert import ExpertProfile, Consultation, ExpertReview
 from server.models.article import Article
 
-# Create the Flask application
-import os
-config_name = os.environ.get('FLASK_CONFIG', 'development')
-app = create_app(config_name)
+# Create the Flask application with production configuration
+app = create_app('production')
 
 # Initialize Flask-Migrate
 migrate = Migrate(app, db)
 
-if __name__ == '__main__':
-    # Run the Flask application
-    app.run(host='0.0.0.0', port=5001, debug=True)
+with app.app_context():
+    # Create all tables but leave the database empty
+    db.create_all()
+    print("Production database tables created successfully!")
+    print("Production database initialization complete!")

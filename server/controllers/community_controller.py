@@ -1,7 +1,7 @@
 from flask import request, jsonify
 from datetime import datetime
 
-from server.models.community import Community, CommunityMember, CommunityPost
+from server.models.community import Community, CommunityMember, CommunityPost, PostLike, PostComment
 from server.database import db
 from server.utils.auth import token_required
 
@@ -358,3 +358,492 @@ def create_community_post(current_user, community_id):
         'message': 'Post created successfully',
         'post': post.to_dict()
     }), 201
+@token_required
+def get_community_post(current_user, community_id, post_id):
+    """
+    Get a specific post with comments.
+    """
+    # Check if community exists
+    community = Community.query.get(community_id)
+    
+    if not community:
+        return jsonify({'message': 'Community not found'}), 404
+    
+    # Check if user is a member for private communities
+    if community.is_private:
+        member = CommunityMember.query.filter_by(
+            community_id=community_id,
+            user_id=current_user.user_id
+        ).first()
+        
+        if not member:
+            return jsonify({'message': 'Not a member of this community'}), 403
+    
+    # Get post
+    post = CommunityPost.query.filter_by(
+        community_id=community_id,
+        post_id=post_id
+    ).first()
+    
+    if not post:
+        return jsonify({'message': 'Post not found'}), 404
+    
+    # Check if user has liked the post
+    user_like = PostLike.query.filter_by(
+        post_id=post_id,
+        user_id=current_user.user_id
+    ).first()
+    
+    # Get post with comments and likes
+    post_data = post.to_dict(include_comments=True)
+    post_data['user_has_liked'] = bool(user_like)
+    
+    return jsonify(post_data), 200
+
+
+@token_required
+def update_community_post(current_user, community_id, post_id):
+    """
+    Update a community post.
+    
+    Request Body:
+    {
+        "content": "Updated content...",
+        "image_url": "https://example.com/new-image.jpg"  # Optional
+    }
+    """
+    # Check if community exists
+    community = Community.query.get(community_id)
+    
+    if not community:
+        return jsonify({'message': 'Community not found'}), 404
+    
+    # Get post
+    post = CommunityPost.query.filter_by(
+        community_id=community_id,
+        post_id=post_id
+    ).first()
+    
+    if not post:
+        return jsonify({'message': 'Post not found'}), 404
+    
+    # Check if user is the author or a community admin/moderator
+    is_author = post.user_id == current_user.user_id
+    
+    member = CommunityMember.query.filter_by(
+        community_id=community_id,
+        user_id=current_user.user_id
+    ).first()
+    
+    is_admin_or_mod = member and member.role in ['admin', 'moderator']
+    
+    if not (is_author or is_admin_or_mod or current_user.role == 'admin'):
+        return jsonify({'message': 'Unauthorized to update this post'}), 403
+    
+    data = request.get_json()
+    
+    # Update fields
+    if 'content' in data:
+        post.content = data['content']
+    
+    if 'image_url' in data:
+        post.image_url = data['image_url']
+    
+    db.session.commit()
+    
+    return jsonify({
+        'message': 'Post updated successfully',
+        'post': post.to_dict()
+    }), 200
+
+
+@token_required
+def delete_community_post(current_user, community_id, post_id):
+    """
+    Delete a community post.
+    """
+    # Check if community exists
+    community = Community.query.get(community_id)
+    
+    if not community:
+        return jsonify({'message': 'Community not found'}), 404
+    
+    # Get post
+    post = CommunityPost.query.filter_by(
+        community_id=community_id,
+        post_id=post_id
+    ).first()
+    
+    if not post:
+        return jsonify({'message': 'Post not found'}), 404
+    
+    # Check if user is the author or a community admin/moderator
+    is_author = post.user_id == current_user.user_id
+    
+    member = CommunityMember.query.filter_by(
+        community_id=community_id,
+        user_id=current_user.user_id
+    ).first()
+    
+    is_admin_or_mod = member and member.role in ['admin', 'moderator']
+    
+    if not (is_author or is_admin_or_mod or current_user.role == 'admin'):
+        return jsonify({'message': 'Unauthorized to delete this post'}), 403
+    
+    # Delete post likes
+    PostLike.query.filter_by(post_id=post_id).delete()
+    
+    # Delete post comments
+    PostComment.query.filter_by(post_id=post_id).delete()
+    
+    # Delete post
+    db.session.delete(post)
+    db.session.commit()
+    
+    return jsonify({'message': 'Post deleted successfully'}), 200
+
+
+@token_required
+def like_community_post(current_user, community_id, post_id):
+    """
+    Like or unlike a community post.
+    """
+    # Check if community exists
+    community = Community.query.get(community_id)
+    
+    if not community:
+        return jsonify({'message': 'Community not found'}), 404
+    
+    # Check if user is a member for private communities
+    if community.is_private:
+        member = CommunityMember.query.filter_by(
+            community_id=community_id,
+            user_id=current_user.user_id
+        ).first()
+        
+        if not member:
+            return jsonify({'message': 'Not a member of this community'}), 403
+    
+    # Get post
+    post = CommunityPost.query.filter_by(
+        community_id=community_id,
+        post_id=post_id
+    ).first()
+    
+    if not post:
+        return jsonify({'message': 'Post not found'}), 404
+    
+    # Check if user has already liked the post
+    like = PostLike.query.filter_by(
+        post_id=post_id,
+        user_id=current_user.user_id
+    ).first()
+    
+    if like:
+        # Unlike the post
+        db.session.delete(like)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Post unliked successfully',
+            'liked': False,
+            'like_count': PostLike.query.filter_by(post_id=post_id).count()
+        }), 200
+    else:
+        # Like the post
+        like = PostLike(
+            post_id=post_id,
+            user_id=current_user.user_id
+        )
+        
+        db.session.add(like)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Post liked successfully',
+            'liked': True,
+            'like_count': PostLike.query.filter_by(post_id=post_id).count()
+        }), 200
+
+
+@token_required
+def get_post_likes(current_user, community_id, post_id):
+    """
+    Get users who liked a post.
+    
+    Query Parameters:
+    - page: int (default=1)
+    - per_page: int (default=20)
+    """
+    # Check if community exists
+    community = Community.query.get(community_id)
+    
+    if not community:
+        return jsonify({'message': 'Community not found'}), 404
+    
+    # Check if user is a member for private communities
+    if community.is_private:
+        member = CommunityMember.query.filter_by(
+            community_id=community_id,
+            user_id=current_user.user_id
+        ).first()
+        
+        if not member:
+            return jsonify({'message': 'Not a member of this community'}), 403
+    
+    # Get post
+    post = CommunityPost.query.filter_by(
+        community_id=community_id,
+        post_id=post_id
+    ).first()
+    
+    if not post:
+        return jsonify({'message': 'Post not found'}), 404
+    
+    # Get query parameters
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+    
+    # Get likes with pagination
+    likes_page = PostLike.query.filter_by(post_id=post_id).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+    
+    # Format response
+    likes = [like.to_dict() for like in likes_page.items]
+    
+    return jsonify({
+        'likes': likes,
+        'pagination': {
+            'page': page,
+            'per_page': per_page,
+            'total_pages': likes_page.pages,
+            'total_items': likes_page.total
+        }
+    }), 200
+
+
+@token_required
+def get_post_comments(current_user, community_id, post_id):
+    """
+    Get comments for a post.
+    
+    Query Parameters:
+    - page: int (default=1)
+    - per_page: int (default=20)
+    """
+    # Check if community exists
+    community = Community.query.get(community_id)
+    
+    if not community:
+        return jsonify({'message': 'Community not found'}), 404
+    
+    # Check if user is a member for private communities
+    if community.is_private:
+        member = CommunityMember.query.filter_by(
+            community_id=community_id,
+            user_id=current_user.user_id
+        ).first()
+        
+        if not member:
+            return jsonify({'message': 'Not a member of this community'}), 403
+    
+    # Get post
+    post = CommunityPost.query.filter_by(
+        community_id=community_id,
+        post_id=post_id
+    ).first()
+    
+    if not post:
+        return jsonify({'message': 'Post not found'}), 404
+    
+    # Get query parameters
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+    
+    # Get comments with pagination
+    comments_page = PostComment.query.filter_by(post_id=post_id).order_by(
+        PostComment.created_at.asc()
+    ).paginate(page=page, per_page=per_page, error_out=False)
+    
+    # Format response
+    comments = [comment.to_dict() for comment in comments_page.items]
+    
+    return jsonify({
+        'comments': comments,
+        'pagination': {
+            'page': page,
+            'per_page': per_page,
+            'total_pages': comments_page.pages,
+            'total_items': comments_page.total
+        }
+    }), 200
+
+
+@token_required
+def create_post_comment(current_user, community_id, post_id):
+    """
+    Add a comment to a post.
+    
+    Request Body:
+    {
+        "content": "This is my comment..."
+    }
+    """
+    # Check if community exists
+    community = Community.query.get(community_id)
+    
+    if not community:
+        return jsonify({'message': 'Community not found'}), 404
+    
+    # Check if user is a member
+    member = CommunityMember.query.filter_by(
+        community_id=community_id,
+        user_id=current_user.user_id,
+        status='active'
+    ).first()
+    
+    if not member and community.is_private:
+        return jsonify({'message': 'Not an active member of this community'}), 403
+    
+    # Get post
+    post = CommunityPost.query.filter_by(
+        community_id=community_id,
+        post_id=post_id
+    ).first()
+    
+    if not post:
+        return jsonify({'message': 'Post not found'}), 404
+    
+    data = request.get_json()
+    
+    # Validate content
+    if not data or not data.get('content'):
+        return jsonify({'message': 'Comment content is required'}), 400
+    
+    # Create comment
+    comment = PostComment(
+        post_id=post_id,
+        user_id=current_user.user_id,
+        content=data.get('content')
+    )
+    
+    db.session.add(comment)
+    db.session.commit()
+    
+    return jsonify({
+        'message': 'Comment added successfully',
+        'comment': comment.to_dict()
+    }), 201
+
+
+@token_required
+def update_post_comment(current_user, community_id, post_id, comment_id):
+    """
+    Update a comment.
+    
+    Request Body:
+    {
+        "content": "Updated comment content..."
+    }
+    """
+    # Check if community exists
+    community = Community.query.get(community_id)
+    
+    if not community:
+        return jsonify({'message': 'Community not found'}), 404
+    
+    # Get post
+    post = CommunityPost.query.filter_by(
+        community_id=community_id,
+        post_id=post_id
+    ).first()
+    
+    if not post:
+        return jsonify({'message': 'Post not found'}), 404
+    
+    # Get comment
+    comment = PostComment.query.filter_by(
+        post_id=post_id,
+        comment_id=comment_id
+    ).first()
+    
+    if not comment:
+        return jsonify({'message': 'Comment not found'}), 404
+    
+    # Check if user is the comment author or a community admin/moderator
+    is_author = comment.user_id == current_user.user_id
+    
+    member = CommunityMember.query.filter_by(
+        community_id=community_id,
+        user_id=current_user.user_id
+    ).first()
+    
+    is_admin_or_mod = member and member.role in ['admin', 'moderator']
+    
+    if not (is_author or is_admin_or_mod or current_user.role == 'admin'):
+        return jsonify({'message': 'Unauthorized to update this comment'}), 403
+    
+    data = request.get_json()
+    
+    # Validate content
+    if not data or not data.get('content'):
+        return jsonify({'message': 'Comment content is required'}), 400
+    
+    # Update comment
+    comment.content = data.get('content')
+    db.session.commit()
+    
+    return jsonify({
+        'message': 'Comment updated successfully',
+        'comment': comment.to_dict()
+    }), 200
+
+
+@token_required
+def delete_post_comment(current_user, community_id, post_id, comment_id):
+    """
+    Delete a comment.
+    """
+    # Check if community exists
+    community = Community.query.get(community_id)
+    
+    if not community:
+        return jsonify({'message': 'Community not found'}), 404
+    
+    # Get post
+    post = CommunityPost.query.filter_by(
+        community_id=community_id,
+        post_id=post_id
+    ).first()
+    
+    if not post:
+        return jsonify({'message': 'Post not found'}), 404
+    
+    # Get comment
+    comment = PostComment.query.filter_by(
+        post_id=post_id,
+        comment_id=comment_id
+    ).first()
+    
+    if not comment:
+        return jsonify({'message': 'Comment not found'}), 404
+    
+    # Check if user is the comment author or a community admin/moderator
+    is_author = comment.user_id == current_user.user_id
+    
+    member = CommunityMember.query.filter_by(
+        community_id=community_id,
+        user_id=current_user.user_id
+    ).first()
+    
+    is_admin_or_mod = member and member.role in ['admin', 'moderator']
+    
+    if not (is_author or is_admin_or_mod or current_user.role == 'admin'):
+        return jsonify({'message': 'Unauthorized to delete this comment'}), 403
+    
+    # Delete comment
+    db.session.delete(comment)
+    db.session.commit()
+    
+    return jsonify({'message': 'Comment deleted successfully'}), 200
