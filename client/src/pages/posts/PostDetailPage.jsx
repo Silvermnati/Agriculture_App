@@ -4,8 +4,8 @@ import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import mockPostData from '../../utils/mockPostData';
 import { mockComments } from '../../utils/mockData';
-import PostDetail from 'components/posts/PostDetail';
-import CommentSection from 'components/posts/CommentSection';
+import PostDetail from '../../components/posts/PostDetail';
+import CommentSection from '../../components/posts/CommentSection';
 
 const PostDetailPage = () => {
   const { id } = useParams();

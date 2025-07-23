@@ -1,9 +1,11 @@
 import axios from 'axios';
 import { API_ENDPOINTS } from './constants';
 
-// Create axios instance. The base URL is relative to the current domain,
-// which allows the Vite proxy to work in development.
-const API_URL = '/api';
+// Create axios instance. The base URL is relative to the current domain in development,
+// and uses the deployed backend URL in production.
+const API_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://agriculture-app-1-u2a6.onrender.com/api'
+  : '/api';
 
 const api = axios.create({
   baseURL: API_URL,

@@ -1,8 +1,8 @@
 // pages/Posts/PostsPage.jsx
 import React, { useEffect, useState } from 'react';
 import { mockCommunityPosts } from '../../utils/mockData';
-import PostList from 'components/posts/PostList';
-import PostFilters from 'components/posts/PostFilters';
+import PostList from '../../components/posts/PostList';
+import PostFilters from '../../components/posts/PostFilters';
 import './Posts.css';
 
 const PostsPage = () => {

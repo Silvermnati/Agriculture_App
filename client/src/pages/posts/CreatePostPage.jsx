@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import PostForm from 'components/posts/PostForm';
+import PostForm from '../../components/posts/PostForm';
 
 const CreatePostPage = () => {
   const navigate = useNavigate();

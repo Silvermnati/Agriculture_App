@@ -46,10 +46,10 @@ const LoginForm = () => {
 
   // Quick login with demo accounts
   const handleQuickLogin = (email) => {
-    // For demo purposes, we'll use a simple password
+    // For demo purposes, we'll use the known password for test accounts
     const demoData = {
       email,
-      password: 'password' // In mock mode, any password works for demo accounts
+      password: 'securepassword' // This should match the password in the test database
     };
     dispatch(login(demoData));
   };
@@ -157,7 +157,7 @@ const LoginForm = () => {
             <li><strong>Admin:</strong> admin@example.com</li>
           </ul>
           <p className="demo-note">
-            <small>Note: In demo mode, any password will work for these accounts</small>
+            <small>Note: Use password 'securepassword' for these demo accounts</small>
           </p>
         </div>
       </div>
