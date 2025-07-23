@@ -1,133 +1,28 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { mockUsers } from '../../utils/mockData';
+import { authAPI } from '../../utils/api';
 
 // Get user from localStorage
 const userJSON = localStorage.getItem('user');
 const user = userJSON && userJSON !== 'undefined' ? JSON.parse(userJSON) : null;
 const token = localStorage.getItem('token');
 
-// Mock authentication functions
-const mockAuth = {
-  login: (credentials) => {
-    return new Promise((resolve, reject) => {
-      // Simulate API delay
-      setTimeout(() => {
-        // Find user with matching email
-        const user = mockUsers.find(u => u.email === credentials.email);
-        
-        if (!user) {
-          reject({ message: 'User not found. Please check your email address.' });
-          return;
-        }
-        
-        // In a real app, we would check the password hash
-        // For mock data, we'll accept any password for demo users
-        if (credentials.email === 'farmer@example.com' || 
-            credentials.email === 'expert@example.com' ||
-            credentials.password === 'password') {
-          
-          // Generate a mock token
-          const token = `mock-token-${Date.now()}`;
-          
-          resolve({
-            user,
-            token
-          });
-        } else {
-          reject({ message: 'Invalid credentials. Please check your email and password.' });
-        }
-      }, 800); // Simulate network delay
-    });
-  },
-  
-  register: (userData) => {
-    return new Promise((resolve, reject) => {
-      // Simulate API delay
-      setTimeout(() => {
-        // Check if email already exists
-        const existingUser = mockUsers.find(u => u.email === userData.email);
-        
-        if (existingUser) {
-          reject({ message: 'Email already exists. Please use a different email address.' });
-          return;
-        }
-        
-        // Create new user
-        const newUser = {
-          id: `user${Date.now()}`,
-          name: `${userData.firstName} ${userData.lastName}`,
-          email: userData.email,
-          role: userData.role || 'farmer',
-          avatar: `https://randomuser.me/api/portraits/${userData.gender === 'female' ? 'women' : 'men'}/${Math.floor(Math.random() * 100)}.jpg`,
-          ...userData
-        };
-        
-        // Generate a mock token
-        const token = `mock-token-${Date.now()}`;
-        
-        resolve({
-          user: newUser,
-          token
-        });
-      }, 1000); // Simulate network delay
-    });
-  },
-  
-  getProfile: () => {
-    return new Promise((resolve, reject) => {
-      // Simulate API delay
-      setTimeout(() => {
-        const storedUser = JSON.parse(localStorage.getItem('user'));
-        
-        if (storedUser) {
-          resolve(storedUser);
-        } else {
-          reject({ message: 'User not found. Please login again.' });
-        }
-      }, 500); // Simulate network delay
-    });
-  },
-  
-  updateProfile: (profileData) => {
-    return new Promise((resolve, reject) => {
-      // Simulate API delay
-      setTimeout(() => {
-        const storedUser = JSON.parse(localStorage.getItem('user'));
-        
-        if (!storedUser) {
-          reject({ message: 'User not found. Please login again.' });
-          return;
-        }
-        
-        // Update user data
-        const updatedUser = {
-          ...storedUser,
-          ...profileData
-        };
-        
-        resolve({
-          user: updatedUser
-        });
-      }, 800); // Simulate network delay
-    });
-  }
-};
-
 // Register user
 export const register = createAsyncThunk(
   'auth/register',
   async (userData, thunkAPI) => {
     try {
-      const response = await mockAuth.register(userData);
+      const response = await authAPI.register(userData);
       
-      if (response) {
-        localStorage.setItem('user', JSON.stringify(response.user));
-        localStorage.setItem('token', response.token);
+      if (response.data) {
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        localStorage.setItem('token', response.data.token);
       }
       
-      return response;
+      return response.data;
     } catch (error) {
-      return thunkAPI.rejectWithValue(error.message || 'Registration failed');
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || 'Registration failed'
+      );
     }
   }
 );
@@ -137,16 +32,18 @@ export const login = createAsyncThunk(
   'auth/login',
   async (userData, thunkAPI) => {
     try {
-      const response = await mockAuth.login(userData);
+      const response = await authAPI.login(userData);
       
-      if (response) {
-        localStorage.setItem('user', JSON.stringify(response.user));
-        localStorage.setItem('token', response.token);
+      if (response.data) {
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        localStorage.setItem('token', response.data.token);
       }
       
-      return response;
+      return response.data;
     } catch (error) {
-      return thunkAPI.rejectWithValue(error.message || 'Login failed');
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || 'Login failed'
+      );
     }
   }
 );
@@ -156,10 +53,12 @@ export const getProfile = createAsyncThunk(
   'auth/getProfile',
   async (_, thunkAPI) => {
     try {
-      const response = await mockAuth.getProfile();
-      return response;
+      const response = await authAPI.getProfile();
+      return response.data;
     } catch (error) {
-      return thunkAPI.rejectWithValue(error.message || 'Failed to get profile');
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || 'Failed to get profile'
+      );
     }
   }
 );
@@ -169,15 +68,17 @@ export const updateProfile = createAsyncThunk(
   'auth/updateProfile',
   async (profileData, thunkAPI) => {
     try {
-      const response = await mockAuth.updateProfile(profileData);
+      const response = await authAPI.updateProfile(profileData);
       
-      if (response) {
-        localStorage.setItem('user', JSON.stringify(response.user));
+      if (response.data) {
+        localStorage.setItem('user', JSON.stringify(response.data.user));
       }
       
-      return response;
+      return response.data;
     } catch (error) {
-      return thunkAPI.rejectWithValue(error.message || 'Failed to update profile');
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || 'Failed to update profile'
+      );
     }
   }
 );

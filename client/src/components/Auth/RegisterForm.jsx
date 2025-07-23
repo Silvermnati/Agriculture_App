@@ -87,6 +87,17 @@ const RegisterForm = () => {
     
     // Remove confirmPassword before sending to API
     const { confirmPassword, ...registerData } = formData;
+    
+    // Ensure farm_size is a number if provided
+    if (registerData.farm_size) {
+      registerData.farm_size = parseFloat(registerData.farm_size);
+    }
+    
+    // Ensure farming_experience is a number if provided
+    if (registerData.farming_experience) {
+      registerData.farming_experience = parseInt(registerData.farming_experience, 10);
+    }
+    
     dispatch(register(registerData));
   };
 
