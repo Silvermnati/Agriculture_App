@@ -3,12 +3,19 @@ services:
     name: agricultural-super-app-api
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn wsgi:app
+    startCommand: gunicorn server.wsgi:app
+    buildFilter:
+      paths:
+        - server/**
+        - requirements.txt
+        - render.yaml
+        - Procfile
+    preDeployCommand: python -m server.init_prod_db
     envVars:
       - key: FLASK_ENV
         value: production
       - key: FLASK_APP
-        value: run.py
+        value: server.run.py
       - key: SECRET_KEY
         generateValue: true
       - key: JWT_SECRET_KEY
