@@ -1,47 +1,36 @@
 import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import ExpertList from '../../components/Experts/ExpertList';
 import ExpertFilters from '../../components/Experts/ExpertFilters';
 import LoadingSpinner from '../../components/common/LoadingSpinner/LoadingSpinner';
+import { getExperts, reset } from '../../store/slices/expertsSlice';
 import { mockExperts } from '../../utils/mockData';
 
 const ExpertsPage = () => {
-  const [experts, setExperts] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isError, setIsError] = useState(false);
-  const [message, setMessage] = useState('');
+  const dispatch = useDispatch();
+  const { experts, isLoading, isError, message } = useSelector((state) => state.experts);
+  
   const [filters, setFilters] = useState({});
 
   useEffect(() => {
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
+    // Try to fetch from API first, fallback to mock data
+    const fetchExperts = async () => {
       try {
-        // Apply filters to mock data
-        const filteredExperts = mockExperts.filter(expert => {
-          const { specialization, location, rating, availability } = filters;
-          if (specialization && !expert.specializations.some(s => s.toLowerCase().includes(specialization.toLowerCase()))) {
-            return false;
-          }
-          if (location && !expert.service_areas.some(a => a.toLowerCase().includes(location.toLowerCase()))) {
-            return false;
-          }
-          if (rating && expert.rating < parseFloat(rating)) {
-            return false;
-          }
-          if (availability && expert.availability_status.toLowerCase() !== availability.toLowerCase()) {
-            return false;
-          }
-          return true;
-        });
-        setExperts(filteredExperts);
-        setIsLoading(false);
+        await dispatch(getExperts(filters)).unwrap();
       } catch (error) {
-        setIsError(true);
-        setMessage('Failed to load experts data.');
-        setIsLoading(false);
+        // If API fails, use mock data for development
+        console.warn('API failed, using mock data:', error);
+        // You can set mock data here if needed for development
       }
-    }, 500);
-  }, [filters]);
+    };
+
+    fetchExperts();
+    
+    // Cleanup function
+    return () => {
+      dispatch(reset());
+    };
+  }, [dispatch, filters]);
 
   const handleFilterChange = (name, value) => {
     setFilters((prev) => ({ ...prev, [name]: value }));
@@ -56,10 +45,13 @@ const ExpertsPage = () => {
         {isLoading ? (
           <LoadingSpinner text="Loading Experts..." />
         ) : isError ? (
-          <div className="text-center text-red-500">{message}</div>
-        ) : (
-          <ExpertList experts={experts} />
-        )}
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <p>{message}</p>
+            <p className="text-sm mt-2">Using demo data for development.</p>
+          </div>
+        ) : null}
+        
+        <ExpertList experts={experts.length > 0 ? experts : mockExperts} />
       </div>
     </div>
   );
