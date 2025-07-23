@@ -18,34 +18,7 @@ app = create_app('production')
 migrate = Migrate(app, db)
 
 with app.app_context():
-    # Create all tables
+    # Create all tables but leave the database empty
     db.create_all()
     print("Production database tables created successfully!")
-
-    # Create initial data if needed
-    # For example, create a default admin user
-    if not User.query.filter_by(email='admin@example.com').first():
-        admin = User(
-            email='admin@example.com',
-            password='adminpassword',  # This will be hashed by the User model
-            first_name='Admin',
-            last_name='User',
-            role='admin'
-        )
-        db.session.add(admin)
-        db.session.commit()
-        print("Admin user created!")
-
-    # Create default country and state
-    if not Country.query.first():
-        country = Country(name='United States', code='US')
-        db.session.add(country)
-        db.session.commit()
-        print("Default country created!")
-
-        state = StateProvince(name='California', code='CA', country_id=country.country_id)
-        db.session.add(state)
-        db.session.commit()
-        print("Default state created!")
-
     print("Production database initialization complete!")
