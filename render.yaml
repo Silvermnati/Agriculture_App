@@ -2,7 +2,7 @@ services:
   - type: web
     name: agricultural-super-app-api
     env: python
-    buildCommand: pip install -r server/requirements.txt
+    buildCommand: pip install -r server/requirements.txt && rm -rf migrations
     startCommand: cd server && gunicorn wsgi:app
     buildFilter:
       paths:
