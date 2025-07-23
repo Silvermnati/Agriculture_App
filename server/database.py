@@ -10,7 +10,7 @@ def init_db(app):
     db.init_app(app)
     
     # In production, automatically create tables if they don't exist
-    if app.config['ENV'] == 'production':
+    if app.config.get('FLASK_ENV') == 'production' or app.config.get('ENV') == 'production':
         with app.app_context():
             # Import all models to ensure they're included
             from server.models.user import User, UserExpertise, UserFollow
