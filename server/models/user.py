@@ -36,6 +36,7 @@ class User(db.Model):
     is_phone_verified = db.Column(db.Boolean, default=False)
     
     # Simple location fields (alternative to complex location hierarchy)
+    # NOTE: These fields are commented out until database migration is run
     country = db.Column(db.String(100), nullable=True)
     city = db.Column(db.String(100), nullable=True)
     
