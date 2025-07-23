@@ -7,7 +7,7 @@ services:
     buildFilter:
       paths:
         - server/**
-    preDeployCommand: cd server && python -m init_prod_db
+    preDeployCommand: cd server && python init_prod_db.py
     envVars:
       - key: FLASK_ENV
         value: production
