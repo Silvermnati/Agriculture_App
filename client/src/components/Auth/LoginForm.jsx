@@ -44,15 +44,7 @@ const LoginForm = () => {
     dispatch(login(formData));
   };
 
-  // Quick login with demo accounts
-  const handleQuickLogin = (email) => {
-    // For demo purposes, we'll use the known password for test accounts
-    const demoData = {
-      email,
-      password: 'securepassword' // This should match the password in the test database
-    };
-    dispatch(login(demoData));
-  };
+
 
   return (
     <div className="auth-form-container">
@@ -112,55 +104,7 @@ const LoginForm = () => {
         <p><a href="/forgot-password">Forgot password?</a></p>
       </div>
       
-      <div className="auth-demo">
-        <p>Quick login with demo accounts:</p>
-        <div className="demo-buttons">
-          <button 
-            onClick={() => handleQuickLogin('farmer@example.com')}
-            className="demo-button farmer"
-            disabled={isLoading}
-          >
-            Login as Farmer
-          </button>
-          <button 
-            onClick={() => handleQuickLogin('expert@example.com')}
-            className="demo-button expert"
-            disabled={isLoading}
-          >
-            Login as Expert
-          </button>
-        </div>
-        <div className="demo-buttons">
-          <button 
-            onClick={() => handleQuickLogin('supplier@example.com')}
-            className="demo-button supplier"
-            disabled={isLoading}
-          >
-            Login as Supplier
-          </button>
-          <button 
-            onClick={() => handleQuickLogin('admin@example.com')}
-            className="demo-button admin"
-            disabled={isLoading}
-          >
-            Login as Admin
-          </button>
-        </div>
-        <div className="demo-accounts">
-          <p className="demo-note">
-            <small>Available demo accounts:</small>
-          </p>
-          <ul className="demo-account-list">
-            <li><strong>Farmer:</strong> farmer@example.com</li>
-            <li><strong>Expert:</strong> expert@example.com</li>
-            <li><strong>Supplier:</strong> supplier@example.com</li>
-            <li><strong>Admin:</strong> admin@example.com</li>
-          </ul>
-          <p className="demo-note">
-            <small>Note: Use password 'securepassword' for these demo accounts</small>
-          </p>
-        </div>
-      </div>
+
     </div>
   );
 };

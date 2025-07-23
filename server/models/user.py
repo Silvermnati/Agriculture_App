@@ -35,6 +35,10 @@ class User(db.Model):
     whatsapp_number = db.Column(db.String(20), nullable=True)
     is_phone_verified = db.Column(db.Boolean, default=False)
     
+    # Simple location fields (alternative to complex location hierarchy)
+    country = db.Column(db.String(100), nullable=True)
+    city = db.Column(db.String(100), nullable=True)
+    
     # Status fields
     is_verified = db.Column(db.Boolean, default=False)
     is_active = db.Column(db.Boolean, default=True)
@@ -69,6 +73,9 @@ class User(db.Model):
             'role': self.role,
             'bio': self.bio,
             'avatar_url': self.avatar_url,
+            'phone_number': self.phone_number,
+            'country': self.country,
+            'city': self.city,
             'farm_size': float(self.farm_size) if self.farm_size else None,
             'farm_size_unit': self.farm_size_unit,
             'farming_experience': self.farming_experience,

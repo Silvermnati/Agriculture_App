@@ -1,9 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { authAPI } from '../../utils/api';
+import { transformBackendUserToProfile, ensureCompleteProfile } from '../../utils/userDataAdapter';
 
 // Get user from localStorage
 const userJSON = localStorage.getItem('user');
-const user = userJSON && userJSON !== 'undefined' ? JSON.parse(userJSON) : null;
+const rawUser = userJSON && userJSON !== 'undefined' ? JSON.parse(userJSON) : null;
+const user = rawUser ? ensureCompleteProfile(rawUser) : null;
 const token = localStorage.getItem('token');
 
 // Register user
@@ -14,8 +16,17 @@ export const register = createAsyncThunk(
       const response = await authAPI.register(userData);
       
       if (response.data) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+        // Transform backend user data to frontend profile structure
+        const transformedUser = transformBackendUserToProfile(response.data.user);
+        const completeProfile = ensureCompleteProfile(transformedUser);
+        
+        localStorage.setItem('user', JSON.stringify(completeProfile));
         localStorage.setItem('token', response.data.token);
+        
+        return {
+          user: completeProfile,
+          token: response.data.token
+        };
       }
       
       return response.data;
@@ -35,8 +46,17 @@ export const login = createAsyncThunk(
       const response = await authAPI.login(userData);
       
       if (response.data) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+        // Transform backend user data to frontend profile structure
+        const transformedUser = transformBackendUserToProfile(response.data.user);
+        const completeProfile = ensureCompleteProfile(transformedUser);
+        
+        localStorage.setItem('user', JSON.stringify(completeProfile));
         localStorage.setItem('token', response.data.token);
+        
+        return {
+          user: completeProfile,
+          token: response.data.token
+        };
       }
       
       return response.data;
@@ -54,7 +74,8 @@ export const getProfile = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const response = await authAPI.getProfile();
-      return response.data;
+      const transformedUser = transformBackendUserToProfile(response.data);
+      return ensureCompleteProfile(transformedUser);
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.message || 'Failed to get profile'
@@ -71,7 +92,10 @@ export const updateProfile = createAsyncThunk(
       const response = await authAPI.updateProfile(profileData);
       
       if (response.data) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+        const transformedUser = transformBackendUserToProfile(response.data.user);
+        const completeProfile = ensureCompleteProfile(transformedUser);
+        localStorage.setItem('user', JSON.stringify(completeProfile));
+        return { user: completeProfile };
       }
       
       return response.data;
