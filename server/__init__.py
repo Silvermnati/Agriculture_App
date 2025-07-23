@@ -157,15 +157,16 @@ def create_app(config_name='default'):
                     
                     # Try manual column addition as fallback
                     try:
-                        if 'country' in still_missing:
-                            db.engine.execute(text("ALTER TABLE users ADD COLUMN country VARCHAR(100)"))
-                            print("✅ Added country column manually")
-                        
-                        if 'city' in still_missing:
-                            db.engine.execute(text("ALTER TABLE users ADD COLUMN city VARCHAR(100)"))
-                            print("✅ Added city column manually")
-                        
-                        db.session.commit()
+                        with db.engine.connect() as connection:
+                            if 'country' in still_missing:
+                                connection.execute(text("ALTER TABLE users ADD COLUMN country VARCHAR(100)"))
+                                print("✅ Added country column manually")
+                            
+                            if 'city' in still_missing:
+                                connection.execute(text("ALTER TABLE users ADD COLUMN city VARCHAR(100)"))
+                                print("✅ Added city column manually")
+                            
+                            connection.commit()
                     except Exception as manual_error:
                         print(f"⚠️  Manual column addition failed: {str(manual_error)}")
                         # This might be expected if columns already exist
