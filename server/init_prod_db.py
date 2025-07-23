@@ -1,15 +1,21 @@
-from . import create_app
-from .database import db
+import os
+import sys
+
+# Add the parent directory to sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from server import create_app
+from server.database import db
 from flask_migrate import Migrate
 
 # Import all models to ensure they're included
-from .models.user import User, UserExpertise, UserFollow
-from .models.location import Country, StateProvince, Location
-from .models.crop import Crop, Livestock, UserCrop
-from .models.post import Category, Tag, Post, Comment, ArticlePostLike
-from .models.community import Community, CommunityMember, CommunityPost, PostLike, PostComment
-from .models.expert import ExpertProfile, Consultation, ExpertReview
-from .models.article import Article
+from server.models.user import User, UserExpertise, UserFollow
+from server.models.location import Country, StateProvince, Location
+from server.models.crop import Crop, Livestock, UserCrop
+from server.models.post import Category, Tag, Post, Comment, ArticlePostLike
+from server.models.community import Community, CommunityMember, CommunityPost, PostLike, PostComment
+from server.models.expert import ExpertProfile, Consultation, ExpertReview
+from server.models.article import Article
 
 # Create the Flask application with production configuration
 app = create_app('production')
