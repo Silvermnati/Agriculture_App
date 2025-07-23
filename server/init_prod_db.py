@@ -1,3 +1,9 @@
+import os
+import sys
+
+# Add the parent directory to sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from server import create_app
 from server.database import db
 from flask_migrate import Migrate
@@ -18,34 +24,11 @@ app = create_app('production')
 migrate = Migrate(app, db)
 
 with app.app_context():
-    # Create all tables
+    # Create all tables but leave the database empty
     db.create_all()
     print("Production database tables created successfully!")
-
-    # Create initial data if needed
-    # For example, create a default admin user
-    if not User.query.filter_by(email='admin@example.com').first():
-        admin = User(
-            email='admin@example.com',
-            password='adminpassword',  # This will be hashed by the User model
-            first_name='Admin',
-            last_name='User',
-            role='admin'
-        )
-        db.session.add(admin)
-        db.session.commit()
-        print("Admin user created!")
-
-    # Create default country and state
-    if not Country.query.first():
-        country = Country(name='United States', code='US')
-        db.session.add(country)
-        db.session.commit()
-        print("Default country created!")
-
-        state = StateProvince(name='California', code='CA', country_id=country.country_id)
-        db.session.add(state)
-        db.session.commit()
-        print("Default state created!")
-
     print("Production database initialization complete!")
+
+# This allows the script to be run directly
+if __name__ == "__main__":
+    print("Script executed directly")

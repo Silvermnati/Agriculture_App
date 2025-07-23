@@ -1,0 +1,29 @@
+from setuptools import setup, find_packages
+
+setup(
+    name="agricultural-super-app",
+    version="0.1",
+    packages=find_packages(),
+    include_package_data=True,
+    install_requires=[
+        "Flask",
+        "Flask-SQLAlchemy",
+        "Flask-Migrate",
+        "Flask-CORS",
+        "psycopg2-binary",
+        "python-dotenv",
+        "PyJWT",
+        "Werkzeug",
+        "SQLAlchemy",
+        "alembic",
+        "gunicorn",
+        "Pillow",
+        "email-validator",
+        "marshmallow",
+        "Flask-Bcrypt",
+        "python-slugify",
+        "requests",
+        "cloudinary",
+        "bleach",
+    ],
+)
