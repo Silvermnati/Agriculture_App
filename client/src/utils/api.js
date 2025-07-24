@@ -1,9 +1,11 @@
 import axios from 'axios';
 import { API_ENDPOINTS } from './constants';
 
-// Create axios instance. The base URL is relative to the current domain,
-// which allows the Vite proxy to work in development.
-const API_URL = '/api';
+// Create axios instance. The base URL is relative to the current domain in development,
+// and uses the deployed backend URL in production.
+const API_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://agriculture-app-1-u2a6.onrender.com/api'
+  : '/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -94,15 +96,35 @@ export const communitiesAPI = {
   getCommunities: (params) => api.get(API_ENDPOINTS.COMMUNITIES.BASE, { params }),
   getCommunity: (communityId) => api.get(`${API_ENDPOINTS.COMMUNITIES.BASE}/${communityId}`),
   createCommunity: (communityData) => api.post(API_ENDPOINTS.COMMUNITIES.BASE, communityData),
+  updateCommunity: (communityId, communityData) => api.put(`${API_ENDPOINTS.COMMUNITIES.BASE}/${communityId}`, communityData),
   joinCommunity: (communityId) => api.post(API_ENDPOINTS.COMMUNITIES.JOIN(communityId)),
-  getCommunityPosts: (communityId, params) => api.get(API_ENDPOINTS.COMMUNITIES.POSTS(communityId), { params })
+  getCommunityPosts: (communityId, params) => api.get(API_ENDPOINTS.COMMUNITIES.POSTS(communityId), { params }),
+  createCommunityPost: (communityId, postData) => api.post(API_ENDPOINTS.COMMUNITIES.POSTS(communityId), postData),
+  likeCommunityPost: (communityId, postId) => api.post(API_ENDPOINTS.COMMUNITIES.LIKE_POST(communityId, postId)),
+  commentOnCommunityPost: (communityId, postId, commentData) => api.post(API_ENDPOINTS.COMMUNITIES.POST_COMMENTS(communityId, postId), commentData)
 };
 
 // Experts API calls
 export const expertsAPI = {
   getExperts: (params) => api.get(API_ENDPOINTS.EXPERTS.BASE, { params }),
   getExpert: (expertId) => api.get(`${API_ENDPOINTS.EXPERTS.BASE}/${expertId}`),
-  bookConsultation: (consultationData) => api.post(API_ENDPOINTS.EXPERTS.CONSULTATIONS, consultationData)
+  createExpertProfile: (expertData) => api.post(API_ENDPOINTS.EXPERTS.BASE, expertData),
+  updateExpertProfile: (expertId, expertData) => api.put(`${API_ENDPOINTS.EXPERTS.BASE}/${expertId}`, expertData),
+  bookConsultation: (consultationData) => api.post(API_ENDPOINTS.EXPERTS.CONSULTATIONS, consultationData),
+  getConsultations: () => api.get(API_ENDPOINTS.EXPERTS.CONSULTATIONS)
+};
+
+// File upload API calls
+export const uploadAPI = {
+  uploadFile: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post(API_ENDPOINTS.UPLOAD.BASE, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  }
 };
 
 export default api;

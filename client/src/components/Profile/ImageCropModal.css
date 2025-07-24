@@ -1,0 +1,251 @@
+/* Image Crop Modal Styles */
+.image-crop-modal .modal-content {
+  max-width: 800px;
+  max-height: 90vh;
+}
+
+.crop-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.crop-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.crop-editor {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.crop-preview-container {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid #e5e7eb;
+}
+
+.crop-image {
+  position: absolute;
+  max-width: none;
+  max-height: none;
+  cursor: move;
+  user-select: none;
+  transition: transform 0.1s ease;
+}
+
+.crop-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.crop-area {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200px;
+  height: 200px;
+  transform: translate(-50%, -50%);
+  border: 2px solid #10b981;
+  border-radius: 50%;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+}
+
+.crop-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.control-group label {
+  font-weight: 500;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.control-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.control-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+}
+
+.control-btn:hover:not(:disabled) {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+.control-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.scale-value {
+  font-weight: 500;
+  color: #374151;
+  min-width: 50px;
+  text-align: center;
+}
+
+.crop-preview-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.crop-preview-result h4 {
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.preview-circle {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #e5e7eb;
+  background: #f3f4f6;
+}
+
+.preview-canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .image-crop-modal .modal-content {
+    max-width: 95vw;
+    margin: 1rem;
+  }
+  
+  .crop-editor {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .crop-preview-container {
+    height: 300px;
+  }
+  
+  .crop-area {
+    width: 150px;
+    height: 150px;
+  }
+  
+  .crop-controls {
+    order: -1;
+  }
+  
+  .control-buttons {
+    justify-content: center;
+  }
+  
+  .crop-preview-result {
+    order: 1;
+  }
+  
+  .preview-circle {
+    width: 120px;
+    height: 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .crop-preview-container {
+    height: 250px;
+  }
+  
+  .crop-area {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .control-btn {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  .preview-circle {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+/* Touch Devices */
+@media (hover: none) and (pointer: coarse) {
+  .crop-image {
+    cursor: grab;
+  }
+  
+  .crop-image:active {
+    cursor: grabbing;
+  }
+}
+
+/* Accessibility */
+.control-btn:focus {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .crop-preview-container {
+    border-color: black;
+    border-width: 3px;
+  }
+  
+  .crop-area {
+    border-color: black;
+    border-width: 3px;
+  }
+  
+  .control-btn {
+    border-color: black;
+    border-width: 2px;
+  }
+  
+  .preview-circle {
+    border-color: black;
+    border-width: 3px;
+  }
+}

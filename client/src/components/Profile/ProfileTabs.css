@@ -1,0 +1,251 @@
+/* Profile Tabs Styles */
+.profile-tabs {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.profile-tabs-container {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.profile-tabs-list {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.profile-tabs-list::-webkit-scrollbar {
+  display: none;
+}
+
+.profile-tab {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 1rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  color: #6b7280;
+  font-weight: 500;
+  border-bottom: 3px solid transparent;
+}
+
+.profile-tab:hover {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.profile-tab-active {
+  color: #10b981;
+  border-bottom-color: #10b981;
+}
+
+.profile-tab-highlight {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #92400e;
+  border-radius: 8px 8px 0 0;
+}
+
+.profile-tab-highlight:hover {
+  background: linear-gradient(135deg, #fde68a 0%, #fcd34d 100%);
+}
+
+.profile-tab-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.profile-tab-icon {
+  display: flex;
+  align-items: center;
+}
+
+.profile-tab-label {
+  white-space: nowrap;
+}
+
+.profile-tab-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+.profile-tab-badge-unsaved {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.profile-tab-badge-text {
+  font-size: 0.625rem;
+}
+
+.profile-tab-description {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  z-index: 20;
+  margin-top: 0.5rem;
+}
+
+.profile-tab-description::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 4px solid #1f2937;
+}
+
+.profile-tab:hover .profile-tab-description {
+  display: block;
+}
+
+/* Tabs Indicator */
+.profile-tabs-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: #10b981;
+  transition: transform 0.3s ease;
+  width: calc(100% / var(--tab-count, 5));
+}
+
+/* Mobile Tab Selector */
+.profile-tabs-mobile {
+  display: none;
+  padding: 1rem;
+}
+
+.profile-tabs-select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  font-size: 1rem;
+  color: #374151;
+}
+
+.profile-tabs-select:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .profile-tabs-list {
+    display: none;
+  }
+  
+  .profile-tabs-mobile {
+    display: block;
+  }
+  
+  .profile-tabs-container {
+    padding: 0 0.5rem;
+  }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+  .profile-tab {
+    padding: 0.75rem 1rem;
+  }
+  
+  .profile-tab-label {
+    font-size: 0.875rem;
+  }
+}
+
+/* Touch Devices */
+@media (hover: none) and (pointer: coarse) {
+  .profile-tab-description {
+    display: none !important;
+  }
+  
+  .profile-tab:hover {
+    background: none;
+  }
+  
+  .profile-tab:active {
+    background: rgba(16, 185, 129, 0.1);
+  }
+}
+
+/* Accessibility */
+.profile-tab:focus {
+  outline: 2px solid #10b981;
+  outline-offset: -2px;
+}
+
+.profile-tab[aria-selected="true"] {
+  color: #10b981;
+  border-bottom-color: #10b981;
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .profile-tabs {
+    border-bottom-color: black;
+  }
+  
+  .profile-tab {
+    color: black;
+  }
+  
+  .profile-tab-active {
+    color: black;
+    border-bottom-color: black;
+    background: yellow;
+  }
+  
+  .profile-tab-highlight {
+    background: yellow;
+    color: black;
+    border: 1px solid black;
+  }
+  
+  .profile-tab-badge-unsaved {
+    background: red;
+    color: white;
+    border-color: black;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .profile-tab {
+    transition: none;
+  }
+  
+  .profile-tabs-indicator {
+    transition: none;
+  }
+}

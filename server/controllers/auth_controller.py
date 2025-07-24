@@ -37,27 +37,16 @@ def register():
     if User.query.filter_by(email=data.get('email')).first():
         return jsonify({'message': 'User already exists'}), 409
     
-    # Create location if provided
-    location_id = None
-    if 'location' in data:
-        location_data = data['location']
-        location = Location(
-            country_id=location_data.get('country_id'),
-            state_id=location_data.get('state_id'),
-            city=location_data.get('city')
-        )
-        db.session.add(location)
-        db.session.flush()  # Get the ID without committing
-        location_id = location.location_id
-    
-    # Create user
+    # Create user with all the new fields including simple location fields
     user = User(
         email=data.get('email'),
         password=data.get('password'),
         first_name=data.get('first_name'),
         last_name=data.get('last_name'),
         role=data.get('role', 'farmer'),
-        location_id=location_id,
+        phone_number=data.get('phone_number'),
+        country=data.get('country'),
+        city=data.get('city'),
         farm_size=data.get('farm_size'),
         farm_size_unit=data.get('farm_size_unit', 'hectares'),
         farming_experience=data.get('farming_experience'),
