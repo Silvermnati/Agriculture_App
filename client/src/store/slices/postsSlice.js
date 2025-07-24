@@ -34,11 +34,15 @@ export const createPost = createAsyncThunk(
   'posts/createPost',
   async (postData, thunkAPI) => {
     try {
+      console.log('Redux createPost thunk called with:', postData);
       const response = await postsAPI.createPost(postData);
+      console.log('Redux createPost response:', response);
       return response.data;
     } catch (error) {
+      console.error('Redux createPost error:', error);
+      console.error('Error response:', error.response);
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message || 'Failed to create post'
+        error.response?.data?.message || error.message || 'Failed to create post'
       );
     }
   }

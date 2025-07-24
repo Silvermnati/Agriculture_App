@@ -85,6 +85,29 @@ def create_app(config_name='default'):
                         db.session.add(state)
                         db.session.commit()
                         print("Default state created!")
+                    
+                    # Create default categories
+                    from server.models.post import Category
+                    if not Category.query.first():
+                        categories = [
+                            {'name': 'Crop Management', 'description': 'Best practices for growing and managing crops'},
+                            {'name': 'Pest and Disease Control', 'description': 'Methods to prevent and treat plant diseases and pests'},
+                            {'name': 'Soil Health', 'description': 'Maintaining and improving soil quality'},
+                            {'name': 'Harvesting and Post-Harvesting', 'description': 'Techniques for harvesting and post-harvest handling'},
+                            {'name': 'Agricultural Technology', 'description': 'Modern tools and technology in agriculture'}
+                        ]
+                        
+                        for cat_data in categories:
+                            category = Category(
+                                name=cat_data['name'],
+                                description=cat_data['description'],
+                                is_agricultural_specific=True
+                            )
+                            db.session.add(category)
+                        
+                        db.session.commit()
+                        print("Default categories created!")
+                        
                 except Exception as e:
                     print(f"Error creating initial data: {str(e)}")
                     db.session.rollback()
@@ -234,6 +257,41 @@ def create_app(config_name='default'):
             return {'message': 'Database schema updated successfully! Location fields are now available.'}
         else:
             return {'message': 'Database schema update failed. Please check the logs.'}
+    
+    @app.route('/create-categories')
+    def create_categories_endpoint():
+        """Force create default categories"""
+        try:
+            from server.models.post import Category
+            from server.database import db
+            
+            # Check if categories already exist
+            existing_categories = Category.query.count()
+            if existing_categories > 0:
+                return {'message': f'Categories already exist ({existing_categories} found).'}
+            
+            categories = [
+                {'name': 'Crop Management', 'description': 'Best practices for growing and managing crops'},
+                {'name': 'Pest and Disease Control', 'description': 'Methods to prevent and treat plant diseases and pests'},
+                {'name': 'Soil Health', 'description': 'Maintaining and improving soil quality'},
+                {'name': 'Harvesting and Post-Harvesting', 'description': 'Techniques for harvesting and post-harvest handling'},
+                {'name': 'Agricultural Technology', 'description': 'Modern tools and technology in agriculture'}
+            ]
+            
+            for cat_data in categories:
+                category = Category(
+                    name=cat_data['name'],
+                    description=cat_data['description'],
+                    is_agricultural_specific=True
+                )
+                db.session.add(category)
+            
+            db.session.commit()
+            return {'message': f'Successfully created {len(categories)} categories!'}
+            
+        except Exception as e:
+            db.session.rollback()
+            return {'message': f'Failed to create categories: {str(e)}'}, 500
     
     return app
 
