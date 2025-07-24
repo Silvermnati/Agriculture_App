@@ -428,39 +428,63 @@ def delete_post(current_user, post_id):
     return jsonify({'message': 'Post archived successfully'}), 200
 
 
-@token_required
-def add_comment(current_user, post_id):
+def add_comment(post_id, current_user=None):
     """
-    Add a comment to a post.
-    
-    Request Body:
-    {
-        "content": "Great post! I've been using this method...",
-        "parent_comment_id": null  # Optional, for replies
-    }
+    Handle both GET and POST requests for comments.
+    GET: Retrieve comments for a post
+    POST: Add a new comment to a post
     """
     post = Post.query.get(post_id)
     
     if not post:
         return jsonify({'message': 'Post not found'}), 404
     
-    data = request.get_json()
+    if request.method == 'GET':
+        # Get comments for the post
+        all_comments = Comment.query.options(
+            joinedload(Comment.user)
+        ).filter_by(post_id=post_id).order_by(Comment.created_at.asc()).all()
+
+        comment_map = {comment.comment_id: comment.to_dict(include_replies=False) for comment in all_comments}
+        
+        # Initialize replies list for each comment
+        for comment_data in comment_map.values():
+            comment_data['replies'] = []
+
+        top_level_comments = []
+        for comment in all_comments:
+            comment_data = comment_map[comment.comment_id]
+            if comment.parent_comment_id:
+                parent = comment_map.get(comment.parent_comment_id)
+                if parent:
+                    parent['replies'].append(comment_data)
+            else:
+                top_level_comments.append(comment_data)
+
+        return jsonify(top_level_comments), 200
     
-    # Create comment
-    comment = Comment(
-        post_id=post_id,
-        user_id=current_user.user_id,
-        content=data.get('content'),
-        parent_comment_id=data.get('parent_comment_id')
-    )
-    
-    db.session.add(comment)
-    db.session.commit()
-    
-    return jsonify({
-        'message': 'Comment added successfully',
-        'comment': comment.to_dict()
-    }), 201
+    elif request.method == 'POST':
+        # Add a new comment (requires authentication)
+        if not current_user:
+            return jsonify({'message': 'Authentication required'}), 401
+            
+        data = request.get_json()
+        
+        # Create comment
+        comment = Comment(
+            post_id=post_id,
+            user_id=current_user.user_id,
+            content=data.get('content'),
+            parent_comment_id=data.get('parent_comment_id')
+        )
+        
+        db.session.add(comment)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Comment added successfully',
+            'comment': comment.to_dict()
+        }), 201
 
 
 @token_required

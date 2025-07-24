@@ -94,15 +94,27 @@ class Post(db.Model):
         author_info = { 'name': 'Unknown Author', 'avatar_url': None, 'role': None }
         if self.author:
             author_info['name'] = f"{self.author.first_name} {self.author.last_name}"
-            author_info['avatar_url'] = self.author.avatar_url
+            # Fix avatar URL to use full path or default
+            if self.author.avatar_url:
+                author_info['avatar_url'] = self.author.avatar_url
+            else:
+                author_info['avatar_url'] = 'https://agriculture-app-1-u2a6.onrender.com/static/default-avatar.png'
             author_info['role'] = self.author.role
+
+        # Fix featured image URL to use full path
+        featured_image_url = None
+        if self.featured_image_url:
+            if self.featured_image_url.startswith('http'):
+                featured_image_url = self.featured_image_url
+            else:
+                featured_image_url = f"https://agriculture-app-1-u2a6.onrender.com/static/{self.featured_image_url}"
 
         post_dict = {
             'id': str(self.post_id), # Keep 'id' for frontend convenience
             'post_id': str(self.post_id), # Keep 'post_id' for backend consistency
             'title': self.title,
             'excerpt': self.excerpt,
-            'featured_image_url': self.featured_image_url,
+            'featured_image_url': featured_image_url,
             'author': author_info,
             'category': self.category.to_dict() if self.category else None,
             'related_crops': self.related_crops or [],
