@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import ReactQuill from 'react-quill';
 import PropTypes from 'prop-types';
 import './posts.css';
@@ -14,10 +14,10 @@ const PostForm = ({ onSubmit }) => {
         related_crops: [],
         season_relevance:'',
         featured_image: null,
-        tags:[],
         status:'draft'
     });
     const [showPreview, setShowPreview] = useState(false);
+    const quillRef = useRef(null);
 
     const categories = [
         { id: 1, name: 'Crop Management' },
@@ -78,7 +78,7 @@ const PostForm = ({ onSubmit }) => {
                     <input id="title" type="text" name="title" placeholder="A catchy and descriptive title" value={formData.title} onChange={handleChange} required/>
 
                     <label htmlFor="content">Full Content</label>
-                    <ReactQuill id="content" theme="snow" value={formData.content} onChange={handleContentChange} />
+                    <ReactQuill ref={quillRef} id="content" theme="snow" value={formData.content} onChange={handleContentChange} />
 
                     <label htmlFor="excerpt">Excerpt</label>
                     <textarea id="excerpt" name="excerpt" placeholder="A short summary to appear in post previews" value={formData.excerpt} onChange={handleChange} required/>
@@ -103,9 +103,6 @@ const PostForm = ({ onSubmit }) => {
 
                     <label htmlFor="featured_image">Featured Image</label>
                     <input id="featured_image" type="file" onChange={handleFileChange}/>
-
-                    <label htmlFor="tags">Tags (comma-separated)</label>
-                    <input id="tags" type="text" name="tags" placeholder="e.g., organic, pest-control" value={Array.isArray(formData.tags) ? formData.tags.join(', ') : ''} onChange={e => setFormData({...formData, tags: e.target.value.split(',').map(s => s.trim())})}/>
 
                     <label htmlFor="status">Status</label>
                     <select id="status" name="status" value={formData.status} onChange={handleChange}>

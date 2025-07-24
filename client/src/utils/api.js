@@ -83,7 +83,23 @@ export const postsAPI = {
     return api.get(API_ENDPOINTS.POSTS.BASE, { params: processedParams });
   },
   getPost: (postId) => api.get(`${API_ENDPOINTS.POSTS.BASE}/${postId}`),
-  createPost: (postData) => api.post(API_ENDPOINTS.POSTS.BASE, postData),
+  createPost: (postData) => {
+    const formData = new FormData();
+    Object.keys(postData).forEach(key => {
+      if (key === 'featured_image' && postData[key]) {
+        formData.append(key, postData[key]);
+      } else if (Array.isArray(postData[key])) {
+        postData[key].forEach(item => formData.append(key, item));
+      } else {
+        formData.append(key, postData[key]);
+      }
+    });
+    return api.post(API_ENDPOINTS.POSTS.BASE, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
   updatePost: (postId, postData) => api.put(`${API_ENDPOINTS.POSTS.BASE}/${postId}`, postData),
   deletePost: (postId) => api.delete(`${API_ENDPOINTS.POSTS.BASE}/${postId}`),
   addComment: (postId, commentData) => api.post(API_ENDPOINTS.POSTS.COMMENTS(postId), commentData),

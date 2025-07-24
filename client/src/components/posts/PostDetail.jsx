@@ -3,9 +3,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import './posts.css';
 
-import mockPostData from '../../utils/mockPostData';
-
-const PostDetail = ({ post = mockPostData }) => {
+const PostDetail = ({ post }) => {
   if (!post) return <p>Loading post...</p>;
 
   return (
