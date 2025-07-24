@@ -1,31 +1,39 @@
 // pages/Posts/PostDetailPage.jsx
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import mockPostData from '../../utils/mockPostData';
-import { mockComments } from '../../utils/mockData';
+import { useDispatch, useSelector } from 'react-redux';
+import { getPost, getComments, addComment, reset } from '../../store/slices/postsSlice';
 import PostDetail from '../../components/posts/PostDetail';
 import CommentSection from '../../components/posts/CommentSection';
+import LoadingSpinner from '../../components/common/LoadingSpinner/LoadingSpinner';
+import ErrorMessage from '../../components/common/ErrorMessage/ErrorMessage';
 
 const PostDetailPage = () => {
-  const { id } = useParams();
-  const post = mockPostData;
-  const comments = mockComments;
+  const { postId } = useParams();
+  const dispatch = useDispatch();
+  const { currentPost, postComments, isLoading, isError, message } = useSelector((state) => state.posts);
 
-  // This handler will be passed to the CommentSection
+  useEffect(() => {
+    dispatch(getPost(postId));
+    dispatch(getComments(postId));
+
+    return () => {
+      dispatch(reset());
+    };
+  }, [dispatch, postId]);
+
   const handleCommentSubmit = (content, parentCommentId) => {
-    console.log(`Adding comment: ${content} to post ${id} with parent ${parentCommentId}`);
-    // In a real application, you would dispatch an action to add the comment to the backend
-    // For now, we'll just log it.
+    dispatch(addComment({ postId, commentData: { content, parent_comment_id: parentCommentId } }));
   };
 
-  if (!post) return <p>Post not found.</p>;
+  if (isLoading && !currentPost) return <LoadingSpinner text="Loading post..." />;
+  if (isError) return <ErrorMessage error={message} onRetry={() => { dispatch(getPost(postId)); dispatch(getComments(postId)); }} />;
+  if (!currentPost) return <p>Post not found.</p>;
 
   return (
     <div className="post-detail-page">
-      <PostDetail post={post} />
-      {/* Pass the handler to make the comment form functional */}
-      <CommentSection comments={post.comments || []} onCommentSubmit={handleCommentSubmit} />
+      <PostDetail post={currentPost} />
+      <CommentSection comments={postComments[postId] || []} onCommentSubmit={handleCommentSubmit} />
     </div>
   );
 };

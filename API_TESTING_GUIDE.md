@@ -1,4 +1,4 @@
-# API Testing Guide for Agricultural Super App
+ge# API Testing Guide for Agricultural Super App
 
 This guide provides information about the API endpoints available in the Agricultural Super App deployed on Render.
 
@@ -222,7 +222,108 @@ https://agriculture-app-1-u2a6.onrender.com
     -d '{"content":"This is a test comment"}'
   ```
 
+## Post Endpoints
+
+### Get All Posts
+- **URL**: `/api/posts`
+- **Method**: `GET`
+- **Response**: Returns a list of all posts.
+- **Test Command**:
+  ```bash
+  curl -X GET https://agriculture-app-1-u2a6.onrender.com/api/posts
+  ```
+
+### Create a Post
+- **URL**: `/api/posts`
+- **Method**: `POST`
+- **Headers**: Authorization: Bearer {token}
+- **Body**:
+  ```json
+  {
+    "content": "This is a new post.",
+    "image_url": "http://example.com/image.png"
+  }
+  ```
+- **Response**: Returns the created post data.
+- **Test Command**:
+  ```bash
+  curl -X POST https://agriculture-app-1-u2a6.onrender.com/api/posts \
+    -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+    -H "Content-Type: application/json" \
+    -d '{"content":"This is a new post.","image_url":"http://example.com/image.png"}'
+  ```
+
+### Get a Single Post
+- **URL**: `/api/posts/{post_id}`
+- **Method**: `GET`
+- **Response**: Returns the details of a single post.
+- **Test Command**:
+  ```bash
+  curl -X GET https://agriculture-app-1-u2a6.onrender.com/api/posts/POST_ID_HERE
+  ```
+
+### Update a Post
+- **URL**: `/api/posts/{post_id}`
+- **Method**: `PUT`
+- **Headers**: Authorization: Bearer {token}
+- **Body**:
+  ```json
+  {
+    "content": "This is an updated post."
+  }
+  ```
+- **Response**: Returns a success message.
+- **Test Command**:
+  ```bash
+  curl -X PUT https://agriculture-app-1-u2a6.onrender.com/api/posts/POST_ID_HERE \
+    -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+    -H "Content-Type: application/json" \
+    -d '{"content":"This is an updated post."}'
+  ```
+
+### Delete a Post
+- **URL**: `/api/posts/{post_id}`
+- **Method**: `DELETE`
+- **Headers**: Authorization: Bearer {token}
+- **Response**: Returns a success message.
+- **Test Command**:
+  ```bash
+  curl -X DELETE https://agriculture-app-1-u2a6.onrender.com/api/posts/POST_ID_HERE \
+    -H "Authorization: Bearer YOUR_TOKEN_HERE"
+  ```
+
+### Add a Comment to a Post
+- **URL**: `/api/posts/{post_id}/comments`
+- **Method**: `POST`
+- **Headers**: Authorization: Bearer {token}
+- **Body**:
+  ```json
+  {
+    "content": "This is a comment."
+  }
+  ```
+- **Response**: Returns the created comment data.
+- **Test Command**:
+  ```bash
+  curl -X POST https://agriculture-app-1-u2a6.onrender.com/api/posts/POST_ID_HERE/comments \
+    -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+    -H "Content-Type: application/json" \
+    -d '{"content":"This is a comment."}'
+  ```
+
+### Toggle Like on a Post
+- **URL**: `/api/posts/{post_id}/like`
+- **Method**: `POST`
+- **Headers**: Authorization: Bearer {token}
+- **Response**: Returns a success message.
+- **Test Command**:
+  ```bash
+  curl -X POST https://agriculture-app-1-u2a6.onrender.com/api/posts/POST_ID_HERE/like \
+    -H "Authorization: Bearer YOUR_TOKEN_HERE"
+  ```
+
 ## Expert Endpoints
+
 
 ### Get All Experts
 - **URL**: `/api/experts`
