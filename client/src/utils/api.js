@@ -1,11 +1,8 @@
 import axios from 'axios';
 import { API_ENDPOINTS } from './constants';
 
-// Create axios instance. The base URL is relative to the current domain in development,
-// and uses the deployed backend URL in production.
-const API_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://agriculture-app-1-u2a6.onrender.com/api'
-  : '/api';
+// Create axios instance. Always use the production API URL since we don't have a local backend
+const API_URL = 'https://agriculture-app-1-u2a6.onrender.com/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -84,16 +81,28 @@ export const postsAPI = {
   },
   getPost: (postId) => api.get(`${API_ENDPOINTS.POSTS.BASE}/${postId}`),
   createPost: (postData) => {
+    console.log('API createPost called with:', postData);
     const formData = new FormData();
     Object.keys(postData).forEach(key => {
       if (key === 'featured_image' && postData[key]) {
         formData.append(key, postData[key]);
+        console.log(`Added file: ${key}`, postData[key]);
       } else if (Array.isArray(postData[key])) {
-        postData[key].forEach(item => formData.append(key, item));
+        // Backend expects arrays as JSON strings
+        const jsonValue = JSON.stringify(postData[key]);
+        formData.append(key, jsonValue);
+        console.log(`Added array as JSON: ${key} = ${jsonValue}`);
       } else {
         formData.append(key, postData[key]);
+        console.log(`Added field: ${key} = ${postData[key]}`);
       }
     });
+    
+    console.log('Making API request to:', API_ENDPOINTS.POSTS.BASE);
+    console.log('Full API URL:', `${API_URL}${API_ENDPOINTS.POSTS.BASE}`);
+    console.log('Environment check - import.meta.env.PROD:', import.meta.env.PROD);
+    console.log('Current API_URL:', API_URL);
+    
     return api.post(API_ENDPOINTS.POSTS.BASE, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
