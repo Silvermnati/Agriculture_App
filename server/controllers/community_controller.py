@@ -3,7 +3,10 @@ from datetime import datetime
 
 from server.models.community import Community, CommunityMember, CommunityPost, PostLike, PostComment
 from server.database import db
-from server.utils.auth import token_required
+from server.utils.auth import token_required, resource_owner_required, admin_required
+from server.utils.validators import sanitize_html_content, validate_string_length, validate_required_fields
+from server.utils.error_handlers import create_error_response, create_success_response
+from server.utils.rate_limiter import rate_limit_moderate, rate_limit_lenient
 
 @token_required
 def get_communities(current_user):
@@ -60,15 +63,15 @@ def get_communities(current_user):
         
         communities.append(community_dict)
     
-    return jsonify({
-        'communities': communities,
-        'pagination': {
+    return create_success_response(
+        data=communities,
+        pagination={
             'page': page,
             'per_page': per_page,
             'total_pages': communities_page.pages,
             'total_items': communities_page.total
         }
-    }), 200
+    )
 
 
 @token_required

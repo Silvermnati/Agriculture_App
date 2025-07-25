@@ -32,9 +32,9 @@ class ProductionConfig(Config):
     database_url = os.environ.get('DATABASE_URL')
     if database_url and database_url.startswith('postgres://'):
         database_url = database_url.replace('postgres://', 'postgresql://', 1)
-    SQLALCHEMY_DATABASE_URI = database_url
-    SECRET_KEY = os.environ.get('SECRET_KEY')
-    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
+    SQLALCHEMY_DATABASE_URI = database_url or 'postgresql://localhost/agri_app_prod'
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'prod-secret-key-change-me'
+    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or 'jwt-prod-secret-key-change-me'
 
 config = {
     'development': DevelopmentConfig,
