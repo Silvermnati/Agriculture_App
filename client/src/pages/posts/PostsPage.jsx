@@ -42,20 +42,60 @@ const PostsPage = () => {
     }));
   };
 
+  const featuredPost = posts && posts.length > 0 ? posts[0] : null;
+
+
+
   return (
     <div className="posts-page">
-      <div className="posts-header">
-        <h1>Agricultural Posts & Blogs</h1>
-        <Link to="/create-post" className="create-post-btn">Create Post</Link>
-      </div>
-      <PostFilters filters={filters} onFilterChange={handleFilterChange} />
+      <div className="header-and-featured-section">
+        {/* Left side: Agricultural Insights text */}
+        <div className="hero-text-content">
+          <h1>Agricultural Insights</h1>
+          <p>
+            Expert knowledge, practical advice, and the latest research to help you succeed in modern agriculture.
+          </p>
+          <Link to="/create-post" className="contribute-btn">Contribute</Link>
+        </div>
 
-      {isLoading && <LoadingSpinner text="Loading posts..." />}
-      {isError && <ErrorMessage error={message} onRetry={() => dispatch(getPosts(filters))} />}
-      
-      {!isLoading && !isError && (
-        <PostList posts={posts} pagination={pagination} onPageChange={handlePageChange} />
-      )}
+        {/* Right side: Featured Post Card (Simplified) - only render if featuredPost exists */}
+        {featuredPost && (
+          <div className="featured-post-card-wrapper">
+            {/* The Link wraps the entire simplified card */}
+            <Link to={`/posts/${featuredPost.id}`} className="simplified-featured-card-link">
+              <div className="simplified-featured-post-card"> {/* NEW CLASS for this simplified card */}
+                <img
+                  src={featuredPost.featured_image_url || '/fallback.jpg'}
+                  alt={featuredPost.title}
+                  className="simplified-featured-post-image" /* NEW CLASS */
+                />
+                <div className="simplified-featured-post-title-overlay"> {/* NEW CLASS for overlay */}
+                  <h3>{featuredPost.title}</h3>
+                </div>
+              </div>
+            </Link>
+          </div>
+        )}
+      </div>
+
+      {isLoading && !featuredPost && <LoadingSpinner text="Loading posts..." />}
+      {isError && !featuredPost && <ErrorMessage error={message} onRetry={() => dispatch(getPosts(filters))} />}
+
+      <div className="posts-content-layout">
+        <div className="main-content-area">
+          {!isLoading && !isError && (
+            <PostList
+              posts={featuredPost ? posts.slice(1) : posts}
+              pagination={pagination}
+              onPageChange={handlePageChange}
+            />
+          )}
+        </div>
+
+        <div className="sidebar-area">
+          <PostFilters filters={filters} onFilterChange={handleFilterChange} />
+        </div>
+      </div>
     </div>
   );
 };
