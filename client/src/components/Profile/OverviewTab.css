@@ -186,6 +186,26 @@
   text-decoration: underline;
 }
 
+/* Loading States */
+.stats-loading,
+.activity-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 120px;
+}
+
+.no-activity {
+  text-align: center;
+  padding: 2rem;
+  color: #9ca3af;
+}
+
+.no-activity p {
+  margin: 0;
+  font-style: italic;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .overview-tab {

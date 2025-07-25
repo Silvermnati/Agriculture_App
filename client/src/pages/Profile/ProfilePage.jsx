@@ -42,7 +42,9 @@ const ProfilePage = () => {
     showPasswordModal,
     settings,
     activityStats,
-    recentActivity
+    recentActivity,
+    isLoadingStats,
+    isLoadingActivity
   } = useSelector((state) => state.profile);
 
   useEffect(() => {
@@ -118,6 +120,8 @@ const ProfilePage = () => {
             user={currentProfile}
             stats={activityStats}
             recentActivity={recentActivity}
+            isLoadingStats={isLoadingStats}
+            isLoadingActivity={isLoadingActivity}
           />
         );
       case 'edit':
@@ -151,6 +155,8 @@ const ProfilePage = () => {
             user={currentProfile}
             stats={activityStats}
             recentActivity={recentActivity}
+            isLoadingStats={isLoadingStats}
+            isLoadingActivity={isLoadingActivity}
           />
         );
     }

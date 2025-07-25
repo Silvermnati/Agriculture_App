@@ -7,7 +7,9 @@ import PostList from '../../components/posts/PostList';
 import PostFilters from '../../components/posts/PostFilters';
 import LoadingSpinner from '../../components/common/LoadingSpinner/LoadingSpinner';
 import ErrorMessage from '../../components/common/ErrorMessage/ErrorMessage';
+import Image from '../../components/common/Image/Image';
 import './Posts.css';
+import '../../components/posts/posts.css';
 
 const PostsPage = () => {
   const dispatch = useDispatch();
@@ -64,10 +66,11 @@ const PostsPage = () => {
             {/* The Link wraps the entire simplified card */}
             <Link to={`/posts/${featuredPost.id}`} className="simplified-featured-card-link">
               <div className="simplified-featured-post-card"> {/* NEW CLASS for this simplified card */}
-                <img
-                  src={featuredPost.featured_image_url || '/fallback.jpg'}
+                <Image
+                  src={featuredPost.featured_image_url}
                   alt={featuredPost.title}
                   className="simplified-featured-post-image" /* NEW CLASS */
+                  fallbackType="postLarge"
                 />
                 <div className="simplified-featured-post-title-overlay"> {/* NEW CLASS for overlay */}
                   <h3>{featuredPost.title}</h3>

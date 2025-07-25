@@ -1,6 +1,7 @@
 // components/Posts/PostDetail.jsx
 import React from 'react';
 import PropTypes from 'prop-types';
+import Image from '../common/Image/Image';
 import './posts.css';
 
 const PostDetail = ({ post }) => {
@@ -8,12 +9,22 @@ const PostDetail = ({ post }) => {
 
   return (
     <div className="post-detail">
-      <img src={post.featured_image_url || '/fallback.jpg'} alt={post.title} className="detail-image" />
+      <Image 
+        src={post.featured_image_url} 
+        alt={post.title} 
+        className="detail-image" 
+        fallbackType="postLarge"
+      />
       <h1>{post.title}</h1>
       <p className="excerpt">{post.excerpt}</p>
 
       <div className="author-bar">
-        <img src={post.author?.avatar_url || '/default-avatar.png'} alt={post.author?.name} className="avatar" />
+        <Image 
+          src={post.author?.avatar_url} 
+          alt={post.author?.name || 'Anonymous'} 
+          className="avatar" 
+          fallbackType="avatar"
+        />
         <span>{post.author?.name || 'Anonymous'} • {new Date(post.published_at).toLocaleDateString()}</span>
         {post.category && <span className="category">{post.category.name}</span>}
       </div>

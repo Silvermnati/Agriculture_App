@@ -1,6 +1,7 @@
 // components/Posts/CommentSection.jsx
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import Image from '../common/Image/Image';
 import './posts.css'; // Ensure this CSS file is updated
 
 const CommentItem = ({ comment, onReplySubmit, level = 0 }) => {
@@ -19,7 +20,12 @@ const CommentItem = ({ comment, onReplySubmit, level = 0 }) => {
   return (
     <div className="comment-item" style={{ marginLeft: `${level * 20}px` }}>
       <div className="comment-header">
-        <img src={comment.user?.avatar_url || '/default-avatar.png'} alt={comment.user?.name} className="avatar" />
+        <Image 
+          src={comment.user?.avatar_url} 
+          alt={comment.user?.name || 'Anonymous'} 
+          className="avatar" 
+          fallbackType="avatar"
+        />
         <div>
           <strong>{comment.user?.name || 'Anonymous'}</strong>
           <span className="comment-date">{new Date(comment.created_at).toLocaleString()}</span>

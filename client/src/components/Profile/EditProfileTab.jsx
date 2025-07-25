@@ -26,9 +26,7 @@ const EditProfileTab = ({ user }) => {
     first_name: user?.first_name || '',
     last_name: user?.last_name || '',
     bio: user?.bio || '',
-    gender: user?.gender || '',
     phone: user?.phone || '',
-    date_of_birth: user?.date_of_birth ? user.date_of_birth.split('T')[0] : '',
     location: {
       city: user?.location?.city || '',
       country: user?.location?.country || ''
@@ -37,28 +35,19 @@ const EditProfileTab = ({ user }) => {
     farm_size_unit: user?.farm_size_unit || 'hectares',
     farming_experience: user?.farming_experience || '',
     farming_type: user?.farming_type || '',
-    crops_grown: user?.crops_grown || [],
-    social_links: {
-      website: user?.social_links?.website || '',
-      linkedin: user?.social_links?.linkedin || '',
-      twitter: user?.social_links?.twitter || '',
-      facebook: user?.social_links?.facebook || ''
-    }
+    primary_language: user?.primary_language || 'en'
   });
 
   const [errors, setErrors] = useState({});
-  const [newCrop, setNewCrop] = useState('');
 
   useEffect(() => {
-    // Initialize form with user data
+    // Initialize form with user data (only using fields that exist in database)
     if (user) {
       const initialData = {
         first_name: user.first_name || '',
         last_name: user.last_name || '',
         bio: user.bio || '',
-        gender: user.gender || '',
         phone: user.phone || '',
-        date_of_birth: user.date_of_birth ? user.date_of_birth.split('T')[0] : '',
         location: {
           city: user.location?.city || '',
           country: user.location?.country || ''
@@ -67,13 +56,7 @@ const EditProfileTab = ({ user }) => {
         farm_size_unit: user.farm_size_unit || 'hectares',
         farming_experience: user.farming_experience || '',
         farming_type: user.farming_type || '',
-        crops_grown: user.crops_grown || [],
-        social_links: {
-          website: user.social_links?.website || '',
-          linkedin: user.social_links?.linkedin || '',
-          twitter: user.social_links?.twitter || '',
-          facebook: user.social_links?.facebook || ''
-        }
+        primary_language: user.primary_language || 'en'
       };
       setFormData(initialData);
     }
@@ -121,14 +104,7 @@ const EditProfileTab = ({ user }) => {
       newErrors.bio = `Bio must be less than ${VALIDATION.DESCRIPTION.MAX_LENGTH} characters`;
     }
 
-    // URL validation for social links
-    const urlPattern = /^https?:\/\/.+/;
-    Object.keys(formData.social_links).forEach(platform => {
-      const url = formData.social_links[platform];
-      if (url && !urlPattern.test(url)) {
-        newErrors[`social_links.${platform}`] = 'Please enter a valid URL (starting with http:// or https://)';
-      }
-    });
+    // Remove URL validation for social links since they don't exist in database
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -275,20 +251,6 @@ const EditProfileTab = ({ user }) => {
               required
             />
             
-            <div className="form-field">
-              <label className="form-label">Gender</label>
-              <select
-                value={formData.gender}
-                onChange={(e) => handleInputChange('gender', e.target.value)}
-                className="form-select"
-              >
-                <option value="">Select Gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            
             <Input
               id="phone"
               name="phone"
@@ -300,15 +262,20 @@ const EditProfileTab = ({ user }) => {
               placeholder="+1 234 567 8900"
             />
             
-            <Input
-              id="date_of_birth"
-              name="date_of_birth"
-              label="Date of Birth"
-              type="date"
-              value={formData.date_of_birth}
-              onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
-              error={errors.date_of_birth}
-            />
+            <div className="form-field">
+              <label className="form-label">Primary Language</label>
+              <select
+                value={formData.primary_language}
+                onChange={(e) => handleInputChange('primary_language', e.target.value)}
+                className="form-select"
+              >
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="sw">Swahili</option>
+                <option value="ar">Arabic</option>
+              </select>
+            </div>
           </div>
         </div>
 

@@ -4,8 +4,8 @@ import PropTypes from 'prop-types';
 import './posts.css';
 import 'react-quill/dist/quill.snow.css';
 
-const PostForm = ({ onSubmit, isLoading = false }) => {
-    const [formData, setFormData] = useState({
+const PostForm = ({ onSubmit, isLoading = false, initialData = null, isEdit = false }) => {
+    const [formData, setFormData] = useState(initialData || {
         title: '',
         content: '',
         excerpt: '',
@@ -328,6 +328,8 @@ const PostForm = ({ onSubmit, isLoading = false }) => {
 PostForm.propTypes = {
     onSubmit: PropTypes.func.isRequired,
     isLoading: PropTypes.bool,
+    initialData: PropTypes.object,
+    isEdit: PropTypes.bool,
 };
 
 export default PostForm;

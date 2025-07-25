@@ -12,7 +12,7 @@ export const transformBackendUserToProfile = (backendUser) => {
   if (!backendUser) return null;
 
   return {
-    // Core fields
+    // Core fields (exist in database)
     id: backendUser.user_id || backendUser.id,
     email: backendUser.email,
     first_name: backendUser.first_name,
@@ -20,51 +20,37 @@ export const transformBackendUserToProfile = (backendUser) => {
     role: backendUser.role,
     bio: backendUser.bio || '',
     
-    // Avatar and media
+    // Media fields (exist in database)
     avatar_url: backendUser.avatar_url,
     cover_image_url: backendUser.cover_image_url,
     
-    // Contact information
+    // Contact information (exist in database)
     phone: backendUser.phone_number,
     whatsapp: backendUser.whatsapp_number,
     is_phone_verified: backendUser.is_phone_verified || false,
     
-    // Location (transform to nested object structure)
-    location: backendUser.location ? {
-      city: backendUser.location.city,
-      country: backendUser.location.country,
-      latitude: backendUser.location.latitude,
-      longitude: backendUser.location.longitude
-    } : {
+    // Location (using simple fields that exist in database)
+    location: {
       city: backendUser.city || '',
       country: backendUser.country || ''
     },
     
-    // Farming information
+    // Farming information (exist in database)
     farm_size: backendUser.farm_size,
     farm_size_unit: backendUser.farm_size_unit || 'hectares',
     farming_experience: backendUser.farming_experience,
     farming_type: backendUser.farming_type,
     
-    // Additional fields that might not exist in backend yet
-    gender: backendUser.gender || '',
-    date_of_birth: backendUser.date_of_birth || '',
-    crops_grown: backendUser.crops_grown || [],
+    // Language (exists in database)
+    primary_language: backendUser.primary_language || 'en',
     
-    // Social links (default empty structure)
-    social_links: backendUser.social_links || {
-      website: '',
-      linkedin: '',
-      twitter: '',
-      facebook: ''
-    },
-    
-    // Expert profile (if exists)
+    // Expert profile and expertise (exist in database)
     expert_profile: backendUser.expert_profile || null,
+    expertise: backendUser.expertise || [],
     
-    // Status and timestamps
+    // Status and timestamps (exist in database)
     is_verified: backendUser.is_verified || false,
-    is_active: backendUser.is_active !== false, // Default to true if not specified
+    is_active: backendUser.is_active !== false,
     created_at: backendUser.join_date || backendUser.created_at,
     updated_at: backendUser.updated_at,
     last_login: backendUser.last_login
@@ -90,12 +76,14 @@ export const transformProfileToBackendUser = (profileData) => {
     farming_type: profileData.farming_type
   };
 
-  // Handle location transformation
-  if (profileData.location && (profileData.location.city || profileData.location.country)) {
-    backendData.location = {
-      city: profileData.location.city,
-      country: profileData.location.country
-    };
+  // Handle location transformation - use simple fields for now
+  if (profileData.location) {
+    if (profileData.location.city) {
+      backendData.city = profileData.location.city;
+    }
+    if (profileData.location.country) {
+      backendData.country = profileData.location.country;
+    }
   }
 
   // Handle social links (might need to be stored as JSON in backend)

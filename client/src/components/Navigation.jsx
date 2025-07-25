@@ -55,6 +55,9 @@ const Navigation = () => {
           <li className="nav-item">
             <Link to="/communities" className="nav-link">Communities</Link>
           </li>
+          <li className="nav-item">
+            <Link to="/api-test" className="nav-link">API Test</Link>
+          </li>
           
           {isAuthenticated && (
             <>

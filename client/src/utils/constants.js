@@ -40,12 +40,34 @@ export const API_ENDPOINTS = {
     REGISTER: '/auth/register',
     LOGIN: '/auth/login',
     PROFILE: '/auth/profile',
-    CHANGE_PASSWORD: '/auth/change-password'
+    CHANGE_PASSWORD: '/auth/change-password',
+    ACTIVITY_STATS: '/auth/activity-stats'
   },
   POSTS: {
     BASE: '/posts',
     COMMENTS: (postId) => `/posts/${postId}/comments`,
     LIKE: (postId) => `/posts/${postId}/like`
+  },
+  ARTICLES: {
+    BASE: '/articles'
+  },
+  CROPS: {
+    BASE: '/crops',
+    USER_CROPS: '/user-crops'
+  },
+  LOCATIONS: {
+    BASE: '/locations',
+    COUNTRIES: '/locations/countries',
+    STATES: (countryId) => `/locations/states/${countryId}`
+  },
+  CATEGORIES: {
+    BASE: '/categories'
+  },
+  TAGS: {
+    BASE: '/tags'
+  },
+  REVIEWS: {
+    BASE: '/reviews'
   },
   COMMUNITIES: {
     BASE: '/communities',

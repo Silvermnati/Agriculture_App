@@ -14,10 +14,11 @@ export const getExtendedProfile = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const response = await authAPI.getProfile();
-      return response.data;
+      const userData = response.data.success ? response.data.data : response.data;
+      return transformBackendUserToProfile(userData);
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message || 'Failed to get profile'
+        error.response?.data?.error?.message || error.response?.data?.message || 'Failed to get profile'
       );
     }
   }
@@ -33,16 +34,17 @@ export const updateUserProfile = createAsyncThunk(
       const response = await authAPI.updateProfile(backendData);
       
       // Transform and update localStorage with new user data
-      if (response.data?.user) {
-        const transformedUser = transformBackendUserToProfile(response.data.user);
-        localStorage.setItem('user', JSON.stringify(transformedUser));
-        return { user: transformedUser };
+      if (response.data && response.data.success && response.data.data?.user) {
+        const transformedUser = transformBackendUserToProfile(response.data.data.user);
+        const completeProfile = ensureCompleteProfile(transformedUser);
+        localStorage.setItem('user', JSON.stringify(completeProfile));
+        return { user: completeProfile };
       }
       
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message || 'Failed to update profile'
+        error.response?.data?.error?.message || error.response?.data?.message || 'Failed to update profile'
       );
     }
   }
@@ -228,20 +230,11 @@ export const getActivityStats = createAsyncThunk(
   'profile/getActivityStats',
   async (_, thunkAPI) => {
     try {
-      // This would be a separate API endpoint in a real app
-      // For now, return mock data
-      return {
-        posts_created: 12,
-        communities_joined: 5,
-        consultations_booked: 3,
-        consultations_given: 8,
-        comments_made: 45,
-        likes_received: 128,
-        profile_views: 234
-      };
+      const response = await authAPI.getActivityStats();
+      return response.data.success ? response.data.data : response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message || 'Failed to get activity stats'
+        error.response?.data?.error?.message || error.response?.data?.message || 'Failed to get activity stats'
       );
     }
   }

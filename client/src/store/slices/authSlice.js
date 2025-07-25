@@ -15,24 +15,24 @@ export const register = createAsyncThunk(
     try {
       const response = await authAPI.register(userData);
       
-      if (response.data) {
+      if (response.data && response.data.success) {
         // Transform backend user data to frontend profile structure
-        const transformedUser = transformBackendUserToProfile(response.data.user);
+        const transformedUser = transformBackendUserToProfile(response.data.data.user);
         const completeProfile = ensureCompleteProfile(transformedUser);
         
         localStorage.setItem('user', JSON.stringify(completeProfile));
-        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('token', response.data.data.token);
         
         return {
           user: completeProfile,
-          token: response.data.token
+          token: response.data.data.token
         };
       }
       
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message || 'Registration failed'
+        error.response?.data?.error?.message || error.response?.data?.message || 'Registration failed'
       );
     }
   }
@@ -45,24 +45,24 @@ export const login = createAsyncThunk(
     try {
       const response = await authAPI.login(userData);
       
-      if (response.data) {
+      if (response.data && response.data.success) {
         // Transform backend user data to frontend profile structure
-        const transformedUser = transformBackendUserToProfile(response.data.user);
+        const transformedUser = transformBackendUserToProfile(response.data.data.user);
         const completeProfile = ensureCompleteProfile(transformedUser);
         
         localStorage.setItem('user', JSON.stringify(completeProfile));
-        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('token', response.data.data.token);
         
         return {
           user: completeProfile,
-          token: response.data.token
+          token: response.data.data.token
         };
       }
       
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message || 'Login failed'
+        error.response?.data?.error?.message || error.response?.data?.message || 'Login failed'
       );
     }
   }
@@ -74,11 +74,12 @@ export const getProfile = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const response = await authAPI.getProfile();
-      const transformedUser = transformBackendUserToProfile(response.data);
+      const userData = response.data.success ? response.data.data : response.data;
+      const transformedUser = transformBackendUserToProfile(userData);
       return ensureCompleteProfile(transformedUser);
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message || 'Failed to get profile'
+        error.response?.data?.error?.message || error.response?.data?.message || 'Failed to get profile'
       );
     }
   }
@@ -91,8 +92,8 @@ export const updateProfile = createAsyncThunk(
     try {
       const response = await authAPI.updateProfile(profileData);
       
-      if (response.data) {
-        const transformedUser = transformBackendUserToProfile(response.data.user);
+      if (response.data && response.data.success) {
+        const transformedUser = transformBackendUserToProfile(response.data.data.user);
         const completeProfile = ensureCompleteProfile(transformedUser);
         localStorage.setItem('user', JSON.stringify(completeProfile));
         return { user: completeProfile };
@@ -101,7 +102,7 @@ export const updateProfile = createAsyncThunk(
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message || 'Failed to update profile'
+        error.response?.data?.error?.message || error.response?.data?.message || 'Failed to update profile'
       );
     }
   }
