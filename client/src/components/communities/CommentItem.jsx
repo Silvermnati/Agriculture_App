@@ -105,7 +105,7 @@ const CommentItem = ({ comment, currentUserId, onEdit, onDelete }) => {
 
 CommentItem.propTypes = {
     comment: PropTypes.object.isRequired,
-    currentUserId: PropTypes.number.isRequired,
+    currentUserId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     onEdit: PropTypes.func.isRequired,
     onDelete: PropTypes.func.isRequired,
 };

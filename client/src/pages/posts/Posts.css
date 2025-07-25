@@ -1,339 +1,333 @@
-/* pages/Posts/Posts.css */
-
+/* Posts Page Styles */
 .posts-page {
-  max-width: 1200px;
-  margin: 2rem auto;
-  padding: 0 1.5rem;
+  min-height: 100vh;
+  background: #f8f9fa;
+  padding: 20px 0;
 }
 
-.error-message {
-  color: #dc3545;
-  text-align: center;
-  padding: 15px;
-  background-color: #f8d7da;
-  border: 1px solid #f5c6cb;
-  border-radius: 5px;
-  margin: 20px auto;
-  font-weight: 500;
-  max-width: 800px;
-}
-
-/* NEW: Header and Featured Section Styles */
+/* Header and Featured Section */
 .header-and-featured-section {
   display: grid;
-  grid-template-columns: 1fr; /* Default to single column on mobile */
-  gap: 30px;
-  background-color: #2e7d32;
-  color: white;
-  padding: 40px 60px;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
   align-items: center;
-  border-radius: 10px;
-  margin-bottom: 30px;
-  overflow: hidden;
-  position: relative;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  max-width: 1200px;
+  margin: 0 auto 40px auto;
+  padding: 0 20px;
 }
 
-.header-and-featured-section .hero-text-content {
-  text-align: center;
-  padding-bottom: 20px;
+.hero-text-content {
+  padding: 20px 0;
 }
 
-.header-and-featured-section .hero-text-content h1 {
-  font-size: 2.8rem;
-  margin-bottom: 15px;
+.hero-text-content h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 16px;
   line-height: 1.2;
-  color: white;
 }
 
-.header-and-featured-section .hero-text-content p {
-  font-size: 1.15rem;
+.hero-text-content p {
+  font-size: 1.1rem;
+  color: #666;
   line-height: 1.6;
-  margin-bottom: 25px;
-  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 24px;
 }
 
-.header-and-featured-section .contribute-btn {
-  display: inline-block;
-  padding: 12px 30px;
-  background-color: rgba(255, 255, 255, 0.2);
-  border: 1px solid white;
-  border-radius: 8px;
+.contribute-btn {
+  display: inline-flex;
+  align-items: center;
+  background: #28a745;
   color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
   text-decoration: none;
   font-weight: 600;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
 }
 
-.header-and-featured-section .contribute-btn:hover {
-  background-color: rgba(255, 255, 255, 0.3);
+.contribute-btn:hover {
+  background: #218838;
   transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+  color: white;
+  text-decoration: none;
 }
 
-/* Wrapper for the simplified featured card */
-.header-and-featured-section .featured-post-card-wrapper {
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+/* Featured Post Card */
+.featured-post-card-wrapper {
+  position: relative;
+}
+
+.simplified-featured-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.simplified-featured-post-card {
+  position: relative;
   border-radius: 12px;
   overflow: hidden;
-  max-width: 500px;
-  margin: 0 auto;
-  background-color: white; /* Ensure background is white for contrast */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  background: white;
+  height: 300px;
 }
 
-/* Styles for the SIMPLIFIED featured post card within the header */
-.header-and-featured-section .simplified-featured-card-link {
-    text-decoration: none; /* Remove underline from the Link */
-    color: inherit; /* Ensure text color is inherited or set explicitly */
+.simplified-featured-post-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
 }
 
-.header-and-featured-section .simplified-featured-post-card {
-  position: relative; /* For the title overlay */
-  border-radius: 12px;
-  overflow: hidden;
-  display: flex; /* Helps ensure content aligns if it were to expand */
-  flex-direction: column; /* Stacks image and overlay */
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-}
-
-.header-and-featured-section .simplified-featured-post-card:hover {
-  transform: translateY(-5px); /* Subtle lift on hover */
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35); /* Stronger shadow on hover */
-}
-
-.header-and-featured-section .simplified-featured-post-image {
+.simplified-featured-post-image {
   width: 100%;
-  height: 250px; /* Adjust height as needed for the simplified look */
+  height: 100%;
   object-fit: cover;
-  display: block; /* Remove extra space below image */
 }
 
-.header-and-featured-section .simplified-featured-post-title-overlay {
+.simplified-featured-post-title-overlay {
   position: absolute;
   bottom: 0;
   left: 0;
-  width: 100%;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0)); /* Gradient overlay */
-  padding: 20px;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  padding: 40px 20px 20px 20px;
   color: white;
-  text-align: left;
 }
 
-.header-and-featured-section .simplified-featured-post-title-overlay h3 {
-  font-size: 1.6rem; /* Adjust title size for overlay */
+.simplified-featured-post-title-overlay h3 {
   margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
   line-height: 1.3;
-  color: white; /* Ensure title is white */
 }
 
-
-/* --- Main Layout Grid Container (for posts list and sidebar) --- */
+/* Posts Content Layout */
 .posts-content-layout {
   display: grid;
-  grid-template-columns: 1fr; /* Single column by default (mobile-first) */
-  gap: 30px; /* Gap between columns/rows */
-  margin-top: 2rem; /* Space below the new header section */
+  grid-template-columns: 1fr 300px;
+  gap: 32px;
+  align-items: start;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
-/* --- IMPORTANT: Styles for PostList cards (regular posts, NOT the simplified featured one) --- */
-/* These styles should apply to the cards rendered by your PostList component */
-.post-list .featured-post-card { /* This targets the cards within your PostList */
-  display: flex;
-  flex-direction: column;
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  transition: transform 0.3s ease-in-out;
-  cursor: pointer;
-  text-decoration: none; /* Ensure links inside PostList cards don't have underlines */
-  color: inherit; /* Ensure text color is inherited */
+.main-content-area {
+  min-width: 0; /* Prevents grid overflow */
 }
 
-.post-list .featured-post-card:hover {
-    transform: translateY(-8px);
+.sidebar-area {
+  position: sticky;
+  top: 20px;
 }
 
-.post-list .featured-post-image {
-  width: 100%;
-  height: 250px; /* Larger image for regular post cards */
-  object-fit: cover;
+.posts-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
-.post-list .featured-post-content {
-  padding: 30px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-}
-
-.post-list .featured-post-content h3 {
-  font-size: 1.8rem;
-  color: #2c3e50;
-  margin-top: 0;
-  margin-bottom: 12px;
-  line-height: 1.3;
-}
-
-.post-list .featured-post-content .featured-excerpt {
-  font-size: 1.05rem;
-  color: #555;
-  line-height: 1.6;
-  margin-bottom: 20px;
-  flex-grow: 1;
-}
-
-.post-list .featured-meta {
+.posts-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
-  margin-bottom: 0; /* Adjusted from 20px as read-more-btn is often below this */
-  padding-top: 15px;
-  border-top: 1px solid #f0f0f0;
-  font-size: 0.9rem;
-  color: #777;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e1e5e9;
 }
 
-.post-list .featured-meta .author-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.posts-header h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
 }
 
-.post-list .featured-meta .author-info .avatar {
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #eee;
+.posts-content {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 32px;
+  align-items: start;
 }
 
-.post-list .featured-meta .author-info strong {
-    font-size: 1rem;
-    color: #333;
-}
-.post-list .featured-meta .author-info small {
-    font-size: 0.8rem;
+.posts-main {
+  min-width: 0; /* Prevents grid overflow */
 }
 
-.post-list .read-more-btn {
-  background-color: #007bff;
+.posts-sidebar {
+  position: sticky;
+  top: 20px;
+}
+
+/* Empty state */
+.posts-empty {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e1e5e9;
+}
+
+.posts-empty h3 {
+  color: #666;
+  margin-bottom: 8px;
+  font-size: 18px;
+}
+
+.posts-empty p {
+  color: #999;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+/* Loading state */
+.posts-loading {
+  display: flex;
+  justify-content: center;
+  padding: 60px;
+}
+
+/* Error state */
+.posts-error {
+  background: #fff5f5;
+  border: 1px solid #fed7d7;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.posts-error h3 {
+  color: #e53e3e;
+  margin: 0 0 8px 0;
+  font-size: 16px;
+}
+
+.posts-error p {
+  color: #c53030;
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Pagination */
+.posts-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 40px;
+  padding: 20px;
+}
+
+.pagination-button {
+  background: #007bff;
   color: white;
-  padding: 12px 25px;
+  border: none;
+  padding: 10px 20px;
   border-radius: 6px;
-  text-decoration: none;
+  cursor: pointer;
+  font-size: 14px;
   font-weight: 500;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  align-self: flex-start;
-  margin-top: 15px; /* Space above button */
+  transition: all 0.2s ease;
 }
 
-.post-list .read-more-btn:hover {
-  background-color: #0056b3;
-  transform: translateY(-2px);
+.pagination-button:hover:not(:disabled) {
+  background: #0056b3;
+  transform: translateY(-1px);
 }
 
+.pagination-button:disabled {
+  background: #e9ecef;
+  color: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+}
 
-/* --- Layout for Desktop (Two Columns) --- */
-@media (min-width: 992px) {
+.pagination-info {
+  font-size: 14px;
+  color: #666;
+  margin: 0 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .posts-content {
+    grid-template-columns: 1fr 250px;
+    gap: 24px;
+  }
+  
   .posts-content-layout {
-    grid-template-columns: 2fr 1fr;
-    align-items: start;
-  }
-
-  .main-content-area {
-    grid-column: 1;
-  }
-
-  .sidebar-area {
-    grid-column: 2;
-    position: sticky;
-    top: 20px;
-    align-self: flex-start;
-  }
-
-  /* Responsive adjustments for the new header */
-  .header-and-featured-section {
-      grid-template-columns: 1.5fr 1fr;
-      gap: 40px;
-      padding: 50px 80px;
-  }
-
-  .header-and-featured-section .hero-text-content {
-      text-align: left;
-      padding-bottom: 0;
-  }
-
-  .header-and-featured-section .hero-text-content h1 {
-      font-size: 3.5rem;
-  }
-
-  .header-and-featured-section .hero-text-content p {
-      font-size: 1.25rem;
-  }
-
-  .header-and-featured-section .featured-post-card-wrapper {
-      max-width: none;
-  }
-
-  /* Specific height for simplified featured card on desktop */
-  .header-and-featured-section .simplified-featured-post-image {
-      height: 280px; /* Adjust as needed to match design */
-  }
-
-  /* Styles for PostList cards on desktop */
-  .post-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 25px;
-    margin-top: 0;
-  }
-
-  .post-list .featured-post-card { /* These styles are for the regular cards in the list */
-    flex-direction: column; /* Ensure regular cards stay vertical even if .featured-post-card was changed */
-    height: auto; /* Allow height to adjust for regular cards */
+    grid-template-columns: 1fr 250px;
+    gap: 24px;
   }
 }
 
-/* --- Responsive Adjustments (Smaller Screens) --- */
-@media (max-width: 991px) {
-  .posts-content-layout {
-    flex-direction: column;
-  }
-
-  /* General featured-post-card adjustments for smaller screens (for cards in PostList) */
-  .post-list .featured-post-card { /* Targeting cards within PostList */
-    flex-direction: column;
-  }
-  .post-list .featured-post-image {
-    height: 200px;
-  }
-  .post-list .featured-post-content {
-    padding: 20px;
-  }
-  .post-list .featured-post-content h3 {
-    font-size: 1.5rem;
-  }
-  .post-list .featured-post-content .featured-excerpt {
-    font-size: 0.95rem;
-  }
-
-  .post-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+@media (max-width: 768px) {
+  .posts-content {
+    grid-template-columns: 1fr;
     gap: 20px;
-    margin-top: 2rem;
   }
-
+  
+  .posts-content-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .posts-sidebar {
+    position: static;
+    order: -1; /* Move sidebar above main content on mobile */
+  }
+  
   .sidebar-area {
-    margin-top: 2rem;
+    position: static;
+    order: -1;
+  }
+  
+  .posts-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .posts-container {
+    padding: 0 15px;
+  }
+  
+  .posts-page {
+    padding: 15px 0;
+  }
+  
+  .header-and-featured-section {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    text-align: center;
+  }
+  
+  .hero-text-content h1 {
+    font-size: 2rem;
+  }
+  
+  .simplified-featured-post-card {
+    height: 250px;
   }
 }
 
-/* Ensures PostDetail page still centers (kept here for consistency, but detail page is usually separate) */
-.post-detail-page {
-  max-width: 900px;
-  margin: 2rem auto;
-  padding: 1.5rem;
+@media (max-width: 480px) {
+  .posts-header h1 {
+    font-size: 24px;
+  }
+  
+  .pagination-button {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+  
+  .pagination-info {
+    font-size: 13px;
+    margin: 0 8px;
+  }
 }

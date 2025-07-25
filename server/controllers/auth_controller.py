@@ -283,3 +283,80 @@ def change_password(current_user):
     db.session.commit()
     
     return create_success_response(message='Password changed successfully')
+
+
+@token_required
+def get_activity_stats(current_user):
+    """
+    Get user activity statistics.
+    
+    Returns:
+    {
+        "posts_created": 12,
+        "communities_joined": 5,
+        "comments_made": 45,
+        "likes_received": 128,
+        "consultations_given": 8,
+        "profile_views": 234
+    }
+    """
+    try:
+        from server.models.post import Post, Comment
+        from server.models.community import Community, CommunityMember
+        
+        user_id = current_user.user_id
+        
+        # Count posts created by user
+        posts_created = Post.query.filter_by(author_id=user_id).count()
+        
+        # Count communities joined by user
+        communities_joined = CommunityMember.query.filter_by(user_id=user_id).count()
+        
+        # Count comments made by user
+        comments_made = Comment.query.filter_by(user_id=user_id).count()
+        
+        # Count likes received on user's posts
+        try:
+            from server.models.post import PostLike
+            likes_received = db.session.query(db.func.count(PostLike.post_id)).join(Post).filter(Post.author_id == user_id).scalar() or 0
+        except ImportError:
+            likes_received = 0
+        
+        # Count consultations given (for experts)
+        consultations_given = 0
+        if current_user.role == 'expert':
+            try:
+                from server.models.expert import Expert
+                expert = Expert.query.filter_by(user_id=user_id).first()
+                if expert:
+                    consultations_given = expert.consultations_given or 0
+            except ImportError:
+                # Expert model might not exist yet
+                consultations_given = 0
+        
+        # Profile views (placeholder - would need to implement view tracking)
+        profile_views = 0
+        
+        stats = {
+            'posts_created': posts_created,
+            'communities_joined': communities_joined,
+            'comments_made': comments_made,
+            'likes_received': int(likes_received),
+            'consultations_given': consultations_given,
+            'profile_views': profile_views
+        }
+        
+        return create_success_response(data=stats)
+        
+    except Exception as e:
+        current_app.logger.error(f"Error getting activity stats: {str(e)}")
+        # Return default stats if there's an error
+        default_stats = {
+            'posts_created': 0,
+            'communities_joined': 0,
+            'comments_made': 0,
+            'likes_received': 0,
+            'consultations_given': 0,
+            'profile_views': 0
+        }
+        return create_success_response(data=default_stats)

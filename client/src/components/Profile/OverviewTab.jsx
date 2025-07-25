@@ -18,7 +18,7 @@ import {
 import LoadingSpinner from '../common/LoadingSpinner/LoadingSpinner';
 import './OverviewTab.css';
 
-const OverviewTab = ({ user, stats, recentActivity, isLoading }) => {
+const OverviewTab = ({ user, stats, recentActivity, isLoadingStats, isLoadingActivity }) => {
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -58,13 +58,7 @@ const OverviewTab = ({ user, stats, recentActivity, isLoading }) => {
     return `${Math.floor(diffInHours / 168)}w ago`;
   };
 
-  if (isLoading) {
-    return (
-      <div className="overview-tab">
-        <LoadingSpinner text="Loading profile overview..." />
-      </div>
-    );
-  }
+
 
   return (
     <div className="overview-tab">
@@ -300,15 +294,19 @@ const OverviewTab = ({ user, stats, recentActivity, isLoading }) => {
         )}
 
         {/* Activity Statistics */}
-        {stats && (
-          <div className="overview-card">
-            <h3 className="overview-card-title">Activity Statistics</h3>
-            <div className="overview-card-content">
+        <div className="overview-card">
+          <h3 className="overview-card-title">Activity Statistics</h3>
+          <div className="overview-card-content">
+            {isLoadingStats ? (
+              <div className="stats-loading">
+                <LoadingSpinner text="Loading activity statistics..." />
+              </div>
+            ) : (
               <div className="stats-grid">
                 <div className="stat-item">
                   <MessageSquare size={20} />
                   <div>
-                    <span className="stat-value">{stats.posts_created || 0}</span>
+                    <span className="stat-value">{stats?.posts_created || 0}</span>
                     <span className="stat-label">Posts Created</span>
                   </div>
                 </div>
@@ -316,7 +314,7 @@ const OverviewTab = ({ user, stats, recentActivity, isLoading }) => {
                 <div className="stat-item">
                   <Users size={20} />
                   <div>
-                    <span className="stat-value">{stats.communities_joined || 0}</span>
+                    <span className="stat-value">{stats?.communities_joined || 0}</span>
                     <span className="stat-label">Communities</span>
                   </div>
                 </div>
@@ -324,7 +322,7 @@ const OverviewTab = ({ user, stats, recentActivity, isLoading }) => {
                 <div className="stat-item">
                   <MessageSquare size={20} />
                   <div>
-                    <span className="stat-value">{stats.comments_made || 0}</span>
+                    <span className="stat-value">{stats?.comments_made || 0}</span>
                     <span className="stat-label">Comments</span>
                   </div>
                 </div>
@@ -332,40 +330,42 @@ const OverviewTab = ({ user, stats, recentActivity, isLoading }) => {
                 <div className="stat-item">
                   <Heart size={20} />
                   <div>
-                    <span className="stat-value">{stats.likes_received || 0}</span>
+                    <span className="stat-value">{stats?.likes_received || 0}</span>
                     <span className="stat-label">Likes Received</span>
                   </div>
                 </div>
                 
                 {user?.role === 'expert' && (
-                  <>
-                    <div className="stat-item">
-                      <Calendar size={20} />
-                      <div>
-                        <span className="stat-value">{stats.consultations_given || 0}</span>
-                        <span className="stat-label">Consultations</span>
-                      </div>
+                  <div className="stat-item">
+                    <Calendar size={20} />
+                    <div>
+                      <span className="stat-value">{stats?.consultations_given || 0}</span>
+                      <span className="stat-label">Consultations</span>
                     </div>
-                  </>
+                  </div>
                 )}
                 
                 <div className="stat-item">
                   <Eye size={20} />
                   <div>
-                    <span className="stat-value">{stats.profile_views || 0}</span>
+                    <span className="stat-value">{stats?.profile_views || 0}</span>
                     <span className="stat-label">Profile Views</span>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
-        )}
+        </div>
 
         {/* Recent Activity */}
-        {recentActivity && recentActivity.length > 0 && (
-          <div className="overview-card recent-activity-card">
-            <h3 className="overview-card-title">Recent Activity</h3>
-            <div className="overview-card-content">
+        <div className="overview-card recent-activity-card">
+          <h3 className="overview-card-title">Recent Activity</h3>
+          <div className="overview-card-content">
+            {isLoadingActivity ? (
+              <div className="activity-loading">
+                <LoadingSpinner text="Loading recent activity..." />
+              </div>
+            ) : recentActivity && recentActivity.length > 0 ? (
               <div className="activity-list">
                 {recentActivity.slice(0, 5).map((activity) => (
                   <div key={activity.id} className="activity-item">
@@ -385,9 +385,13 @@ const OverviewTab = ({ user, stats, recentActivity, isLoading }) => {
                   </div>
                 ))}
               </div>
-            </div>
+            ) : (
+              <div className="no-activity">
+                <p>No recent activity to display.</p>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

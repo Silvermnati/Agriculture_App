@@ -17,7 +17,6 @@ import SettingsTab from '../../components/Profile/SettingsTab';
 import SecurityTab from '../../components/Profile/SecurityTab';
 import ExpertProfileTab from '../../components/Profile/ExpertProfileTab';
 import ExpertApplicationModal from '../../components/Profile/ExpertApplicationModal';
-import ImageCropModal from '../../components/Profile/ImageCropModal';
 import PasswordChangeModal from '../../components/Profile/PasswordChangeModal';
 import LoadingSpinner from '../../components/common/LoadingSpinner/LoadingSpinner';
 import ErrorMessage from '../../components/common/ErrorMessage/ErrorMessage';
@@ -38,11 +37,13 @@ const ProfilePage = () => {
     isError,
     message,
     showExpertModal,
-    showImageCropModal,
+
     showPasswordModal,
     settings,
     activityStats,
-    recentActivity
+    recentActivity,
+    isLoadingStats,
+    isLoadingActivity
   } = useSelector((state) => state.profile);
 
   useEffect(() => {
@@ -118,6 +119,8 @@ const ProfilePage = () => {
             user={currentProfile}
             stats={activityStats}
             recentActivity={recentActivity}
+            isLoadingStats={isLoadingStats}
+            isLoadingActivity={isLoadingActivity}
           />
         );
       case 'edit':
@@ -151,6 +154,8 @@ const ProfilePage = () => {
             user={currentProfile}
             stats={activityStats}
             recentActivity={recentActivity}
+            isLoadingStats={isLoadingStats}
+            isLoadingActivity={isLoadingActivity}
           />
         );
     }
@@ -179,9 +184,7 @@ const ProfilePage = () => {
         <ExpertApplicationModal />
       )}
       
-      {showImageCropModal && (
-        <ImageCropModal />
-      )}
+
       
       {showPasswordModal && (
         <PasswordChangeModal />

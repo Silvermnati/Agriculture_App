@@ -1,0 +1,98 @@
+.api-error-handler {
+  background-color: #fff5f5;
+  border: 1px solid #fed7d7;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+  color: #742a2a;
+}
+
+.api-error-handler.auth-error {
+  background-color: #fffaf0;
+  border-color: #fbd38d;
+  color: #744210;
+}
+
+.error-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.error-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.error-details {
+  flex: 1;
+}
+
+.error-title {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: inherit;
+}
+
+.error-message {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: inherit;
+}
+
+.error-description {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: inherit;
+  opacity: 0.8;
+}
+
+.error-status {
+  font-size: 12px;
+  opacity: 0.6;
+  color: inherit;
+}
+
+.error-actions {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #fed7d7;
+}
+
+.api-error-handler.auth-error .error-actions {
+  border-top-color: #fbd38d;
+}
+
+.retry-button {
+  background-color: #e53e3e;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.retry-button:hover {
+  background-color: #c53030;
+}
+
+.retry-button:active {
+  background-color: #9c1c1c;
+}
+
+.api-error-handler.auth-error .retry-button {
+  background-color: #dd6b20;
+}
+
+.api-error-handler.auth-error .retry-button:hover {
+  background-color: #c05621;
+}
+
+.api-error-handler.auth-error .retry-button:active {
+  background-color: #9c4221;
+}
