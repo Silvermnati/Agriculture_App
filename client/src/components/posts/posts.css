@@ -1,160 +1,509 @@
-/* components/Posts/Posts.css */
+/* components/posts/Posts.css */
 
+/* Post Card Styles */
 .post-card {
-  border: 1px solid #eee;
-  border-radius: 12px;
+  border: 1px solid #e0e0e0; /* Lighter border */
+  border-radius: 8px; /* Slightly smaller border-radius */
   overflow: hidden;
   cursor: pointer;
-  margin-bottom: 16px;
+  margin-bottom: 20px; /* Increased margin for spacing */
   background: white;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.post-card:hover {
+  transform: translateY(-5px); /* Lift effect on hover */
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
 }
 
 .post-image {
   width: 100%;
-  height: 200px;
+  height: 180px; /* Slightly reduced height for better fit */
   object-fit: cover;
+  border-bottom: 1px solid #f0f0f0; /* Separator for image */
 }
 
 .post-content {
-  padding: 16px;
-}
-
-.badges {
-  margin-top: 8px;
-}
-
-.badge {
-  display: inline-block;
-  background: #eef;
-  padding: 4px 8px;
-  margin: 2px;
-  border-radius: 8px;
-  font-size: 0.75rem;
-}
-
-.post-stats, .post-footer {
+  padding: 15px 20px; /* Adjusted padding */
+  flex-grow: 1; /* Allows content to expand */
   display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
+  flex-direction: column;
+}
+
+.post-content h3 {
+  font-size: 1.15rem; /* Slightly larger title */
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.post-content p {
+  font-size: 0.9rem; /* Slightly smaller excerpt */
+  color: #555;
+  line-height: 1.5;
+  margin-bottom: 10px;
+  flex-grow: 1; /* Allow excerpt to take available space */
+}
+
+.post-meta {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.author-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 0.85rem;
   color: #666;
 }
 
+.author-info .avatar {
+  width: 32px; /* Smaller avatar in card */
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.author-info div {
+  display: flex;
+  flex-direction: column;
+}
+
+.author-info strong {
+  font-weight: 600;
+  color: #333;
+}
+
+.author-info small {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.badges {
+  margin: 10px 0;
+  display: flex;
+  flex-wrap: wrap; /* Allow badges to wrap */
+  gap: 6px; /* Gap between badges */
+}
+
+.badge {
+  display: inline-block;
+  background: #e6f7ff; /* Light blue background for badges */
+  color: #007bff; /* Blue text for badges */
+  padding: 5px 10px;
+  border-radius: 15px; /* More rounded shape */
+  font-size: 0.7rem; /* Smaller font size */
+  font-weight: 500;
+  white-space: nowrap; /* Prevent text wrapping within a badge */
+}
+
+.badge.crop { background-color: #e6ffe6; color: #28a745; } /* Greenish for crops */
+.badge.season { background-color: #fff3e0; color: #ff9800; } /* Orangish for season */
+.badge.location { background-color: #f0e6ff; color: #6f42c1; } /* Purplish for location */
+
+
+.post-stats {
+  display: flex;
+  gap: 15px; /* Spacing between stats */
+  margin-top: auto; /* Pushes stats to the bottom */
+  font-size: 0.8rem;
+  color: #777;
+  padding-top: 10px; /* Space above stats */
+  border-top: 1px solid #f8f8f8; /* Light line above stats */
+}
+
+.post-stats span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.post-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* Align items vertically */
+  margin-top: 10px;
+  font-size: 0.75rem; /* Smaller font for footer */
+  color: #888;
+  padding-top: 8px;
+  border-top: 1px solid #f8f8f8;
+}
+
+.post-footer .category {
+  background-color: #f2f2f2;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-weight: 500;
+  color: #555;
+}
+
+.post-footer .date {
+  font-weight: 400;
+}
+
+/* Pagination */
 .pagination {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 20px 0;
+  gap: 15px; /* Increased gap */
+  margin: 30px 0; /* More vertical margin */
 }
 
 .pagination button {
-  margin: 0 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
 }
 
+.pagination button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.pagination button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.pagination span {
+  font-size: 1rem;
+  color: #555;
+}
+
+
+/* Post Filters (for sidebar) */
 .post-filters {
-  display: flex;
-  gap: 24px;
-  padding: 16px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
+  padding: 20px; /* Increased padding */
+  background-color: #f0f4f7; /* Lighter background */
+  border-radius: 10px; /* More rounded corners */
+  /* margin-bottom: 0; -> This was in pages/Posts.css, now correct as 0 (handled by grid gap) */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  display: flex; /* Keep flex for its internal group layout */
+  flex-direction: column; /* Stack groups vertically */
+  gap: 20px; /* Gap between filter groups */
 }
 
 .filter-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px; /* Gap between filter items */
+}
+
+.filter-group strong {
+  font-size: 0.9rem; /* Smaller font for titles */
+  color: #333;
+  margin-bottom: 5px;
+  text-transform: uppercase; /* Uppercase for titles */
+  letter-spacing: 0.5px;
 }
 
 .filter-group label {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px; /* Gap between checkbox and text */
   font-weight: normal;
+  color: #555;
+  font-size: 0.85rem;
+  cursor: pointer;
 }
 
-.post-form input, .post-form textarea, .post-form select {
-  display: block;
+.filter-group input[type="checkbox"] {
+  accent-color: #28a745; /* Green accent for checkboxes */
+  width: 16px;
+  height: 16px;
+}
+
+.filter-group select {
   width: 100%;
-  margin: 8px 0;
-  padding: 8px;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: white;
+  font-size: 0.85rem;
+  color: #555;
+  appearance: none; /* Remove default arrow */
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13%205.4L146.2%20204%2018.5%2074.9a17.6%2017.6%200%200%200-25.5%200%2017.6%2017.6%200%200%200%200%2025.5l130.4%20129.5c.4.4.9.7%201.3%201.1l12.4%2012.4c1.8%201.8%204.1%202.7%206.3%202.7s4.5-.9%206.3-2.7l12.4-12.4c.4-.4.9-.7%201.3-1.1L287%2094.9a17.6%2017.6%200%200%200%200-25.5z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 12px;
+}
+
+/* Post Detail Page */
+.post-detail-page {
+  max-width: 900px; /* Wider for detail page */
+  margin: 2rem auto;
+  padding: 1.5rem; /* More padding */
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
 
 .post-detail {
-  max-width: 800px;
-  margin: auto;
-  padding: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 20px;
+}
+
+.detail-image {
+  width: 100%;
+  max-height: 400px; /* Larger image for detail */
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 25px;
+}
+
+.post-detail h1 {
+  font-size: 2.2rem; /* Larger, bolder title */
+  color: #2c3e50;
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+
+.post-detail .excerpt {
+  font-size: 1.1rem; /* Prominent excerpt */
+  color: #555;
+  margin-bottom: 20px;
+  font-style: italic;
 }
 
 .author-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 12px; /* Increased gap */
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+  color: #666;
 }
 
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 100%;
+.author-bar .avatar {
+  width: 48px; /* Larger avatar in detail */
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #eee; /* Subtle border */
+}
+
+.author-bar .category {
+  background-color: #e0f2f7; /* Light blue background for category */
+  color: #007bff;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  margin-left: auto; /* Push category to the right */
+}
+
+.context-badges {
+  margin-top: 15px;
+  margin-bottom: 25px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.context-badges .badge {
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  border-radius: 20px;
+}
+
+.post-detail .post-content {
+  line-height: 1.7; /* Improved readability */
+  color: #333;
+  font-size: 1rem;
+  margin-bottom: 30px;
+}
+
+.post-detail .post-content h2,
+.post-detail .post-content h3 {
+  color: #2c3e50;
+  margin-top: 25px;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.post-detail .post-stats {
+  justify-content: flex-start; /* Align stats to the left */
+  gap: 25px; /* More space between stats */
+  font-size: 0.9rem;
+  color: #666;
+  border-top: none; /* Remove border as it's handled by post-detail */
+  padding-top: 0;
+}
+
+/* Comment Section */
+.comment-section {
+  background: #fdfdfd;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  margin-top: 30px;
+}
+
+.comment-section h2 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.comment-form textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  min-height: 80px;
+  resize: vertical;
+  font-size: 0.9rem;
+}
+
+.comment-form button, .comment-item button {
+  background-color: #28a745; /* Green button for comments */
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease;
+  align-self: flex-end; /* Align button to the right */
+}
+
+.comment-form button:hover, .comment-item button:hover {
+  background-color: #218838;
+}
+
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Spacing between comments */
 }
 
 .comment-item {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid #f0f0f0;
+  border: 1px solid #ececec; /* Subtle border for each comment */
+  border-radius: 8px;
+  padding: 15px;
+  background-color: #fff;
+  margin-top: 0; /* Resetting default margin-top from previous definition */
 }
 
-.comment-header {
+.comment-item .comment-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
-.comment-date {
-  font-size: 0.8rem;
+.comment-item .comment-header .avatar {
+  width: 36px; /* Slightly larger avatar in comments */
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.comment-item .comment-header strong {
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.comment-item .comment-date {
+  font-size: 0.75rem;
   color: #888;
-  margin-left: 8px;
+  margin-left: 5px;
 }
 
-.reply-form {
-  margin-top: 8px;
+.comment-item .comment-content {
+  font-size: 0.9rem;
+  color: #444;
+  line-height: 1.5;
+  margin-bottom: 10px;
 }
+
+.comment-item .reply-form {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.comment-item .reply-form textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  min-height: 60px;
+  font-size: 0.85rem;
+}
+
+.comment-item .replies {
+  padding-left: 20px; /* Indent replies */
+  border-left: 2px solid #f0f0f0; /* Visual indicator for replies */
+  margin-top: 15px;
+}
+
+.comment-item .replies .comment-item {
+    background-color: #fcfcfc; /* Slightly different background for nested comments */
+    margin-top: 10px;
+    padding: 10px;
+}
+
+/* Post Form (Create/Edit) */
 .create-post-page {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 20px;
+  max-width: 900px; /* Adjusted max-width */
+  margin: 2rem auto;
+  padding: 1.5rem; /* Consistent padding */
 }
 
 .page-header {
   text-align: center;
   margin-bottom: 30px;
+  background-color: #e8f5e9; /* Light green background for header */
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .page-header h1 {
-  color: #2c3e50;
+  color: #2e7d32; /* Darker green for heading */
   margin-bottom: 10px;
+  font-size: 2.2rem;
 }
 
 .page-header p {
-  color: #7f8c8d;
-  font-size: 16px;
+  color: #43a047; /* Lighter green for paragraph */
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
 .post-form-container {
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 10px; /* Consistent rounded corners */
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1); /* Stronger shadow */
   overflow: hidden;
 }
 
 .form-preview-toggle {
   display: flex;
-  background: #f8f9fa;
+  background: #f0f4f7; /* Match filter background */
   border-bottom: 1px solid #e9ecef;
 }
 
@@ -164,14 +513,19 @@
   border: none;
   background: transparent;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 600; /* Bolder text */
   transition: all 0.3s ease;
+  color: #555; /* Default button color */
 }
 
 .form-preview-toggle button.active {
   background: white;
-  color: #007bff;
-  border-bottom: 2px solid #007bff;
+  color: #28a745; /* Green active tab */
+  border-bottom: 3px solid #28a745; /* Thicker, green border */
+}
+
+.form-preview-toggle button:hover:not(:disabled) {
+    background-color: #e2e8ed;
 }
 
 .form-preview-toggle button:disabled {
@@ -190,9 +544,9 @@
 .form-group label {
   display: block;
   margin-bottom: 8px;
-  font-weight: 600;
-  color: #2c3e50;
-  font-size: 14px;
+  font-weight: 700; /* Bolder labels */
+  color: #333;
+  font-size: 15px;
 }
 
 .form-group input,
@@ -200,10 +554,10 @@
 .form-group select {
   width: 100%;
   padding: 12px;
-  border: 2px solid #e9ecef;
+  border: 1px solid #ccc; /* Lighter border */
   border-radius: 6px;
-  font-size: 14px;
-  transition: border-color 0.3s ease;
+  font-size: 15px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
   box-sizing: border-box;
 }
 
@@ -211,8 +565,8 @@
 .form-group textarea:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  border-color: #28a745; /* Green focus border */
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.15); /* Green shadow */
 }
 
 .form-group input.error,
@@ -226,50 +580,51 @@
 .form-group select:disabled {
   background-color: #f8f9fa;
   cursor: not-allowed;
-  opacity: 0.7;
+  opacity: 0.8;
 }
 
 .form-group textarea {
-  min-height: 100px;
+  min-height: 120px; /* Slightly taller textarea */
   resize: vertical;
 }
 
 .form-group small {
   display: block;
   margin-top: 5px;
-  color: #6c757d;
-  font-size: 12px;
+  color: #777; /* Darker hint text */
+  font-size: 13px;
 }
 
 .error-message {
   display: block;
   color: #dc3545;
-  font-size: 12px;
+  font-size: 13px;
   margin-top: 5px;
   font-weight: 500;
 }
 
 .submit-button {
-  background: linear-gradient(135deg, #007bff, #0056b3);
+  background: linear-gradient(135deg, #28a745, #218838); /* Green gradient */
   color: white;
-  padding: 15px 30px;
+  padding: 16px 30px; /* Larger padding */
   border: none;
-  border-radius: 6px;
+  border-radius: 8px; /* More rounded */
   cursor: pointer;
-  font-size: 16px;
+  font-size: 1.1rem; /* Larger font */
   font-weight: 600;
   transition: all 0.3s ease;
-  width: 100%;
-  max-width: 200px;
+  width: auto; /* Allow button to size to content, or set max-width below */
+  min-width: 180px; /* Minimum width */
+  margin-top: 20px; /* Space above button */
 }
 
 .submit-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+  transform: translateY(-3px); /* More pronounced lift */
+  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3); /* Stronger green shadow */
 }
 
 .submit-button:disabled {
-  background: #6c757d;
+  background: #a0a0a0; /* Grey for disabled */
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
@@ -294,7 +649,7 @@
 }
 
 .post-content-preview {
-  line-height: 1.6;
+  line-height: 1.7;
   color: #2c3e50;
 }
 
@@ -303,6 +658,8 @@
 .post-content-preview h3 {
   margin-top: 25px;
   margin-bottom: 15px;
+  color: #2c3e50;
+  font-weight: 600;
 }
 
 .post-content-preview p {
@@ -313,37 +670,40 @@
 .post-content-preview ol {
   margin-bottom: 15px;
   padding-left: 30px;
+  list-style-type: disc; /* Ensure bullet points */
 }
 
 /* Quill editor styling */
 .ql-container {
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
-  border: 2px solid #e9ecef;
+  border: 1px solid #ccc; /* Match other inputs */
   border-top: none;
 }
 
 .ql-toolbar {
   border-top-left-radius: 6px;
   border-top-right-radius: 6px;
-  border: 2px solid #e9ecef;
+  border: 1px solid #ccc; /* Match other inputs */
   border-bottom: none;
+  background-color: #f8f8f8; /* Light background for toolbar */
 }
 
 .ql-editor {
-  min-height: 200px;
-  font-size: 14px;
+  min-height: 250px; /* Taller editor */
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 .ql-editor.ql-blank::before {
-  color: #6c757d;
-  font-style: italic;
+  color: #a0a0a0; /* Lighter placeholder */
+  font-style: normal; /* Remove italic for placeholder */
 }
 
 /* Responsive design */
 @media (max-width: 768px) {
-  .create-post-page {
-    padding: 10px;
+  .create-post-page, .post-detail-page {
+    padding: 15px; /* More padding on smaller screens */
   }
   
   .post-form {
@@ -357,5 +717,51 @@
   
   .submit-button {
     max-width: none;
+    width: 100%; /* Full width on smaller screens */
   }
+
+  /*
+  These styles were incorrectly placed here and have been removed as they belong in pages/Posts/Posts.css:
+  .posts-header {
+    flex-direction: column; 
+    gap: 15px;
+    text-align: center;
+  }
+  .posts-page {
+    padding: 15px;
+  }
+  */
+
+  .post-filters {
+    /* grid-template-columns: 1fr; -> This was relevant if post-filters itself was a direct grid child in the page layout, 
+                                    but now it's inside sidebar-area which itself is a grid child.
+                                    The internal flex-direction: column handles this already. */
+  }
+
+  .post-card {
+    margin-bottom: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+    .post-detail h1 {
+        font-size: 1.8rem;
+    }
+
+    .post-detail .excerpt {
+        font-size: 1rem;
+    }
+
+    .author-bar {
+        flex-wrap: wrap; /* Allow author bar to wrap */
+    }
+
+    .comment-section h2 {
+        font-size: 1.3rem;
+    }
+
+    .pagination button {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+    }
 }

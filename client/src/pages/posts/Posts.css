@@ -1,35 +1,339 @@
+/* pages/Posts/Posts.css */
+
 .posts-page {
-  max-width: 900px;
+  max-width: 1200px;
   margin: 2rem auto;
-  padding: 1rem;
-}
-
-.posts-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
-.posts-page h1 {
-  margin: 0;
-}
-
-.create-post-btn {
-  background-color: #4CAF50;
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.25rem;
-  text-decoration: none;
-  font-weight: 500;
-  transition: background-color 0.3s ease;
-}
-
-.create-post-btn:hover {
-  background-color: #45a049;
+  padding: 0 1.5rem;
 }
 
 .error-message {
-  color: red;
+  color: #dc3545;
   text-align: center;
+  padding: 15px;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 5px;
+  margin: 20px auto;
+  font-weight: 500;
+  max-width: 800px;
+}
+
+/* NEW: Header and Featured Section Styles */
+.header-and-featured-section {
+  display: grid;
+  grid-template-columns: 1fr; /* Default to single column on mobile */
+  gap: 30px;
+  background-color: #2e7d32;
+  color: white;
+  padding: 40px 60px;
+  align-items: center;
+  border-radius: 10px;
+  margin-bottom: 30px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.header-and-featured-section .hero-text-content {
+  text-align: center;
+  padding-bottom: 20px;
+}
+
+.header-and-featured-section .hero-text-content h1 {
+  font-size: 2.8rem;
+  margin-bottom: 15px;
+  line-height: 1.2;
+  color: white;
+}
+
+.header-and-featured-section .hero-text-content p {
+  font-size: 1.15rem;
+  line-height: 1.6;
+  margin-bottom: 25px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.header-and-featured-section .contribute-btn {
+  display: inline-block;
+  padding: 12px 30px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border: 1px solid white;
+  border-radius: 8px;
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.header-and-featured-section .contribute-btn:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Wrapper for the simplified featured card */
+.header-and-featured-section .featured-post-card-wrapper {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+  border-radius: 12px;
+  overflow: hidden;
+  max-width: 500px;
+  margin: 0 auto;
+  background-color: white; /* Ensure background is white for contrast */
+}
+
+/* Styles for the SIMPLIFIED featured post card within the header */
+.header-and-featured-section .simplified-featured-card-link {
+    text-decoration: none; /* Remove underline from the Link */
+    color: inherit; /* Ensure text color is inherited or set explicitly */
+}
+
+.header-and-featured-section .simplified-featured-post-card {
+  position: relative; /* For the title overlay */
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex; /* Helps ensure content aligns if it were to expand */
+  flex-direction: column; /* Stacks image and overlay */
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.header-and-featured-section .simplified-featured-post-card:hover {
+  transform: translateY(-5px); /* Subtle lift on hover */
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35); /* Stronger shadow on hover */
+}
+
+.header-and-featured-section .simplified-featured-post-image {
+  width: 100%;
+  height: 250px; /* Adjust height as needed for the simplified look */
+  object-fit: cover;
+  display: block; /* Remove extra space below image */
+}
+
+.header-and-featured-section .simplified-featured-post-title-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0)); /* Gradient overlay */
+  padding: 20px;
+  color: white;
+  text-align: left;
+}
+
+.header-and-featured-section .simplified-featured-post-title-overlay h3 {
+  font-size: 1.6rem; /* Adjust title size for overlay */
+  margin: 0;
+  line-height: 1.3;
+  color: white; /* Ensure title is white */
+}
+
+
+/* --- Main Layout Grid Container (for posts list and sidebar) --- */
+.posts-content-layout {
+  display: grid;
+  grid-template-columns: 1fr; /* Single column by default (mobile-first) */
+  gap: 30px; /* Gap between columns/rows */
+  margin-top: 2rem; /* Space below the new header section */
+}
+
+/* --- IMPORTANT: Styles for PostList cards (regular posts, NOT the simplified featured one) --- */
+/* These styles should apply to the cards rendered by your PostList component */
+.post-list .featured-post-card { /* This targets the cards within your PostList */
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease-in-out;
+  cursor: pointer;
+  text-decoration: none; /* Ensure links inside PostList cards don't have underlines */
+  color: inherit; /* Ensure text color is inherited */
+}
+
+.post-list .featured-post-card:hover {
+    transform: translateY(-8px);
+}
+
+.post-list .featured-post-image {
+  width: 100%;
+  height: 250px; /* Larger image for regular post cards */
+  object-fit: cover;
+}
+
+.post-list .featured-post-content {
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.post-list .featured-post-content h3 {
+  font-size: 1.8rem;
+  color: #2c3e50;
+  margin-top: 0;
+  margin-bottom: 12px;
+  line-height: 1.3;
+}
+
+.post-list .featured-post-content .featured-excerpt {
+  font-size: 1.05rem;
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  flex-grow: 1;
+}
+
+.post-list .featured-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 0; /* Adjusted from 20px as read-more-btn is often below this */
+  padding-top: 15px;
+  border-top: 1px solid #f0f0f0;
+  font-size: 0.9rem;
+  color: #777;
+}
+
+.post-list .featured-meta .author-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.post-list .featured-meta .author-info .avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #eee;
+}
+
+.post-list .featured-meta .author-info strong {
+    font-size: 1rem;
+    color: #333;
+}
+.post-list .featured-meta .author-info small {
+    font-size: 0.8rem;
+}
+
+.post-list .read-more-btn {
+  background-color: #007bff;
+  color: white;
+  padding: 12px 25px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  align-self: flex-start;
+  margin-top: 15px; /* Space above button */
+}
+
+.post-list .read-more-btn:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+}
+
+
+/* --- Layout for Desktop (Two Columns) --- */
+@media (min-width: 992px) {
+  .posts-content-layout {
+    grid-template-columns: 2fr 1fr;
+    align-items: start;
+  }
+
+  .main-content-area {
+    grid-column: 1;
+  }
+
+  .sidebar-area {
+    grid-column: 2;
+    position: sticky;
+    top: 20px;
+    align-self: flex-start;
+  }
+
+  /* Responsive adjustments for the new header */
+  .header-and-featured-section {
+      grid-template-columns: 1.5fr 1fr;
+      gap: 40px;
+      padding: 50px 80px;
+  }
+
+  .header-and-featured-section .hero-text-content {
+      text-align: left;
+      padding-bottom: 0;
+  }
+
+  .header-and-featured-section .hero-text-content h1 {
+      font-size: 3.5rem;
+  }
+
+  .header-and-featured-section .hero-text-content p {
+      font-size: 1.25rem;
+  }
+
+  .header-and-featured-section .featured-post-card-wrapper {
+      max-width: none;
+  }
+
+  /* Specific height for simplified featured card on desktop */
+  .header-and-featured-section .simplified-featured-post-image {
+      height: 280px; /* Adjust as needed to match design */
+  }
+
+  /* Styles for PostList cards on desktop */
+  .post-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    margin-top: 0;
+  }
+
+  .post-list .featured-post-card { /* These styles are for the regular cards in the list */
+    flex-direction: column; /* Ensure regular cards stay vertical even if .featured-post-card was changed */
+    height: auto; /* Allow height to adjust for regular cards */
+  }
+}
+
+/* --- Responsive Adjustments (Smaller Screens) --- */
+@media (max-width: 991px) {
+  .posts-content-layout {
+    flex-direction: column;
+  }
+
+  /* General featured-post-card adjustments for smaller screens (for cards in PostList) */
+  .post-list .featured-post-card { /* Targeting cards within PostList */
+    flex-direction: column;
+  }
+  .post-list .featured-post-image {
+    height: 200px;
+  }
+  .post-list .featured-post-content {
+    padding: 20px;
+  }
+  .post-list .featured-post-content h3 {
+    font-size: 1.5rem;
+  }
+  .post-list .featured-post-content .featured-excerpt {
+    font-size: 0.95rem;
+  }
+
+  .post-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 2rem;
+  }
+
+  .sidebar-area {
+    margin-top: 2rem;
+  }
+}
+
+/* Ensures PostDetail page still centers (kept here for consistency, but detail page is usually separate) */
+.post-detail-page {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 1.5rem;
 }
