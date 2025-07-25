@@ -9,11 +9,15 @@
 .header-and-featured-section {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 40px;
+  gap: 30px;
+  background-color: #218838;
+  color: white;
   align-items: center;
   max-width: 1200px;
+  overflow: hidden;
   margin: 0 auto 40px auto;
-  padding: 0 20px;
+  padding: 40px 40px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
 }
 
 .hero-text-content {
@@ -23,14 +27,14 @@
 .hero-text-content h1 {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #2c3e50;
+  color:white;
   margin-bottom: 16px;
   line-height: 1.2;
 }
 
 .hero-text-content p {
   font-size: 1.1rem;
-  color: #666;
+  color: white;
   line-height: 1.6;
   margin-bottom: 24px;
 }
@@ -104,6 +108,7 @@
   font-size: 1.25rem;
   font-weight: 600;
   line-height: 1.3;
+  color: white;
 }
 
 /* Posts Content Layout */
@@ -224,7 +229,7 @@
 }
 
 .pagination-button {
-  background: #007bff;
+  background:#218838;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -236,7 +241,7 @@
 }
 
 .pagination-button:hover:not(:disabled) {
-  background: #0056b3;
+  background: #218838;
   transform: translateY(-1px);
 }
 
