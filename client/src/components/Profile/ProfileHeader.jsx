@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Edit, Settings, Camera, MapPin, Calendar, Mail, Phone } from 'lucide-react';
-import { setEditMode, setShowImageCropModal, setSelectedImage, setActiveTab } from '../../store/slices/profileSlice';
+import { setEditMode, setActiveTab, uploadProfilePicture } from '../../store/slices/profileSlice';
 import ProfilePicture from './ProfilePicture';
 import ProfileCompletionIndicator from './ProfileCompletionIndicator';
 import Button from '../common/Button/Button';
@@ -16,8 +16,7 @@ const ProfileHeader = ({ user }) => {
   };
 
   const handleImageUpload = (file) => {
-    dispatch(setSelectedImage(file));
-    dispatch(setShowImageCropModal(true));
+    dispatch(uploadProfilePicture(file));
   };
 
   const formatDate = (dateString) => {

@@ -310,18 +310,13 @@ const initialState = {
   
   // Modal states
   showExpertModal: false,
-  showImageCropModal: false,
   showPasswordModal: false,
   showDeleteModal: false,
   
   // Form states
   profileForm: {},
   expertForm: {},
-  passwordForm: {},
-  
-  // Image handling
-  selectedImage: null,
-  cropData: null
+  passwordForm: {}
 };
 
 export const profileSlice = createSlice({
@@ -350,13 +345,7 @@ export const profileSlice = createSlice({
         state.expertForm = {};
       }
     },
-    setShowImageCropModal: (state, action) => {
-      state.showImageCropModal = action.payload;
-      if (!action.payload) {
-        state.selectedImage = null;
-        state.cropData = null;
-      }
-    },
+
     setShowPasswordModal: (state, action) => {
       state.showPasswordModal = action.payload;
       if (!action.payload) {
@@ -379,13 +368,7 @@ export const profileSlice = createSlice({
       state.passwordForm = { ...state.passwordForm, ...action.payload };
     },
     
-    // Image handling
-    setSelectedImage: (state, action) => {
-      state.selectedImage = action.payload;
-    },
-    setCropData: (state, action) => {
-      state.cropData = action.payload;
-    },
+
     
     // Error handling
     clearErrors: (state) => {
@@ -451,9 +434,6 @@ export const profileSlice = createSlice({
         } else if (state.profile) {
           state.profile.avatar_url = action.payload.avatar_url;
         }
-        state.showImageCropModal = false;
-        state.selectedImage = null;
-        state.cropData = null;
         state.message = 'Profile picture updated successfully';
       })
       .addCase(uploadProfilePicture.rejected, (state, action) => {
@@ -584,14 +564,11 @@ export const {
   setEditMode,
   setHasUnsavedChanges,
   setShowExpertModal,
-  setShowImageCropModal,
   setShowPasswordModal,
   setShowDeleteModal,
   updateProfileForm,
   updateExpertForm,
   updatePasswordForm,
-  setSelectedImage,
-  setCropData,
   clearErrors,
   setValidationErrors,
   resetProfileState
