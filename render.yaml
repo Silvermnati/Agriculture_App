@@ -3,11 +3,13 @@ services:
     name: agricultural-super-app-api
     env: python
     buildCommand: pip install -r requirements.txt && python fix_render_db.py
-    startCommand: cd server && gunicorn wsgi:app
+    startCommand: gunicorn wsgi:app --bind 0.0.0.0:$PORT
     envVars:
       - key: FLASK_ENV
         value: production
       - key: ENV
+        value: production
+      - key: FLASK_CONFIG
         value: production
       - key: FLASK_APP
         value: wsgi.py
@@ -25,6 +27,8 @@ services:
         sync: false
       - key: CLOUDINARY_API_SECRET
         sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        value: "*"
 
 databases:
   - name: agricultural-super-app-db
