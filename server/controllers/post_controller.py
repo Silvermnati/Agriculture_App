@@ -273,6 +273,23 @@ def create_post(current_user):
     
     db.session.commit()
     
+    # Notify followers if post is published
+    if post.status == 'published':
+        try:
+            from server.services.follow_service import follow_service
+            follow_service.notify_followers(
+                user_id=str(current_user.user_id),
+                event_type='new_post',
+                event_data={
+                    'post_id': str(post.post_id),
+                    'title': post.title,
+                    'excerpt': post.excerpt
+                }
+            )
+        except Exception as e:
+            current_app.logger.error(f"Error notifying followers: {str(e)}")
+            # Don't fail the post creation if notification fails
+    
     return create_success_response(
         data={'post': post.to_dict()},
         message='Post created successfully',
@@ -536,6 +553,39 @@ def add_comment(post_id, current_user=None):
         
         db.session.add(comment)
         db.session.commit()
+        
+        # Send notification to post author (if not commenting on own post)
+        if str(post.author_id) != str(current_user.user_id):
+            try:
+                from server.models.notifications import Notification
+                from server.services.notification_service import notification_service
+                
+                notification = Notification(
+                    user_id=post.author_id,
+                    type='new_comment',
+                    title='New Comment',
+                    message=f'{current_user.first_name} {current_user.last_name} commented on your post: {post.title}',
+                    data={
+                        'comment_id': str(comment.comment_id),
+                        'post_id': str(post.post_id),
+                        'post_title': post.title,
+                        'commenter_id': str(current_user.user_id),
+                        'commenter_name': f'{current_user.first_name} {current_user.last_name}',
+                        'comment_content': content[:100] + '...' if len(content) > 100 else content
+                    },
+                    channels=['push', 'in_app']
+                )
+                
+                db.session.add(notification)
+                db.session.commit()
+                
+                # Send notification asynchronously
+                import asyncio
+                asyncio.run(notification_service.send_notification(notification))
+                
+            except Exception as e:
+                current_app.logger.error(f"Error sending comment notification: {str(e)}")
+                # Don't fail the comment creation if notification fails
         
         return create_success_response(
             data={'comment': comment.to_dict()},

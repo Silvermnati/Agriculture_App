@@ -2,6 +2,7 @@
 Comprehensive data validation utilities for agricultural data types.
 """
 import re
+import uuid
 from datetime import datetime, date
 from decimal import Decimal, InvalidOperation
 from typing import Any, Dict, List, Optional, Union
@@ -86,6 +87,16 @@ def validate_phone_number(phone: str) -> bool:
     pattern = r'^\+?[1-9]\d{1,14}$'
     cleaned_phone = re.sub(r'[\s\-\(\)]', '', phone)
     return re.match(pattern, cleaned_phone) is not None
+
+def validate_uuid(uuid_string: str) -> bool:
+    """Validate UUID format."""
+    if not uuid_string:
+        return False
+    try:
+        uuid.UUID(uuid_string)
+        return True
+    except (ValueError, TypeError):
+        return False
 
 def validate_password_strength(password: str) -> ValidationResult:
     """Validate password strength."""
@@ -434,3 +445,160 @@ def validate_business_rules(data: Dict[str, Any], rule_type: str) -> ValidationR
                 result.add_error('consultation_date', 'Invalid consultation date format')
     
     return result
+
+def validate_amount(amount) -> tuple[bool, Optional[str]]:
+    """Validate payment amount."""
+    try:
+        amount = float(amount)
+        if amount <= 0:
+            return False, "Amount must be positive"
+        if amount > 999999.99:
+            return False, "Amount too large"
+        return True, None
+    except (ValueError, TypeError):
+        return False, "Invalid amount format"
+
+def validate_mpesa_phone(phone: str) -> tuple[bool, str]:
+    """Validate and format M-Pesa phone number."""
+    if not phone:
+        return False, "Phone number is required"
+    
+    # Remove spaces and special characters
+    phone = re.sub(r'[^\d+]', '', phone)
+    
+    # Format to 254 format
+    if phone.startswith('0'):
+        phone = '254' + phone[1:]
+    elif phone.startswith('+254'):
+        phone = phone[1:]
+    elif not phone.startswith('254'):
+        phone = '254' + phone
+    
+    # Validate final format
+    if re.match(r'^254[17]\d{8}$', phone):
+        return True, phone
+    else:
+        return False, "Invalid M-Pesa phone number format"
+
+def validate_notification_data(data: Dict[str, Any]) -> ValidationResult:
+    """Validate notification creation data."""
+    result = ValidationResult()
+    
+    # Required fields
+    required_result = validate_required_fields(data, ['type', 'title', 'message'])
+    if not required_result.success:
+        result.errors.update(required_result.errors)
+    
+    # Validate notification type
+    valid_types = [
+        'payment_confirmation', 'consultation_booked', 'expert_response',
+        'new_comment', 'new_follower', 'community_activity', 
+        'system_updates', 'marketing', 'system_test'
+    ]
+    type_result = validate_choice_field(data.get('type'), 'type', valid_types)
+    if not type_result.success:
+        result.errors.update(type_result.errors)
+    
+    # Validate title and message length
+    title_result = validate_string_length(data.get('title'), 'title', 1, 255)
+    if not title_result.success:
+        result.errors.update(title_result.errors)
+    
+    message_result = validate_string_length(data.get('message'), 'message', 1, 1000)
+    if not message_result.success:
+        result.errors.update(message_result.errors)
+    
+    # Validate channels
+    if 'channels' in data:
+        valid_channels = ['push', 'email', 'sms', 'in_app']
+        channels = data['channels']
+        if not isinstance(channels, list):
+            result.add_error('channels', 'Channels must be an array')
+        else:
+            for channel in channels:
+                if channel not in valid_channels:
+                    result.add_error('channels', f'Invalid channel: {channel}. Valid channels: {", ".join(valid_channels)}')
+    
+    # Validate priority
+    if 'priority' in data:
+        valid_priorities = ['low', 'normal', 'high', 'urgent']
+        priority_result = validate_choice_field(data.get('priority'), 'priority', valid_priorities)
+        if not priority_result.success:
+            result.errors.update(priority_result.errors)
+    
+    # Validate scheduled_at if provided
+    if 'scheduled_at' in data and data['scheduled_at']:
+        scheduled_result = validate_date_field(data.get('scheduled_at'), 'scheduled_at', allow_past=False)
+        if not scheduled_result.success:
+            result.errors.update(scheduled_result.errors)
+    
+    return result
+
+def validate_notification_preferences(data: Dict[str, Any]) -> ValidationResult:
+    """Validate notification preferences data."""
+    result = ValidationResult()
+    
+    # Boolean fields
+    boolean_fields = [
+        'email_notifications', 'push_notifications', 
+        'sms_notifications', 'in_app_notifications'
+    ]
+    
+    for field in boolean_fields:
+        if field in data and not isinstance(data[field], bool):
+            result.add_error(field, f'{field} must be a boolean value')
+    
+    # Validate notification_types if provided
+    if 'notification_types' in data:
+        notification_types = data['notification_types']
+        if not isinstance(notification_types, dict):
+            result.add_error('notification_types', 'notification_types must be an object')
+        else:
+            valid_types = [
+                'payment_confirmation', 'consultation_booked', 'expert_response',
+                'new_comment', 'new_follower', 'community_activity', 
+                'system_updates', 'marketing'
+            ]
+            for type_key, enabled in notification_types.items():
+                if type_key not in valid_types:
+                    result.add_error('notification_types', f'Invalid notification type: {type_key}')
+                if not isinstance(enabled, bool):
+                    result.add_error('notification_types', f'Value for {type_key} must be boolean')
+    
+    # Validate quiet hours
+    if 'quiet_hours_start' in data or 'quiet_hours_end' in data:
+        start_time = data.get('quiet_hours_start')
+        end_time = data.get('quiet_hours_end')
+        
+        if start_time:
+            try:
+                # Validate time format (HH:MM)
+                if isinstance(start_time, str):
+                    datetime.strptime(start_time, '%H:%M')
+            except ValueError:
+                result.add_error('quiet_hours_start', 'Invalid time format. Use HH:MM format')
+        
+        if end_time:
+            try:
+                # Validate time format (HH:MM)
+                if isinstance(end_time, str):
+                    datetime.strptime(end_time, '%H:%M')
+            except ValueError:
+                result.add_error('quiet_hours_end', 'Invalid time format. Use HH:MM format')
+    
+    # Validate timezone
+    if 'timezone' in data:
+        timezone = data['timezone']
+        if not isinstance(timezone, str) or len(timezone) > 50:
+            result.add_error('timezone', 'Invalid timezone format')
+    
+    return result
+
+def validate_json_data(data: Dict[str, Any], validation_type: str) -> ValidationResult:
+    """Main validation function for different data types."""
+    if validation_type == 'notification':
+        return validate_notification_data(data)
+    elif validation_type == 'notification_preferences':
+        return validate_notification_preferences(data)
+    else:
+        return validate_agricultural_data(data, validation_type)
