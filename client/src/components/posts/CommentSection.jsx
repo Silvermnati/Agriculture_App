@@ -1,86 +1,29 @@
-// components/Posts/CommentSection.jsx
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import './posts.css'; // Ensure this CSS file is updated
+import React from 'react';
+import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
+import CommentForm from './CommentForm';
+import CommentItem from './CommentItem';
 
-const CommentItem = ({ comment, onReplySubmit, level = 0 }) => {
-  const [showReply, setShowReply] = useState(false);
-  const [replyText, setReplyText] = useState('');
-
-  const handleReplySubmit = (e) => {
-    e.preventDefault();
-    if (!replyText.trim()) return;
-    // Call the handler passed from the parent
-    onReplySubmit(replyText, comment.comment_id);
-    setReplyText('');
-    setShowReply(false);
-  };
+const CommentSection = ({ postId, comments }) => {
+  const { isAuthenticated } = useSelector(state => state.auth);
 
   return (
-    <div className="comment-item" style={{ marginLeft: `${level * 20}px` }}>
-      <div className="comment-header">
-        <img src={comment.user?.avatar_url || '/default-avatar.png'} alt={comment.user?.name} className="avatar" />
-        <div>
-          <strong>{comment.user?.name || 'Anonymous'}</strong>
-          <span className="comment-date">{new Date(comment.created_at).toLocaleString()}</span>
-        </div>
-      </div>
-
-      <p className="comment-content">{comment.content}</p>
-      <button onClick={() => setShowReply(!showReply)}>Reply</button>
-
-      {showReply && (
-        <form onSubmit={handleReplySubmit} className="reply-form">
-          <textarea value={replyText} onChange={e => setReplyText(e.target.value)} placeholder="Write a reply..." />
-          <button type="submit">Post Reply</button>
-        </form>
+    <section id="comments" className="comment-section">
+      <h2>Comments ({comments?.length || 0})</h2>
+      {isAuthenticated ? (
+        <CommentForm postId={postId} />
+      ) : (
+        <p>Please <Link to="/login">log in</Link> to post a comment.</p>
       )}
-
-      <div className="replies">
-        {comment.replies?.map(reply => (
-          <CommentItem key={reply.comment_id} comment={reply} onReplySubmit={onReplySubmit} level={level + 1} />
-        ))}
-      </div>
-    </div>
-  );
-};
-
-CommentItem.propTypes = {
-  comment: PropTypes.object.isRequired,
-  onReplySubmit: PropTypes.func.isRequired,
-  level: PropTypes.number,
-};
-
-const CommentSection = ({ comments = [], onCommentSubmit }) => {
-  const [newComment, setNewComment] = useState('');
-
-  const handleCommentSubmit = (e) => {
-    e.preventDefault();
-    if (!newComment.trim()) return;
-    // Submit a top-level comment (parent_comment_id is null)
-    onCommentSubmit(newComment, null);
-    setNewComment('');
-  };
-
-  return (
-    <div className="comment-section">
-      <h2>Comments ({comments.length})</h2>
-      <form onSubmit={handleCommentSubmit} className="comment-form">
-        <textarea value={newComment} onChange={e => setNewComment(e.target.value)} placeholder="Add a comment..." />
-        <button type="submit">Post Comment</button>
-      </form>
       <div className="comment-list">
-        {comments.map(comment => (
-          <CommentItem key={comment.comment_id} comment={comment} onReplySubmit={onCommentSubmit} />
-        ))}
+        {comments && comments.length > 0 ? (
+          comments.map(comment => <CommentItem key={comment.id} comment={comment} />)
+        ) : (
+          <p>No comments yet. Be the first to share your thoughts!</p>
+        )}
       </div>
-    </div>
+    </section>
   );
-};
-
-CommentSection.propTypes = {
-  comments: PropTypes.array.isRequired,
-  onCommentSubmit: PropTypes.func.isRequired,
 };
 
 export default CommentSection;

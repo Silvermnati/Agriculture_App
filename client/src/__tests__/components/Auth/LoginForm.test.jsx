@@ -4,6 +4,7 @@ import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import { vi } from 'vitest';
 import LoginForm from '../../../components/Auth/LoginForm';
+import { BrowserRouter } from 'react-router-dom';
 
 // Create mock store
 const mockStore = configureStore([]);
@@ -28,20 +29,24 @@ describe('LoginForm Component', () => {
   test('renders login form correctly', () => {
     render(
       <Provider store={store}>
-        <LoginForm />
+        <BrowserRouter>
+          <LoginForm />
+        </BrowserRouter>
       </Provider>
     );
     
     // Check if form elements are rendered
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Login$/i })).toBeInTheDocument();
   });
   
   test('handles form submission', () => {
     render(
       <Provider store={store}>
-        <LoginForm />
+        <BrowserRouter>
+          <LoginForm />
+        </BrowserRouter>
       </Provider>
     );
     
@@ -55,7 +60,7 @@ describe('LoginForm Component', () => {
     });
     
     // Submit the form
-    fireEvent.submit(screen.getByRole('button', { name: /login/i }));
+    fireEvent.submit(screen.getByRole('button', { name: /^Login$/i }));
     
     // Check if dispatch was called
     expect(store.dispatch).toHaveBeenCalled();
@@ -73,7 +78,9 @@ describe('LoginForm Component', () => {
     
     render(
       <Provider store={store}>
-        <LoginForm />
+        <BrowserRouter>
+          <LoginForm />
+        </BrowserRouter>
       </Provider>
     );
     
@@ -93,7 +100,9 @@ describe('LoginForm Component', () => {
     
     render(
       <Provider store={store}>
-        <LoginForm />
+        <BrowserRouter>
+          <LoginForm />
+        </BrowserRouter>
       </Provider>
     );
     
@@ -113,13 +122,27 @@ describe('LoginForm Component', () => {
     
     render(
       <Provider store={store}>
-        <LoginForm />
+        <BrowserRouter>
+          <LoginForm />
+        </BrowserRouter>
       </Provider>
     );
     
     // Check if login button is disabled and shows loading text
-    const loginButton = screen.getByRole('button');
+    const loginButton = screen.getByRole('button', { name: /logging in.../i });
     expect(loginButton).toBeDisabled();
     expect(loginButton).toHaveTextContent('Logging in...');
+  });
+
+  test('renders heading', () => {
+    render(
+      <Provider store={store}>
+        <BrowserRouter>
+          <LoginForm />
+        </BrowserRouter>
+      </Provider>
+    );
+    const headingElement = screen.getByText(/Login to Agricultural Super App/i);
+    expect(headingElement).toBeInTheDocument();
   });
 });

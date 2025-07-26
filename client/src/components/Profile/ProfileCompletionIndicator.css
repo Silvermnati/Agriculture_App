@@ -1,0 +1,114 @@
+/* Profile Completion Indicator Styles */
+.profile-completion-indicator {
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  border: 1px solid;
+}
+
+.profile-completion-indicator.complete {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #166534;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.profile-completion-indicator.incomplete {
+  background: #fffbeb;
+  border-color: #fed7aa;
+  color: #92400e;
+}
+
+.completion-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+}
+
+.completion-bar {
+  width: 100%;
+  height: 6px;
+  background: #fed7aa;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+
+.completion-fill {
+  height: 100%;
+  background: #f59e0b;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.completion-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.completion-button {
+  background: #f59e0b;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.completion-button:hover {
+  background: #d97706;
+}
+
+.completion-button:focus {
+  outline: 2px solid #f59e0b;
+  outline-offset: 2px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .profile-completion-indicator {
+    padding: 0.75rem;
+  }
+  
+  .completion-header {
+    font-size: 0.875rem;
+  }
+  
+  .completion-button {
+    width: 100%;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .profile-completion-indicator.complete {
+    background: white;
+    border-color: green;
+    color: green;
+    border-width: 2px;
+  }
+  
+  .profile-completion-indicator.incomplete {
+    background: white;
+    border-color: orange;
+    color: orange;
+    border-width: 2px;
+  }
+  
+  .completion-fill {
+    background: orange;
+  }
+  
+  .completion-button {
+    background: orange;
+    color: black;
+    border: 1px solid black;
+  }
+}

@@ -1,57 +1,28 @@
-import { VALIDATION } from './constants';
+/**
+ * Utility functions for the application
+ */
 
 /**
- * Validate email format
- * @param {string} email - Email to validate
- * @returns {boolean} - True if valid
+ * Check if the current user can manage (edit/delete) a post
+ * @param {Object} user - Current user object
+ * @param {Object} post - Post object
+ * @returns {boolean} - True if user can manage the post
  */
-export const isValidEmail = (email) => {
-  return VALIDATION.EMAIL.PATTERN.test(email);
+export const canManagePost = (user, post) => {
+  if (!user || !post) return false;
+  
+  // Admin can manage any post
+  if (user.role === 'admin') return true;
+  
+  // Author can manage their own post
+  return user.id === post.author?.user_id || 
+         user.id === post.author_id ||
+         user.user_id === post.author?.user_id ||
+         user.user_id === post.author_id;
 };
 
 /**
- * Validate password strength
- * @param {string} password - Password to validate
- * @returns {boolean} - True if valid
- */
-export const isValidPassword = (password) => {
-  return password && password.length >= VALIDATION.PASSWORD.MIN_LENGTH && 
-         VALIDATION.PASSWORD.PATTERN.test(password);
-};
-
-/**
- * Validate farm size
- * @param {number} size - Farm size to validate
- * @returns {boolean} - True if valid
- */
-export const isValidFarmSize = (size) => {
-  const numSize = parseFloat(size);
-  return !isNaN(numSize) && numSize >= VALIDATION.FARM_SIZE.MIN && numSize <= VALIDATION.FARM_SIZE.MAX;
-};
-
-/**
- * Validate farming experience
- * @param {number} years - Years of experience to validate
- * @returns {boolean} - True if valid
- */
-export const isValidFarmingExperience = (years) => {
-  const numYears = parseInt(years);
-  return !isNaN(numYears) && numYears >= VALIDATION.FARMING_EXPERIENCE.MIN && 
-         numYears <= VALIDATION.FARMING_EXPERIENCE.MAX;
-};
-
-/**
- * Validate name (first name, last name)
- * @param {string} name - Name to validate
- * @returns {boolean} - True if valid
- */
-export const isValidName = (name) => {
-  return name && name.length >= VALIDATION.NAME.MIN_LENGTH && 
-         name.length <= VALIDATION.NAME.MAX_LENGTH;
-};
-
-/**
- * Format date to locale string
+ * Format date to readable string
  * @param {string} dateString - ISO date string
  * @returns {string} - Formatted date
  */
@@ -59,69 +30,192 @@ export const formatDate = (dateString) => {
   if (!dateString) return '';
   
   const date = new Date(dateString);
+  const now = new Date();
+  const diffTime = Math.abs(now - date);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return `${diffDays} days ago`;
+  
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
-    month: 'long',
+    month: 'short',
     day: 'numeric'
   });
 };
 
 /**
- * Calculate read time for content
- * @param {string} content - Content to calculate read time for
- * @returns {number} - Read time in minutes
- */
-export const calculateReadTime = (content) => {
-  if (!content) return 1;
-  
-  // Average reading speed: 200 words per minute
-  const words = content.trim().split(/\s+/).length;
-  const readTime = Math.ceil(words / 200);
-  
-  return readTime < 1 ? 1 : readTime;
-};
-
-/**
- * Truncate text with ellipsis
- * @param {string} text - Text to truncate
- * @param {number} maxLength - Maximum length
- * @returns {string} - Truncated text
- */
-export const truncateText = (text, maxLength = 100) => {
-  if (!text || text.length <= maxLength) return text;
-  
-  return text.substring(0, maxLength) + '...';
-};
-
-/**
  * Format number with commas
- * @param {number} number - Number to format
+ * @param {number} num - Number to format
  * @returns {string} - Formatted number
  */
-export const formatNumber = (number) => {
-  return number?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') || '0';
+export const formatNumber = (num) => {
+  if (!num) return '0';
+  return num.toLocaleString();
 };
 
 /**
- * Get error message for form validation
- * @param {string} field - Field name
- * @param {any} value - Field value
+ * Truncate text to specified length
+ * @param {string} text - Text to truncate
+ * @param {number} length - Maximum length
+ * @returns {string} - Truncated text
+ */
+export const truncateText = (text, length = 100) => {
+  if (!text) return '';
+  if (text.length <= length) return text;
+  return text.substring(0, length) + '...';
+};
+
+/**
+ * Get validation error for form fields
+ * @param {string} fieldName - Name of the field
+ * @param {any} value - Value to validate
  * @returns {string|null} - Error message or null if valid
  */
-export const getValidationError = (field, value) => {
-  switch (field) {
+export const getValidationError = (fieldName, value) => {
+  switch (fieldName) {
     case 'email':
-      return isValidEmail(value) ? null : VALIDATION.EMAIL.MESSAGE;
+      if (!value) return 'Email is required';
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value)) return 'Please enter a valid email address';
+      return null;
+      
     case 'password':
-      return isValidPassword(value) ? null : VALIDATION.PASSWORD.MESSAGE;
-    case 'farm_size':
-      return isValidFarmSize(value) ? null : VALIDATION.FARM_SIZE.MESSAGE;
-    case 'farming_experience':
-      return isValidFarmingExperience(value) ? null : VALIDATION.FARMING_EXPERIENCE.MESSAGE;
+      if (!value) return 'Password is required';
+      if (value.length < 8) return 'Password must be at least 8 characters long';
+      return null;
+      
     case 'first_name':
     case 'last_name':
-      return isValidName(value) ? null : VALIDATION.NAME.MESSAGE;
+      if (!value) return `${fieldName.replace('_', ' ')} is required`;
+      if (value.length < 2) return `${fieldName.replace('_', ' ')} must be at least 2 characters long`;
+      return null;
+      
     default:
       return null;
   }
+};
+
+/**
+ * Generate a random color for avatars
+ * @param {string} seed - Seed for consistent color generation
+ * @returns {string} - Hex color code
+ */
+export const generateAvatarColor = (seed) => {
+  const colors = [
+    '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+    '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9'
+  ];
+  
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  
+  return colors[Math.abs(hash) % colors.length];
+};
+
+/**
+ * Get initials from name
+ * @param {string} name - Full name
+ * @returns {string} - Initials
+ */
+export const getInitials = (name) => {
+  if (!name) return 'U';
+  
+  return name
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase())
+    .slice(0, 2)
+    .join('');
+};
+
+/**
+ * Check if user is authenticated
+ * @param {Object} user - User object
+ * @returns {boolean} - True if authenticated
+ */
+export const isAuthenticated = (user) => {
+  return user && user.id && localStorage.getItem('token');
+};
+
+/**
+ * Get post status badge color
+ * @param {string} status - Post status
+ * @returns {string} - CSS class name
+ */
+export const getStatusBadgeColor = (status) => {
+  switch (status) {
+    case 'published':
+      return 'badge-success';
+    case 'draft':
+      return 'badge-warning';
+    case 'archived':
+      return 'badge-secondary';
+    default:
+      return 'badge-default';
+  }
+};
+
+/**
+ * Calculate reading time
+ * @param {string} content - HTML content
+ * @returns {number} - Reading time in minutes
+ */
+export const calculateReadingTime = (content) => {
+  if (!content) return 1;
+  
+  // Remove HTML tags and count words
+  const text = content.replace(/<[^>]*>/g, '');
+  const wordCount = text.split(/\s+/).length;
+  
+  // Average reading speed is 200 words per minute
+  return Math.max(1, Math.ceil(wordCount / 200));
+};
+
+/**
+ * Debounce function
+ * @param {Function} func - Function to debounce
+ * @param {number} wait - Wait time in milliseconds
+ * @returns {Function} - Debounced function
+ */
+export const debounce = (func, wait) => {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+};
+
+/**
+ * Check if string is valid URL
+ * @param {string} string - String to check
+ * @returns {boolean} - True if valid URL
+ */
+export const isValidUrl = (string) => {
+  try {
+    new URL(string);
+    return true;
+  } catch (_) {
+    return false;
+  }
+};
+
+export default {
+  canManagePost,
+  formatDate,
+  formatNumber,
+  truncateText,
+  getValidationError,
+  generateAvatarColor,
+  getInitials,
+  isAuthenticated,
+  getStatusBadgeColor,
+  calculateReadingTime,
+  debounce,
+  isValidUrl
 };

@@ -94,15 +94,27 @@ class Post(db.Model):
         author_info = { 'name': 'Unknown Author', 'avatar_url': None, 'role': None }
         if self.author:
             author_info['name'] = f"{self.author.first_name} {self.author.last_name}"
-            author_info['avatar_url'] = self.author.avatar_url
+            # Fix avatar URL to use full path or default
+            if self.author.avatar_url:
+                author_info['avatar_url'] = self.author.avatar_url
+            else:
+                author_info['avatar_url'] = 'https://agriculture-app-1-u2a6.onrender.com/static/default-avatar.png'
             author_info['role'] = self.author.role
+
+        # Fix featured image URL to use full path
+        featured_image_url = None
+        if self.featured_image_url:
+            if self.featured_image_url.startswith('http'):
+                featured_image_url = self.featured_image_url
+            else:
+                featured_image_url = f"https://agriculture-app-1-u2a6.onrender.com/static/{self.featured_image_url}"
 
         post_dict = {
             'id': str(self.post_id), # Keep 'id' for frontend convenience
             'post_id': str(self.post_id), # Keep 'post_id' for backend consistency
             'title': self.title,
             'excerpt': self.excerpt,
-            'featured_image_url': self.featured_image_url,
+            'featured_image_url': featured_image_url,
             'author': author_info,
             'category': self.category.to_dict() if self.category else None,
             'related_crops': self.related_crops or [],
@@ -157,9 +169,9 @@ class Comment(db.Model):
         }
 
 
-class PostLike(db.Model):
-    """Post like model."""
-    __tablename__ = 'post_likes'
+class ArticlePostLike(db.Model):
+    """Article post like model."""
+    __tablename__ = 'article_post_likes'
     
     post_id = db.Column(UUID(as_uuid=True), db.ForeignKey('posts.post_id'), primary_key=True)
     user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.user_id'), primary_key=True)
@@ -167,4 +179,4 @@ class PostLike(db.Model):
     
     # Relationships
     post = db.relationship('Post', backref=db.backref('likes', lazy=True))
-    user = db.relationship('User', backref=db.backref('post_likes', lazy=True))
+    user = db.relationship('User', backref=db.backref('article_likes', lazy=True))
