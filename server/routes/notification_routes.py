@@ -4,7 +4,6 @@ Handles notification retrieval, preferences, and history.
 """
 
 from flask import Blueprint, request, jsonify, current_app
-from flask_login import login_required, current_user
 from datetime import datetime, timedelta
 from sqlalchemy import desc, and_, or_
 from sqlalchemy.orm import joinedload
@@ -13,16 +12,17 @@ from server.database import db
 from server.models.notifications import Notification, NotificationPreferences, NotificationDelivery
 from server.models.user import User
 from server.services.notification_service import notification_service
+from server.utils.auth import token_required
 from server.utils.validators import validate_json_data
-from server.utils.error_handlers import handle_error
+from server.utils.error_handlers import create_error_response, create_success_response
 
 # Create blueprint
 notification_bp = Blueprint('notifications', __name__, url_prefix='/api/notifications')
 
 
 @notification_bp.route('', methods=['GET'])
-@login_required
-def get_notifications():
+@token_required
+def get_notifications(current_user):
     """
     Get notifications for the current user.
     Query parameters:
@@ -78,15 +78,15 @@ def get_notifications():
         }), 200
         
     except ValueError as e:
-        return jsonify({'error': 'Invalid query parameters', 'details': str(e)}), 400
+        return create_error_response('INVALID_PARAMS', f'Invalid query parameters: {str(e)}', status_code=400)
     except Exception as e:
         current_app.logger.error(f"Error fetching notifications: {str(e)}")
-        return handle_error(e)
+        return create_error_response('FETCH_NOTIFICATIONS_FAILED', f'Failed to fetch notifications: {str(e)}', status_code=500)
 
 
 @notification_bp.route('/<notification_id>/read', methods=['POST'])
-@login_required
-def mark_notification_read(notification_id):
+@token_required
+def mark_notification_read(current_user, notification_id):
     """Mark a specific notification as read."""
     try:
         notification = Notification.query.filter_by(
@@ -110,12 +110,12 @@ def mark_notification_read(notification_id):
     except Exception as e:
         current_app.logger.error(f"Error marking notification as read: {str(e)}")
         db.session.rollback()
-        return handle_error(e)
+        return create_error_response('MARK_READ_FAILED', f'Failed to mark notification as read: {str(e)}', status_code=500)
 
 
 @notification_bp.route('/mark-all-read', methods=['POST'])
-@login_required
-def mark_all_notifications_read():
+@token_required
+def mark_all_notifications_read(current_user):
     """Mark all notifications as read for the current user."""
     try:
         # Update all unread notifications
@@ -139,30 +139,30 @@ def mark_all_notifications_read():
     except Exception as e:
         current_app.logger.error(f"Error marking all notifications as read: {str(e)}")
         db.session.rollback()
-        return handle_error(e)
+        return create_error_response('MARK_ALL_READ_FAILED', f'Failed to mark all notifications as read: {str(e)}', status_code=500)
 
 
 @notification_bp.route('/preferences', methods=['GET'])
-@login_required
-def get_notification_preferences():
+@token_required
+def get_notification_preferences(current_user):
     """Get notification preferences for the current user."""
     try:
         preferences = notification_service.get_user_preferences(str(current_user.user_id))
-        return jsonify(preferences.to_dict()), 200
+        return create_success_response(data=preferences.to_dict())
         
     except Exception as e:
         current_app.logger.error(f"Error fetching notification preferences: {str(e)}")
-        return handle_error(e)
+        return create_error_response('FETCH_PREFERENCES_FAILED', f'Failed to fetch preferences: {str(e)}', status_code=500)
 
 
 @notification_bp.route('/preferences', methods=['PUT'])
-@login_required
-def update_notification_preferences():
+@token_required
+def update_notification_preferences(current_user):
     """Update notification preferences for the current user."""
     try:
         data = request.get_json()
         if not data:
-            return jsonify({'error': 'No data provided'}), 400
+            return create_error_response('NO_DATA', 'No data provided', status_code=400)
         
         # Validate preference data
         valid_fields = {
@@ -175,7 +175,7 @@ def update_notification_preferences():
         filtered_data = {k: v for k, v in data.items() if k in valid_fields}
         
         if not filtered_data:
-            return jsonify({'error': 'No valid preference fields provided'}), 400
+            return create_error_response('NO_VALID_FIELDS', 'No valid preference fields provided', status_code=400)
         
         # Update preferences
         preferences = notification_service.update_user_preferences(
@@ -183,20 +183,20 @@ def update_notification_preferences():
             filtered_data
         )
         
-        return jsonify({
-            'message': 'Notification preferences updated successfully',
-            'preferences': preferences.to_dict()
-        }), 200
+        return create_success_response(
+            data={'preferences': preferences.to_dict()},
+            message='Notification preferences updated successfully'
+        )
         
     except Exception as e:
         current_app.logger.error(f"Error updating notification preferences: {str(e)}")
         db.session.rollback()
-        return handle_error(e)
+        return create_error_response('UPDATE_PREFERENCES_FAILED', f'Failed to update preferences: {str(e)}', status_code=500)
 
 
 @notification_bp.route('/history', methods=['GET'])
-@login_required
-def get_notification_history():
+@token_required
+def get_notification_history(current_user):
     """
     Get detailed notification history with delivery information.
     Query parameters:
@@ -252,15 +252,15 @@ def get_notification_history():
         }), 200
         
     except ValueError as e:
-        return jsonify({'error': 'Invalid query parameters', 'details': str(e)}), 400
+        return create_error_response('INVALID_PARAMS', f'Invalid query parameters: {str(e)}', status_code=400)
     except Exception as e:
         current_app.logger.error(f"Error fetching notification history: {str(e)}")
-        return handle_error(e)
+        return create_error_response('FETCH_HISTORY_FAILED', f'Failed to fetch notification history: {str(e)}', status_code=500)
 
 
 @notification_bp.route('/analytics', methods=['GET'])
-@login_required
-def get_notification_analytics():
+@token_required
+def get_notification_analytics(current_user):
     """Get notification analytics for the current user."""
     try:
         days = min(int(request.args.get('days', 30)), 90)
@@ -270,21 +270,20 @@ def get_notification_analytics():
             days=days
         )
         
-        return jsonify({
-            'analytics': analytics,
-            'period_days': days
-        }), 200
+        return create_success_response(
+            data={'analytics': analytics, 'period_days': days}
+        )
         
     except ValueError as e:
-        return jsonify({'error': 'Invalid query parameters', 'details': str(e)}), 400
+        return create_error_response('INVALID_PARAMS', f'Invalid query parameters: {str(e)}', status_code=400)
     except Exception as e:
         current_app.logger.error(f"Error fetching notification analytics: {str(e)}")
-        return handle_error(e)
+        return create_error_response('ANALYTICS_FAILED', f'Failed to fetch analytics: {str(e)}', status_code=500)
 
 
 @notification_bp.route('/types', methods=['GET'])
-@login_required
-def get_notification_types():
+@token_required
+def get_notification_types(current_user):
     """Get available notification types for preference configuration."""
     try:
         # Define available notification types
@@ -331,18 +330,16 @@ def get_notification_types():
             }
         }
         
-        return jsonify({
-            'notification_types': notification_types
-        }), 200
+        return create_success_response(data={'notification_types': notification_types})
         
     except Exception as e:
         current_app.logger.error(f"Error fetching notification types: {str(e)}")
-        return handle_error(e)
+        return create_error_response('FETCH_TYPES_FAILED', f'Failed to fetch notification types: {str(e)}', status_code=500)
 
 
 @notification_bp.route('/test', methods=['POST'])
-@login_required
-def send_test_notification():
+@token_required
+def send_test_notification(current_user):
     """Send a test notification to the current user (for testing purposes)."""
     try:
         data = request.get_json() or {}
@@ -364,22 +361,24 @@ def send_test_notification():
         import asyncio
         results = asyncio.run(notification_service.send_notification(test_notification))
         
-        return jsonify({
-            'message': 'Test notification sent',
-            'notification': test_notification.to_dict(),
-            'delivery_results': [
-                {
-                    'channel': r.channel,
-                    'success': r.success,
-                    'message': r.message
-                } for r in results
-            ]
-        }), 200
+        return create_success_response(
+            data={
+                'notification': test_notification.to_dict(),
+                'delivery_results': [
+                    {
+                        'channel': r.channel,
+                        'success': r.success,
+                        'message': r.message
+                    } for r in results
+                ]
+            },
+            message='Test notification sent'
+        )
         
     except Exception as e:
         current_app.logger.error(f"Error sending test notification: {str(e)}")
         db.session.rollback()
-        return handle_error(e)
+        return create_error_response('TEST_NOTIFICATION_FAILED', f'Failed to send test notification: {str(e)}', status_code=500)
 
 
 # Error handlers for the blueprint
