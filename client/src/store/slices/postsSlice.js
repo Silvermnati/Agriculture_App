@@ -182,6 +182,7 @@ const postsSlice = createSlice({
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
+        state.currentPost = null; // Ensure post is cleared on error
       })
       // Create Post
       .addCase(createPost.pending, (state) => {
@@ -239,23 +240,35 @@ const postsSlice = createSlice({
       })
       // Toggle Like
       .addCase(toggleLike.fulfilled, (state, action) => {
-        const { postId, liked } = action.payload;
-        const postIndex = state.posts.findIndex(post => post.id === postId || post.post_id === postId);
-        if (postIndex !== -1) {
-          const post = state.posts[postIndex];
+        const { postId, liked, like_count } = action.payload;
+        
+        const updatePostLikeState = (post) => {
           post.userHasLiked = liked;
-          post.like_count = (post.like_count || 0) + (liked ? 1 : -1);
+          // Always trust the like_count from the server to avoid race conditions
+          post.like_count = like_count;
+        };
+
+        const postIndex = state.posts.findIndex(p => p.id === postId || p.post_id === postId);
+        if (postIndex !== -1) {
+          updatePostLikeState(state.posts[postIndex]);
         }
         if (state.currentPost && (state.currentPost.id === postId || state.currentPost.post_id === postId)) {
-          state.currentPost.userHasLiked = liked;
-          state.currentPost.like_count = (state.currentPost.like_count || 0) + (liked ? 1 : -1);
+          updatePostLikeState(state.currentPost);
         }
       })
       // Add Comment
+      .addCase(addComment.pending, (state) => {
+        state.isLoading = true;
+        state.isError = false;
+        state.message = '';
+      })
       .addCase(addComment.fulfilled, (state, action) => {
         const { postId, comment } = action.payload;
         if (state.postComments[postId]) {
-          state.postComments[postId].push(comment);
+          // Add new comment to the beginning of the list
+          state.postComments[postId].unshift(comment);
+        } else {
+          state.postComments[postId] = [comment];
         }
         // Update comment count in posts
         const postIndex = state.posts.findIndex(post => post.id === postId || post.post_id === postId);
@@ -265,6 +278,13 @@ const postsSlice = createSlice({
         if (state.currentPost && (state.currentPost.id === postId || state.currentPost.post_id === postId)) {
           state.currentPost.comment_count = (state.currentPost.comment_count || 0) + 1;
         }
+        state.isLoading = false;
+        state.isSuccess = true;
+      })
+      .addCase(addComment.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
       })
       // Get Comments
       .addCase(getComments.fulfilled, (state, action) => {

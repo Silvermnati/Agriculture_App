@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MessageCircle, Eye, Calendar } from 'lucide-react';
+import { Eye, Calendar } from 'lucide-react';
 import PostActions from './PostActions';
+import PostInteraction from './PostInteraction';
 import Image from '../common/Image/Image';
 import './posts.css';
 
@@ -115,14 +116,7 @@ const PostCard = ({ post, showActions = true }) => {
           </div>
 
           <div className="post-stats">
-            <div className="stat-item">
-              <Heart size={16} />
-              <span>{post.like_count || 0}</span>
-            </div>
-            <div className="stat-item">
-              <MessageCircle size={16} />
-              <span>{post.comment_count || 0}</span>
-            </div>
+            <PostInteraction post={post} />
             <div className="stat-item">
               <Eye size={16} />
               <span>{post.view_count || 0}</span>
