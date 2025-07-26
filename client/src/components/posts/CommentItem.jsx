@@ -4,7 +4,7 @@ import Image from '../common/Image/Image';
 const CommentItem = ({ comment }) => {
   const formatDate = (dateString) => {
     if (!dateString) return 'Just now';
-    // Using Intl.RelativeTimeFormat for user-friendly dates
+
     const date = new Date(dateString);
     const now = new Date();
     const seconds = Math.round((now - date) / 1000);
@@ -20,7 +20,7 @@ const CommentItem = ({ comment }) => {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
-  const author = comment.author || comment.user; // Safely get the author/user object
+  const author = comment.author || comment.user; 
 
   return (
     <div className="comment-item">
