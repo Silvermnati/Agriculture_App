@@ -177,10 +177,16 @@ class NotificationQueue:
                 if not self.running:
                     break
                 
-                retry_count = notification_service.retry_failed_notifications()
-                if retry_count > 0:
-                    self.stats['retried'] += retry_count
-                    self.logger.info(f"Retried {retry_count} failed notifications")
+                # Import here to avoid circular imports
+                from server import create_app
+                
+                # Create app context for database operations
+                app = create_app()
+                with app.app_context():
+                    retry_count = notification_service.retry_failed_notifications()
+                    if retry_count > 0:
+                        self.stats['retried'] += retry_count
+                        self.logger.info(f"Retried {retry_count} failed notifications")
                 
             except Exception as e:
                 self.logger.error(f"Retry processor error: {str(e)}")
@@ -196,18 +202,24 @@ class NotificationQueue:
                 if not self.running:
                     break
                 
-                # Find notifications that should be sent now
-                now = datetime.utcnow()
-                scheduled_notifications = Notification.query.filter(
-                    Notification.scheduled_at <= now,
-                    Notification.status == 'pending'
-                ).all()
+                # Import here to avoid circular imports
+                from server import create_app
                 
-                for notification in scheduled_notifications:
-                    self.enqueue_notification(str(notification.notification_id))
-                
-                if scheduled_notifications:
-                    self.logger.info(f"Enqueued {len(scheduled_notifications)} scheduled notifications")
+                # Create app context for database operations
+                app = create_app()
+                with app.app_context():
+                    # Find notifications that should be sent now
+                    now = datetime.utcnow()
+                    scheduled_notifications = Notification.query.filter(
+                        Notification.scheduled_at <= now,
+                        Notification.status == 'pending'
+                    ).all()
+                    
+                    for notification in scheduled_notifications:
+                        self.enqueue_notification(str(notification.notification_id))
+                    
+                    if scheduled_notifications:
+                        self.logger.info(f"Enqueued {len(scheduled_notifications)} scheduled notifications")
                 
             except Exception as e:
                 self.logger.error(f"Scheduled processor error: {str(e)}")
@@ -236,25 +248,41 @@ class NotificationQueue:
     
     def get_pending_notifications_count(self) -> int:
         """Get count of pending notifications in database."""
-        return Notification.query.filter_by(status='pending').count()
+        try:
+            # Import here to avoid circular imports
+            from server import create_app
+            
+            # Create app context for database operations
+            app = create_app()
+            with app.app_context():
+                return Notification.query.filter_by(status='pending').count()
+        except Exception as e:
+            self.logger.error(f"Error getting pending notifications count: {str(e)}")
+            return 0
     
     def process_pending_notifications(self) -> int:
         """Process all pending notifications in the database."""
         try:
-            pending_notifications = Notification.query.filter_by(status='pending').all()
+            # Import here to avoid circular imports
+            from server import create_app
             
-            for notification in pending_notifications:
-                # Skip scheduled notifications that aren't due yet
-                if notification.scheduled_at and notification.scheduled_at > datetime.utcnow():
-                    continue
+            # Create app context for database operations
+            app = create_app()
+            with app.app_context():
+                pending_notifications = Notification.query.filter_by(status='pending').all()
                 
-                self.enqueue_notification(str(notification.notification_id))
-            
-            count = len([n for n in pending_notifications 
-                        if not n.scheduled_at or n.scheduled_at <= datetime.utcnow()])
-            
-            self.logger.info(f"Enqueued {count} pending notifications")
-            return count
+                for notification in pending_notifications:
+                    # Skip scheduled notifications that aren't due yet
+                    if notification.scheduled_at and notification.scheduled_at > datetime.utcnow():
+                        continue
+                    
+                    self.enqueue_notification(str(notification.notification_id))
+                
+                count = len([n for n in pending_notifications 
+                            if not n.scheduled_at or n.scheduled_at <= datetime.utcnow()])
+                
+                self.logger.info(f"Enqueued {count} pending notifications")
+                return count
             
         except Exception as e:
             self.logger.error(f"Error processing pending notifications: {str(e)}")
