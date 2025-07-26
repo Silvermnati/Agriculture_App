@@ -14,11 +14,10 @@ const CommentForm = ({ postId }) => {
     dispatch(addComment({ postId, commentData: { content } }))
       .unwrap()
       .then(() => {
-        setContent(''); // Clear form only on successful submission
+        setContent(''); 
       })
       .catch((error) => {
         console.error("Failed to add comment:", error);
-        // Optionally, show an error toast to the user
       });
   };
 

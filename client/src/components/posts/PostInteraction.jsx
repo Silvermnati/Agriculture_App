@@ -9,21 +9,18 @@ const PostInteraction = ({ post }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { isAuthenticated } = useSelector(state => state.auth);
-  // Use the general post loading state for now
   const { isLoading } = useSelector(state => state.posts);
 
   const handleLikeClick = (e) => {
-    e.stopPropagation(); // Prevents navigating to post details if the card is a link
+    e.stopPropagation(); 
     if (!isAuthenticated) {
-      navigate('/login'); // Prompt non-logged-in users to sign in
+      navigate('/login'); 
       return;
     }
-    // Use post.id or post.post_id, whichever is available
     const postId = post.id || post.post_id;
     dispatch(toggleLike(postId));
   };
 
-  // The property from your Redux state is `userHasLiked`
   const isLiked = post.userHasLiked;
 
   return (

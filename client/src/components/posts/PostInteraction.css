@@ -1,24 +1,24 @@
 .post-interaction {
   display: flex;
   align-items: center;
-  gap: 12px; /* Match the gap in .post-stats */
+  gap: 12px; 
 }
 
 .interaction-button {
   display: flex;
   align-items: center;
-  gap: 4px; /* Match the gap in .stat-item */
+  gap: 4px; 
   background: none;
   border: none;
   cursor: pointer;
-  font-size: inherit; /* Inherit from parent (.post-card-footer) */
-  color: #666; /* Match .stat-item color */
+  font-size: inherit; 
+  color: #666; 
   padding: 0.25rem;
   transition: color 0.2s ease-in-out;
 }
 
 .interaction-button:hover {
-  color: #111827; /* dark gray */
+  color: #111827; 
 }
 
 .interaction-button:disabled {
@@ -27,10 +27,10 @@
 }
 
 .like-button.liked {
-  color: #ef4444; /* red-500 */
+  color: #ef4444; 
 }
 
 .count {
   font-weight: 500;
-  font-size: inherit; /* Inherit from parent */
+  font-size: inherit; 
 }
