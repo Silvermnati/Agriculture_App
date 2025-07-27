@@ -21,6 +21,14 @@ def create_app(config_name='default'):
     # Initialize database
     init_db(app)
     
+    # Run auto-migration for comment tracking fields
+    try:
+        with app.app_context():
+            from server.auto_migrate import auto_migrate
+            auto_migrate()
+    except Exception as e:
+        print(f"⚠️  Warning: Auto-migration failed: {e}")
+    
     # Register global error handlers
     register_error_handlers(app)
     
