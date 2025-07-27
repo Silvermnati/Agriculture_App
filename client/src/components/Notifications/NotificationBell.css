@@ -11,12 +11,12 @@
   border-radius: 50%;
   transition: all 0.2s;
   position: relative;
-  color: #6b7280;
+  color: #e0e0e0; /* Changed to light grey for a more distinct icon look */
 }
 
 .notification-button:hover {
-  background-color: #f3f4f6;
-  color: #374151;
+  background-color: rgba(255, 255, 255, 0.1); /* Subtle hover effect */
+  color: #ffffff; /* White on hover for emphasis */
 }
 
 .notification-icon {
@@ -27,8 +27,8 @@
 
 .notification-badge {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: -5px; /* Adjusted position */
+  right: -5px; /* Adjusted position */
   background-color: #ef4444;
   color: white;
   border-radius: 50%;
@@ -39,7 +39,7 @@
   justify-content: center;
   font-size: 0.75rem;
   font-weight: 600;
-  border: 2px solid white;
+  border: 2px solid #2c5530; /* Border color matching nav bar background */
   min-width: 20px;
 }
 
@@ -268,11 +268,11 @@
 
 .loading-spinner {
   display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 2px solid #f3f4f6;
+  width: 30px; /* Increased size */
+  height: 30px; /* Increased size */
+  border: 3px solid #f3f4f6; /* Thicker border */
   border-radius: 50%;
-  border-top-color: #3b82f6;
+  border-top-color: #28a745; /* Green color for consistency */
   animation: spin 1s ease-in-out infinite;
   margin-bottom: 0.5rem;
 }

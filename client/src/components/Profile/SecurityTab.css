@@ -13,9 +13,10 @@
 
 .security-section {
   background: white;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #e2e8f0; /* Lighter border */
   border-radius: 12px;
   overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); /* Softer shadow */
 }
 
 .security-section-header {
@@ -23,26 +24,26 @@
   align-items: center;
   gap: 1rem;
   padding: 1.5rem;
-  background: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+  background: #f8fafc; /* Light background */
+  border-bottom: 1px solid #e2e8f0; /* Lighter border */
 }
 
 .security-icon {
-  color: #10b981;
+  color: #4CAF50; /* Green icon color */
   flex-shrink: 0;
 }
 
 .security-section-header h3 {
-  font-size: 1.125rem;
+  font-size: 1.25rem; /* Slightly larger title */
   font-weight: 600;
-  color: #1f2937;
+  color: #334155; /* Darker grey for title */
   margin: 0;
 }
 
 .security-section-header p {
-  color: #6b7280;
+  color: #64748b; /* Softer grey for description */
   margin: 0.25rem 0 0 0;
-  font-size: 0.875rem;
+  font-size: 0.9rem; /* Slightly larger description */
 }
 
 .security-content {
@@ -55,7 +56,7 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem 0;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid #f1f5f9; /* Lighter border */
 }
 
 .security-item:last-child {
@@ -68,12 +69,12 @@
 
 .security-item-title {
   font-weight: 500;
-  color: #1f2937;
+  color: #334155; /* Darker grey for title */
   margin-bottom: 0.25rem;
 }
 
 .security-item-description {
-  color: #6b7280;
+  color: #64748b; /* Softer grey for description */
   font-size: 0.875rem;
 }
 
@@ -82,30 +83,30 @@
 }
 
 .status-badge {
-  padding: 0.25rem 0.75rem;
+  padding: 0.3rem 0.8rem; /* Slightly larger padding */
   border-radius: 20px;
-  font-size: 0.75rem;
+  font-size: 0.8rem; /* Slightly larger font */
   font-weight: 500;
 }
 
 .status-badge.success {
-  background: #d1fae5;
-  color: #065f46;
+  background: #d4edda; /* Light green */
+  color: #155724; /* Dark green */
 }
 
 .status-badge.warning {
-  background: #fef3c7;
-  color: #92400e;
+  background: #fff3cd; /* Light yellow */
+  color: #856404; /* Dark yellow */
 }
 
 .status-badge.disabled {
-  background: #f3f4f6;
-  color: #6b7280;
+  background: #e9ecef; /* Light grey */
+  color: #495057; /* Dark grey */
 }
 
 .status-badge.info {
-  background: #dbeafe;
-  color: #1e40af;
+  background: #e8f5e9; /* Light green */
+  color: #2e7d32; /* Dark green */
 }
 
 .password-strength {
@@ -113,14 +114,14 @@
 }
 
 .password-strength.strong {
-  color: #059669;
+  color: #4CAF50; /* Green for strong */
 }
 
 .strength-indicator {
   width: 100%;
-  height: 4px;
-  background: #e5e7eb;
-  border-radius: 2px;
+  height: 6px; /* Slightly thicker */
+  background: #e2e8f0; /* Light grey */
+  border-radius: 3px;
   overflow: hidden;
 }
 
@@ -129,7 +130,7 @@
   display: block;
   width: 100%;
   height: 100%;
-  background: #10b981;
+  background: #4CAF50; /* Green fill */
 }
 
 .sessions-list {
@@ -144,14 +145,14 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem;
-  background: #f9fafb;
+  background: #f8fafc; /* Light background */
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #e2e8f0; /* Lighter border */
 }
 
 .session-item.current-session {
-  background: #f0fdf4;
-  border-color: #bbf7d0;
+  background: #e6ffe6; /* Light green */
+  border-color: #a3e6a3; /* Green border */
 }
 
 .session-info {
@@ -160,7 +161,7 @@
 
 .session-device {
   font-weight: 500;
-  color: #1f2937;
+  color: #334155; /* Darker grey */
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -168,7 +169,7 @@
 }
 
 .current-badge {
-  background: #10b981;
+  background: #4CAF50; /* Green */
   color: white;
   padding: 0.125rem 0.5rem;
   border-radius: 12px;
@@ -177,7 +178,7 @@
 }
 
 .session-details {
-  color: #6b7280;
+  color: #64748b; /* Softer grey */
   font-size: 0.875rem;
   display: flex;
   align-items: center;
@@ -185,7 +186,7 @@
 }
 
 .session-separator {
-  color: #d1d5db;
+  color: #cbd5e1; /* Lighter separator */
 }
 
 .session-time {
@@ -197,7 +198,7 @@
 .sessions-actions {
   margin-top: 1.5rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid #e2e8f0; /* Lighter border */
 }
 
 .recommendations-list {
@@ -211,23 +212,23 @@
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  background: #f9fafb;
+  background: #f8fafc; /* Light background */
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #e2e8f0; /* Lighter border */
 }
 
 .recommendation-item.completed {
-  background: #f0fdf4;
-  border-color: #bbf7d0;
+  background: #e6ffe6; /* Light green */
+  border-color: #a3e6a3; /* Green border */
 }
 
 .recommendation-icon {
-  color: #6b7280;
+  color: #64748b; /* Softer grey */
   flex-shrink: 0;
 }
 
 .recommendation-item.completed .recommendation-icon {
-  color: #10b981;
+  color: #4CAF50; /* Green */
 }
 
 .recommendation-content {
@@ -236,12 +237,12 @@
 
 .recommendation-title {
   font-weight: 500;
-  color: #1f2937;
+  color: #334155; /* Darker grey */
   margin-bottom: 0.25rem;
 }
 
 .recommendation-description {
-  color: #6b7280;
+  color: #64748b; /* Softer grey */
   font-size: 0.875rem;
 }
 

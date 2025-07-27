@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { commentsAPI } from '../../utils/api';
 import Image from '../common/Image/Image';
 
-const CommentItem = ({ comment, onCommentUpdate, onCommentDelete }) => {
+const CommentItem = ({ comment, onCommentUpdate, onDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
   const [loading, setLoading] = useState(false);
@@ -73,8 +73,8 @@ const CommentItem = ({ comment, onCommentUpdate, onCommentDelete }) => {
     try {
       await commentsAPI.deleteComment(comment.comment_id);
       
-      if (onCommentDelete) {
-        onCommentDelete(comment.comment_id);
+      if (onDelete) {
+        onDelete(comment.comment_id);
       }
     } catch (err) {
       console.error('Error deleting comment:', err);
@@ -220,6 +220,20 @@ const CommentItem = ({ comment, onCommentUpdate, onCommentDelete }) => {
           onClose={() => setShowEditHistory(false)}
         />
       )}
+
+      {/* Render replies if they exist */}
+      {comment.replies && comment.replies.length > 0 && (
+        <div className="comment-replies">
+          {comment.replies.map(reply => (
+            <CommentItem 
+              key={reply.comment_id || reply.id} 
+              comment={reply} 
+              onCommentUpdate={onCommentUpdate}
+              onCommentDelete={onCommentDelete}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -250,7 +264,7 @@ const EditHistoryModal = ({ editHistory, onClose }) => {
             </div>
           ) : (
             editHistory.map((edit, index) => (
-              <div key={edit.edit_id} className="edit-history-item">
+              <div key={edit.edit_id || `edit-${index}`} className="edit-history-item">
                 <div className="edit-history-meta">
                   <span className="edit-number">Edit #{editHistory.length - index}</span>
                   <span className="edit-date">{formatDate(edit.edited_at)}</span>

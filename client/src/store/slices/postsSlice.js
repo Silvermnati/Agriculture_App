@@ -121,6 +121,20 @@ export const getComments = createAsyncThunk(
   }
 );
 
+export const deleteComment = createAsyncThunk(
+  'posts/deleteComment',
+  async ({ postId, commentId }, thunkAPI) => {
+    try {
+      await postsAPI.deleteComment(commentId);
+      return { postId, commentId };
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.error?.message || error.response?.data?.message || 'Failed to delete comment'
+      );
+    }
+  }
+);
+
 const initialState = {
   posts: [],
   currentPost: null,
@@ -290,6 +304,22 @@ const postsSlice = createSlice({
       .addCase(getComments.fulfilled, (state, action) => {
         const { postId, comments } = action.payload;
         state.postComments[postId] = comments;
+      })
+      // Delete Comment
+      .addCase(deleteComment.fulfilled, (state, action) => {
+        const { postId, commentId } = action.payload;
+        if (state.postComments[postId]) {
+          state.postComments[postId] = state.postComments[postId].filter(
+            (comment) => comment.comment_id !== commentId
+          );
+        }
+        const postIndex = state.posts.findIndex(post => post.id === postId || post.post_id === postId);
+        if (postIndex !== -1) {
+          state.posts[postIndex].comment_count = Math.max(0, (state.posts[postIndex].comment_count || 0) - 1);
+        }
+        if (state.currentPost && (state.currentPost.id === postId || state.currentPost.post_id === postId)) {
+          state.currentPost.comment_count = Math.max(0, (state.currentPost.comment_count || 0) - 1);
+        }
       });
   },
 });

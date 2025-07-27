@@ -1,36 +1,48 @@
+/* === Post Interaction: Container for like/comment buttons === */
 .post-interaction {
   display: flex;
   align-items: center;
-  gap: 12px; 
+  gap: 1.5rem; /* Increased gap for better spacing */
+  padding: 0.5rem 0; /* Add some vertical padding */
 }
 
+/* === Interaction Button: Base styles for like, comment, etc. === */
 .interaction-button {
   display: flex;
   align-items: center;
-  gap: 4px; 
+  gap: 0.5rem; /* Space between icon and count */
   background: none;
   border: none;
   cursor: pointer;
-  font-size: inherit; 
-  color: #666; 
-  padding: 0.25rem;
-  transition: color 0.2s ease-in-out;
+  font-size: 0.9rem;
+  color: #666; /* A neutral color */
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
 }
 
 .interaction-button:hover {
-  color: #111827; 
+  background-color: #f0f0f0; /* A subtle background on hover */
+  color: #333;
 }
 
 .interaction-button:disabled {
   cursor: not-allowed;
-  opacity: 0.7;
+  opacity: 0.6;
 }
 
+/* === Like Button: Specific styling for the like button === */
 .like-button.liked {
-  color: #ef4444; 
+  color: #ef4444; /* A vibrant red for a liked state */
+  font-weight: 600;
 }
 
+.like-button.liked:hover {
+  background-color: #fef2f2; /* A light red background on hover when liked */
+}
+
+/* === Count: Style for the number next to the icon === */
 .count {
   font-weight: 500;
-  font-size: inherit; 
+  font-size: 0.9rem;
 }
