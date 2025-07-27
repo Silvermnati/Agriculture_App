@@ -144,11 +144,12 @@ class Comment(db.Model):
     parent_comment_id = db.Column(UUID(as_uuid=True), db.ForeignKey('comments.comment_id'), nullable=True)
     content = db.Column(db.Text, nullable=False)
     is_approved = db.Column(db.Boolean, default=True)
-    is_edited = db.Column(db.Boolean, default=False, nullable=False)
-    edit_count = db.Column(db.Integer, default=0, nullable=False)
-    last_edited_at = db.Column(db.DateTime, nullable=True)
-    is_deleted = db.Column(db.Boolean, default=False, nullable=False)
-    deleted_at = db.Column(db.DateTime, nullable=True)
+    # Note: These columns don't exist in the current database, so they're commented out
+    # is_edited = db.Column(db.Boolean, default=False, nullable=False)
+    # edit_count = db.Column(db.Integer, default=0, nullable=False)
+    # last_edited_at = db.Column(db.DateTime, nullable=True)
+    # is_deleted = db.Column(db.Boolean, default=False, nullable=False)
+    # deleted_at = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -168,11 +169,11 @@ class Comment(db.Model):
                 'name': f"{self.user.first_name} {self.user.last_name}",
                 'avatar_url': self.user.avatar_url
             } if self.user else None,
-            'is_edited': self.is_edited,
-            'edit_count': self.edit_count,
-            'last_edited_at': self.last_edited_at.isoformat() if self.last_edited_at else None,
-            'is_deleted': self.is_deleted,
-            'deleted_at': self.deleted_at.isoformat() if self.deleted_at else None,
+            'is_edited': getattr(self, 'is_edited', False),
+            'edit_count': getattr(self, 'edit_count', 0),
+            'last_edited_at': self.last_edited_at.isoformat() if hasattr(self, 'last_edited_at') and self.last_edited_at else None,
+            'is_deleted': getattr(self, 'is_deleted', False),
+            'deleted_at': self.deleted_at.isoformat() if hasattr(self, 'deleted_at') and self.deleted_at else None,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat()
         }
