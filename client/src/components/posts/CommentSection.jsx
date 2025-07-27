@@ -17,7 +17,7 @@ const CommentSection = ({ postId, comments }) => {
       )}
       <div className="comment-list">
         {comments && comments.length > 0 ? (
-          comments.map(comment => <CommentItem key={comment.id} comment={comment} />)
+          comments.map(comment => <CommentItem key={comment.comment_id || comment.id} comment={comment} />)
         ) : (
           <p>No comments yet. Be the first to share your thoughts!</p>
         )}
