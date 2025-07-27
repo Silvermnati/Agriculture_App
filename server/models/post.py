@@ -157,9 +157,9 @@ class Comment(db.Model):
     user = db.relationship('User', backref=db.backref('comments', lazy=True))
     parent_comment = db.relationship('Comment', remote_side=[comment_id], backref=db.backref('replies', lazy=True))
     
-    def to_dict(self):
+    def to_dict(self, include_replies=True):
         """Convert comment to dictionary."""
-        return {
+        comment_dict = {
             'comment_id': str(self.comment_id),
             'parent_comment_id': str(self.parent_comment_id) if self.parent_comment_id else None,
             'content': self.content,
@@ -174,9 +174,13 @@ class Comment(db.Model):
             'is_deleted': self.is_deleted,
             'deleted_at': self.deleted_at.isoformat() if self.deleted_at else None,
             'created_at': self.created_at.isoformat(),
-            'updated_at': self.updated_at.isoformat(),
-            'replies': [reply.to_dict() for reply in self.replies] if hasattr(self, 'replies') else []
+            'updated_at': self.updated_at.isoformat()
         }
+        
+        if include_replies:
+            comment_dict['replies'] = [reply.to_dict() for reply in self.replies] if hasattr(self, 'replies') else []
+        
+        return comment_dict
 
 
 class ArticlePostLike(db.Model):
