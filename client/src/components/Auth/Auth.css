@@ -26,12 +26,18 @@
   font-weight: 800;
   margin-bottom: 0.75rem;
   text-align: center;
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #15803d 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-shadow: 0 2px 4px rgba(34, 197, 94, 0.1);
   position: relative;
+  /* Fallback for browsers that don't support background-clip */
+}
+
+/* Apply gradient text only for supporting browsers */
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .auth-form-container h2 {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #15803d 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 }
 
 .auth-form-container h2::after {
@@ -51,11 +57,18 @@
   font-size: 1.125rem;
   line-height: 1.6;
   font-weight: 500;
-  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
   position: relative;
+  /* Fallback for browsers that don't support background-clip */
+}
+
+/* Apply gradient text only for supporting browsers */
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .auth-subtitle {
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 }
 
 .auth-subtitle::before {
@@ -97,6 +110,8 @@
   font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  /* Ensure labels are always visible */
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
 .form-group input,
@@ -587,14 +602,21 @@ Enhanced Form Styles - Agricultural Theme */
   font-size: 0.875rem;
   margin-top: 1rem;
   font-weight: 500;
-  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  /* Fallback for browsers that don't support background-clip */
+}
+
+/* Apply gradient text only for supporting browsers */
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .form-validation-hint {
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 }
 
 .form-validation-hint::before {
@@ -668,8 +690,9 @@ Enhanced Form Styles - Agricultural Theme */
 }
 
 .auth-links p {
-  color: #6b7280;
+  color: #374151;
   margin-bottom: 0.5rem;
+  font-weight: 500;
 }
 
 .auth-links a {

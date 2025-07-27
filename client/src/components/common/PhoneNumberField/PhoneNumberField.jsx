@@ -114,21 +114,25 @@ const PhoneNumberField = ({
   };
 
   const handlePhoneChange = (newValue) => {
-    // Clean the input
+    // Clean the input - allow digits, spaces, parentheses, hyphens, and plus sign
     const cleanedValue = CountryDetectionService.cleanPhoneInput(newValue);
     
-    // Format the number
-    const formattedValue = CountryDetectionService.formatPhoneNumber(cleanedValue, selectedCountry);
+    // Don't auto-format while typing - just pass the cleaned value
+    onChange(cleanedValue, selectedCountry);
+  };
+
+  const handlePhoneBlur = () => {
+    setFocused(false);
     
-    onChange(formattedValue, selectedCountry);
+    // Format the phone number when user finishes typing (on blur)
+    if (value && value.length > 3) {
+      const formattedValue = CountryDetectionService.formatPhoneNumber(value, selectedCountry);
+      onChange(formattedValue, selectedCountry);
+    }
   };
 
   const handleInputFocus = () => {
     setFocused(true);
-  };
-
-  const handleInputBlur = () => {
-    setFocused(false);
   };
 
   const toggleDropdown = () => {
@@ -163,27 +167,15 @@ const PhoneNumberField = ({
 
   return (
     <div className={`phone-number-field ${className}`}>
-      <FormField
-        label={label}
-        value={value}
-        onChange={handlePhoneChange}
-        type="tel"
-        name={name}
-        placeholder={placeholder || phoneExample}
-        required={required}
-        onFocus={handleInputFocus}
-        onBlur={handleInputBlur}
-        helpText={focused ? `Format: ${phoneExample}` : ''}
-        className="phone-number-field__input-field"
-        validation={[
-          {
-            validator: (val) => !val || isValid,
-            message: getValidationMessage()
-          }
-        ]}
-        {...props}
-      >
-        <div className="phone-number-field__input-container">
+      {/* Label */}
+      {label && (
+        <label htmlFor={name} className="phone-number-field__label">
+          {label}
+          {required && <span className="phone-number-field__required" aria-label="required">*</span>}
+        </label>
+      )}
+      
+      <div className="phone-number-field__input-container">
           {/* Country code selector */}
           <div className="phone-number-field__country-selector" ref={dropdownRef}>
             <button
@@ -269,7 +261,7 @@ const PhoneNumberField = ({
             value={value || ''}
             onChange={(e) => handlePhoneChange(e.target.value)}
             onFocus={handleInputFocus}
-            onBlur={handleInputBlur}
+            onBlur={handlePhoneBlur}
             placeholder={placeholder || phoneExample}
             className={`phone-number-field__input ${
               value && !isValid ? 'phone-number-field__input--error' : ''
@@ -297,13 +289,22 @@ const PhoneNumberField = ({
             </div>
           )}
         </div>
-      </FormField>
 
-      {/* Format example */}
-      {focused && phoneExample && (
-        <div className="phone-number-field__format-example" id={`${name}-format`}>
-          <span className="phone-number-field__format-label">Format:</span>
-          <span className="phone-number-field__format-text">{phoneExample}</span>
+      {/* Help text and validation */}
+      {(focused || (value && !isValid)) && (
+        <div className="phone-number-field__help">
+          {focused && phoneExample && (
+            <div className="phone-number-field__format-example" id={`${name}-format`}>
+              <span className="phone-number-field__format-label">Format:</span>
+              <span className="phone-number-field__format-text">{phoneExample}</span>
+            </div>
+          )}
+          
+          {value && !isValid && (
+            <div className="phone-number-field__error" id={`${name}-validation`} role="alert">
+              {getValidationMessage()}
+            </div>
+          )}
         </div>
       )}
     </div>

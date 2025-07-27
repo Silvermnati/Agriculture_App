@@ -521,11 +521,11 @@ def add_comment(post_id, current_user=None):
         # Extract and verify token
         try:
             import jwt
-            from server.config import Config
+            from flask import current_app
             token = token.split(' ')[1]  # Remove 'Bearer ' prefix
-            payload = jwt.decode(token, Config.SECRET_KEY, algorithms=['HS256'])
+            payload = jwt.decode(token, current_app.config['JWT_SECRET_KEY'], algorithms=['HS256'])
             from server.models.user import User
-            current_user = User.query.get(payload['user_id'])
+            current_user = User.query.filter_by(user_id=payload['user_id']).first()
             if not current_user:
                 return create_error_response('INVALID_TOKEN', 'Invalid token', status_code=401)
         except jwt.ExpiredSignatureError:
