@@ -308,51 +308,58 @@ def get_post(post_id):
     except ValueError:
         return create_error_response('INVALID_POST_ID', 'Invalid post ID format', status_code=400)
     
-    # --- Performance Fix: Eager load related data in a single query ---
-    post = Post.query.options(
-        joinedload(Post.author),
-        joinedload(Post.category),
-        joinedload(Post.tags)
-    ).filter_by(post_id=post_id).first()
+    try:
+        # --- Performance Fix: Eager load related data in a single query ---
+        post = Post.query.options(
+            joinedload(Post.author),
+            joinedload(Post.category),
+            joinedload(Post.tags)
+        ).filter_by(post_id=post_id).first()
 
-    if not post:
-        return create_error_response('POST_NOT_FOUND', 'Post not found', status_code=404)
+        if not post:
+            return create_error_response('POST_NOT_FOUND', 'Post not found', status_code=404)
 
-    # Only increment view count for published posts
-    if post.status == 'published':
-        post.view_count += 1
-        db.session.commit()
+        # Only increment view count for published posts
+        if post.status == 'published':
+            post.view_count += 1
+            db.session.commit()
 
-    # --- Performance Fix: Fetch all comments and build tree in memory ---
-    all_comments = Comment.query.options(
-        joinedload(Comment.user)
-    ).filter_by(post_id=post_id).order_by(Comment.created_at.asc()).all()
+        # --- Performance Fix: Fetch all comments and build tree in memory ---
+        all_comments = Comment.query.options(
+            joinedload(Comment.user)
+        ).filter_by(post_id=post_id).order_by(Comment.created_at.asc()).all()
 
-    comment_map = {comment.comment_id: comment.to_dict(include_replies=False) for comment in all_comments}
-    
-    # Initialize replies list for each comment
-    for comment_data in comment_map.values():
-        comment_data['replies'] = []
+        comment_map = {comment.comment_id: comment.to_dict(include_replies=False) for comment in all_comments}
+        
+        # Initialize replies list for each comment
+        for comment_data in comment_map.values():
+            comment_data['replies'] = []
 
-    top_level_comments = []
-    for comment in all_comments:
-        comment_data = comment_map[comment.comment_id]
-        if comment.parent_comment_id:
-            parent = comment_map.get(comment.parent_comment_id)
-            if parent:
-                parent['replies'].append(comment_data)
-        else:
-            top_level_comments.append(comment_data)
+        top_level_comments = []
+        for comment in all_comments:
+            comment_data = comment_map[comment.comment_id]
+            if comment.parent_comment_id:
+                parent = comment_map.get(comment.parent_comment_id)
+                if parent:
+                    parent['replies'].append(comment_data)
+            else:
+                top_level_comments.append(comment_data)
 
-    # Get like count
-    like_count = PostLike.query.filter_by(post_id=post_id).count()
+        # Get like count
+        like_count = PostLike.query.filter_by(post_id=post_id).count()
 
-    # Combine all data
-    post_data = post.to_dict(include_content=True)
-    post_data['comments'] = top_level_comments
-    post_data['like_count'] = like_count
+        # Combine all data
+        post_data = post.to_dict(include_content=True)
+        post_data['comments'] = top_level_comments
+        post_data['like_count'] = like_count
 
-    return create_success_response(data=post_data)
+        return create_success_response(data=post_data)
+        
+    except Exception as e:
+        import traceback
+        current_app.logger.error(f"Error fetching post {post_id}: {str(e)}")
+        current_app.logger.error(f"Traceback: {traceback.format_exc()}")
+        return create_error_response('SERVER_ERROR', f'An error occurred while fetching the post: {str(e)}', status_code=500)
 
 
 @token_required
