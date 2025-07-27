@@ -5,6 +5,7 @@ import { bookConsultation } from '../../store/slices/expertsSlice';
 import Modal from '../common/Modal/Modal';
 import Button from '../common/Button/Button';
 import Input from '../common/Input/Input';
+import MpesaPaymentModal from '../common/MpesaPaymentModal/MpesaPaymentModal';
 
 const ConsultationBooking = ({ expert, isOpen, onClose }) => {
   const dispatch = useDispatch();
@@ -20,6 +21,8 @@ const ConsultationBooking = ({ expert, isOpen, onClose }) => {
   });
 
   const [errors, setErrors] = useState({});
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [pendingConsultation, setPendingConsultation] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -96,9 +99,22 @@ const ConsultationBooking = ({ expert, isOpen, onClose }) => {
       scheduled_end: new Date(formData.scheduled_end).toISOString(),
     };
 
+    // Store consultation data and show payment modal
+    setPendingConsultation(consultationData);
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentSuccess = async (paymentData) => {
     try {
-      await dispatch(bookConsultation(consultationData)).unwrap();
-      // Reset form and close modal on success
+      // Include payment information with consultation booking
+      const consultationWithPayment = {
+        ...pendingConsultation,
+        payment_id: paymentData.payment_id
+      };
+
+      await dispatch(bookConsultation(consultationWithPayment)).unwrap();
+      
+      // Reset form and close modals on success
       setFormData({
         topic: '',
         description: '',
@@ -107,13 +123,21 @@ const ConsultationBooking = ({ expert, isOpen, onClose }) => {
         duration: 60,
       });
       setErrors({});
+      setPendingConsultation(null);
+      setShowPaymentModal(false);
       onClose();
-      // Show success message (you might want to use a toast notification)
-      alert('Consultation booked successfully!');
+      
+      alert('Consultation booked and payment confirmed successfully!');
     } catch (error) {
-      // Error is handled by Redux state
-      console.error('Failed to book consultation:', error);
+      console.error('Failed to book consultation after payment:', error);
+      alert('Payment successful but consultation booking failed. Please contact support.');
     }
+  };
+
+  const handlePaymentError = (error) => {
+    console.error('Payment failed:', error);
+    setShowPaymentModal(false);
+    setPendingConsultation(null);
   };
 
   const calculateCost = () => {
@@ -282,10 +306,25 @@ const ConsultationBooking = ({ expert, isOpen, onClose }) => {
         <div className="mt-4 p-3 bg-blue-50 rounded-lg">
           <p className="text-xs text-blue-600">
             <MessageSquare className="w-4 h-4 inline mr-1" />
-            You'll receive a confirmation email with meeting details once the expert accepts your booking.
+            You&apos;ll receive a confirmation email with meeting details once the expert accepts your booking.
           </p>
         </div>
       </div>
+
+      {/* M-Pesa Payment Modal */}
+      <MpesaPaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => {
+          setShowPaymentModal(false);
+          setPendingConsultation(null);
+        }}
+        amount={calculateCost()}
+        currency="KES"
+        description={`Consultation with ${expert.name} - ${formData.topic}`}
+        consultationId={pendingConsultation?.consultation_id}
+        onPaymentSuccess={handlePaymentSuccess}
+        onPaymentError={handlePaymentError}
+      />
     </Modal>
   );
 };

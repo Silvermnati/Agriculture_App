@@ -249,4 +249,36 @@ export const uploadAPI = {
   }
 };
 
+// Payments API calls
+export const paymentsAPI = {
+  initiatePayment: (paymentData) => api.post(API_ENDPOINTS.PAYMENTS.INITIATE, paymentData),
+  getPaymentStatus: (paymentId) => api.get(API_ENDPOINTS.PAYMENTS.STATUS(paymentId)),
+  getPaymentHistory: (params) => api.get(API_ENDPOINTS.PAYMENTS.HISTORY, { params }),
+  requestRefund: (paymentId, refundData) => api.post(API_ENDPOINTS.PAYMENTS.REFUND(paymentId), refundData)
+};
+
+// Notifications API calls
+export const notificationsAPI = {
+  getNotifications: (params) => api.get(API_ENDPOINTS.NOTIFICATIONS.BASE, { params }),
+  markAsRead: (notificationIds) => api.post(API_ENDPOINTS.NOTIFICATIONS.MARK_READ, { notification_ids: notificationIds }),
+  getPreferences: () => api.get(API_ENDPOINTS.NOTIFICATIONS.PREFERENCES),
+  updatePreferences: (preferences) => api.put(API_ENDPOINTS.NOTIFICATIONS.PREFERENCES, preferences),
+  getHistory: (params) => api.get(API_ENDPOINTS.NOTIFICATIONS.HISTORY, { params })
+};
+
+// Follow API calls
+export const followAPI = {
+  followUser: (userId) => api.post(API_ENDPOINTS.FOLLOW.FOLLOW_USER(userId)),
+  unfollowUser: (userId) => api.delete(API_ENDPOINTS.FOLLOW.FOLLOW_USER(userId)),
+  getFollowers: (userId, params) => api.get(API_ENDPOINTS.FOLLOW.FOLLOWERS(userId), { params }),
+  getFollowing: (userId, params) => api.get(API_ENDPOINTS.FOLLOW.FOLLOWING(userId), { params })
+};
+
+// Comments API calls
+export const commentsAPI = {
+  editComment: (commentId, commentData) => api.put(API_ENDPOINTS.COMMENTS.EDIT(commentId), commentData),
+  deleteComment: (commentId) => api.delete(API_ENDPOINTS.COMMENTS.DELETE(commentId)),
+  getEditHistory: (commentId) => api.get(API_ENDPOINTS.COMMENTS.EDIT_HISTORY(commentId))
+};
+
 export default api;

@@ -82,6 +82,30 @@ export const API_ENDPOINTS = {
   },
   UPLOAD: {
     BASE: '/upload'
+  },
+  PAYMENTS: {
+    BASE: '/payments',
+    INITIATE: '/payments/initiate',
+    CALLBACK: '/payments/callback',
+    STATUS: (paymentId) => `/payments/${paymentId}/status`,
+    HISTORY: '/payments/history',
+    REFUND: (paymentId) => `/payments/${paymentId}/refund`
+  },
+  NOTIFICATIONS: {
+    BASE: '/notifications',
+    MARK_READ: '/notifications/mark-read',
+    PREFERENCES: '/notifications/preferences',
+    HISTORY: '/notifications/history'
+  },
+  FOLLOW: {
+    FOLLOW_USER: (userId) => `/users/${userId}/follow`,
+    FOLLOWERS: (userId) => `/users/${userId}/followers`,
+    FOLLOWING: (userId) => `/users/${userId}/following`
+  },
+  COMMENTS: {
+    EDIT: (commentId) => `/comments/${commentId}`,
+    DELETE: (commentId) => `/comments/${commentId}`,
+    EDIT_HISTORY: (commentId) => `/comments/${commentId}/edit-history`
   }
 };
 

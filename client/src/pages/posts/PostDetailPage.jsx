@@ -62,17 +62,19 @@ const PostDetailPage = () => {
   return (
     <div className="post-detail-page">
       <article className="post-detail">
-        <Image src={currentPost.featured_image_url} alt={currentPost.title} className="detail-image" fallbackType="post" />
-        <h1>{currentPost.title}</h1>
+        {currentPost.featured_image_url && (
+          <Image src={currentPost.featured_image_url} alt={currentPost.title || 'Post image'} className="detail-image" fallbackType="post" />
+        )}
+        <h1>{currentPost.title || 'Untitled Post'}</h1>
         <div className="author-bar">
-          <Image src={currentPost.author?.avatar_url} alt={currentPost.author?.name} className="avatar" fallbackType="avatar" />
+          <Image src={currentPost.author?.avatar_url} alt={currentPost.author?.name || 'Author'} className="avatar" fallbackType="avatar" />
           <div>
-            <strong>{currentPost.author?.name}</strong>
-            <small><Calendar size={14} /> Published on {formatDate(currentPost.published_at)}</small>
+            <strong>{currentPost.author?.name || 'Unknown Author'}</strong>
+            <small><Calendar size={14} /> Published on {formatDate(currentPost.published_at || currentPost.created_at)}</small>
           </div>
           {currentPost.category && <span className="category">{currentPost.category.name}</span>}
         </div>
-        <div className="post-content" dangerouslySetInnerHTML={{ __html: currentPost.content }} />
+        <div className="post-content" dangerouslySetInnerHTML={{ __html: currentPost.content || '<p>No content available</p>' }} />
       </article>
       
       <CommentSection postId={postId} comments={comments} />
