@@ -50,7 +50,19 @@ api.interceptors.response.use(
 
 // Auth API calls
 export const authAPI = {
-  register: (userData) => api.post(API_ENDPOINTS.AUTH.REGISTER, userData),
+  register: (userData) => {
+    console.log('API: Registering user with data:', userData);
+    return api.post(API_ENDPOINTS.AUTH.REGISTER, userData)
+      .then(response => {
+        console.log('API: Registration response:', response);
+        return response;
+      })
+      .catch(error => {
+        console.error('API: Registration error:', error);
+        console.error('API: Error response:', error.response?.data);
+        throw error;
+      });
+  },
   login: (credentials) => api.post(API_ENDPOINTS.AUTH.LOGIN, credentials),
   getProfile: () => api.get(API_ENDPOINTS.AUTH.PROFILE),
   updateProfile: (profileData) => api.put(API_ENDPOINTS.AUTH.PROFILE, profileData),
