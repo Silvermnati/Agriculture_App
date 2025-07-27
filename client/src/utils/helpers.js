@@ -1,6 +1,8 @@
 /**
  * Utility functions for the application
  */
+import { VALIDATION } from './constants';
+import CountryDetectionService from './countryDetectionService';
 
 /**
  * Check if the current user can manage (edit/delete) a post
@@ -70,9 +72,10 @@ export const truncateText = (text, length = 100) => {
  * Get validation error for form fields
  * @param {string} fieldName - Name of the field
  * @param {any} value - Value to validate
+ * @param {Object} options - Additional validation options
  * @returns {string|null} - Error message or null if valid
  */
-export const getValidationError = (fieldName, value) => {
+export const getValidationError = (fieldName, value, options = {}) => {
   switch (fieldName) {
     case 'email':
       if (!value) return 'Email is required';
@@ -90,10 +93,138 @@ export const getValidationError = (fieldName, value) => {
       if (!value) return `${fieldName.replace('_', ' ')} is required`;
       if (value.length < 2) return `${fieldName.replace('_', ' ')} must be at least 2 characters long`;
       return null;
+
+    case 'phone_number':
+      if (!value) return null; // Phone is optional
+      if (options.countryCode) {
+        try {
+          if (!CountryDetectionService.validatePhoneNumber(value, options.countryCode)) {
+            const example = CountryDetectionService.getPhoneExample(options.countryCode);
+            return `Please enter a valid phone number${example ? `. Example: ${example}` : ''}`;
+          }
+        } catch (error) {
+          console.warn('Phone validation failed:', error);
+        }
+      }
+      return null;
       
     default:
       return null;
   }
+};
+
+/**
+ * Validate password against all requirements
+ * @param {string} password - Password to validate
+ * @returns {Object} - Validation result with details
+ */
+export const validatePassword = (password) => {
+  const requirements = VALIDATION.PASSWORD.REQUIREMENTS;
+  
+  const result = {
+    isValid: true,
+    requirements: [],
+    strength: 0
+  };
+
+  requirements.forEach(req => {
+    const met = req.validator(password);
+    result.requirements.push({
+      ...req,
+      met
+    });
+    
+    if (met) {
+      result.strength += req.optional ? 0.5 : 1;
+    } else if (!req.optional) {
+      result.isValid = false;
+    }
+  });
+
+  // Calculate strength percentage
+  const totalRequired = requirements.filter(req => !req.optional).length;
+  const totalOptional = requirements.filter(req => req.optional).length;
+  result.strengthPercentage = Math.min(100, (result.strength / (totalRequired + totalOptional)) * 100);
+
+  return result;
+};
+
+/**
+ * Debounced validation function
+ * @param {Function} validationFn - Validation function to debounce
+ * @param {number} delay - Delay in milliseconds
+ * @returns {Function} - Debounced validation function
+ */
+export const createDebouncedValidator = (validationFn, delay = 300) => {
+  return debounce(validationFn, delay);
+};
+
+/**
+ * Validate form field with enhanced options
+ * @param {string} fieldName - Field name
+ * @param {any} value - Field value
+ * @param {Object} options - Validation options
+ * @returns {Object} - Validation result
+ */
+export const validateField = (fieldName, value, options = {}) => {
+  const error = getValidationError(fieldName, value, options);
+  
+  return {
+    isValid: !error,
+    error,
+    value,
+    fieldName
+  };
+};
+
+/**
+ * Validate entire form
+ * @param {Object} formData - Form data object
+ * @param {Object} validationRules - Validation rules for each field
+ * @returns {Object} - Form validation result
+ */
+export const validateForm = (formData, validationRules = {}) => {
+  const errors = {};
+  const validFields = {};
+  let isValid = true;
+
+  Object.keys(formData).forEach(fieldName => {
+    const value = formData[fieldName];
+    const rules = validationRules[fieldName] || {};
+    
+    const fieldResult = validateField(fieldName, value, rules);
+    
+    if (!fieldResult.isValid) {
+      errors[fieldName] = fieldResult.error;
+      isValid = false;
+    } else {
+      validFields[fieldName] = true;
+    }
+  });
+
+  return {
+    isValid,
+    errors,
+    validFields,
+    hasErrors: Object.keys(errors).length > 0
+  };
+};
+
+/**
+ * Format validation error message with placeholders
+ * @param {string} message - Error message template
+ * @param {Object} placeholders - Placeholder values
+ * @returns {string} - Formatted message
+ */
+export const formatValidationMessage = (message, placeholders = {}) => {
+  let formatted = message;
+  
+  Object.keys(placeholders).forEach(key => {
+    const placeholder = `{${key}}`;
+    formatted = formatted.replace(new RegExp(placeholder, 'g'), placeholders[key]);
+  });
+  
+  return formatted;
 };
 
 /**

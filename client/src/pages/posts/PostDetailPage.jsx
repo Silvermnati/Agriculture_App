@@ -27,7 +27,7 @@ const PostDetailPage = () => {
     return () => {
       dispatch(clearCurrentPost());
     };
-  }, [dispatch, postId]);
+  }, [dispatch, fetchData, postId]);
 
   useEffect(() => {
     if (location.hash === '#comments' && !isLoading) {
