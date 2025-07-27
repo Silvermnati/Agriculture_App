@@ -60,6 +60,7 @@ export const authAPI = {
       .catch(error => {
         console.error('API: Registration error:', error);
         console.error('API: Error response:', error.response?.data);
+        console.error('API: Error details:', JSON.stringify(error.response?.data, null, 2));
         throw error;
       });
   },

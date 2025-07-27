@@ -1,10 +1,11 @@
 .auth-form-container {
-  max-width: 600px;
+  max-width: 800px;
   margin: 2rem auto;
   padding: 2rem;
   background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
 }
 
 .auth-form-container h2 {
@@ -262,5 +263,455 @@
   .form-row {
     flex-direction: column;
     gap: 1rem;
+  }
+}
+/* 
+Enhanced Form Styles */
+.enhanced-form {
+  gap: 2rem;
+}
+
+.form-section {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-section-title {
+  color: #1f2937;
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-section-title::before {
+  content: '';
+  width: 4px;
+  height: 1.25rem;
+  background-color: #4CAF50;
+  border-radius: 2px;
+}
+
+/* Form errors display */
+.form-errors {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-errors h4 {
+  color: #dc2626;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+
+.form-errors ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.form-errors li {
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+  padding-left: 1rem;
+  position: relative;
+}
+
+.form-errors li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #dc2626;
+}
+
+/* Enhanced form row */
+.enhanced-form .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.enhanced-form .form-row > * {
+  min-width: 0; /* Prevent overflow */
+}
+
+/* Farmer specific fields */
+.farmer-specific-fields {
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.farmer-specific-fields::before {
+  content: '🌱 Farmer Information';
+  display: block;
+  font-weight: 600;
+  color: #166534;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+/* Enhanced auth button */
+.auth-button {
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+}
+
+.auth-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.auth-button:hover::before {
+  left: 100%;
+}
+
+.auth-button:hover {
+  background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+}
+
+.auth-button--ready {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.auth-button--ready:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+.auth-button:disabled {
+  background: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.auth-button:disabled::before {
+  display: none;
+}
+
+/* Loading spinner */
+.loading-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Form actions */
+.form-actions {
+  text-align: center;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 2rem;
+}
+
+.form-validation-hint {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin-top: 0.75rem;
+  font-style: italic;
+}
+
+/* Enhanced auth container header */
+.auth-form-container h2 {
+  color: #1f2937;
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-align: center;
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.auth-subtitle {
+  color: #6b7280;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* Success and error states */
+.auth-success {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  border: 1px solid #6ee7b7;
+  color: #065f46;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.auth-success::before {
+  content: '✓';
+  background-color: #10b981;
+  color: white;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+.auth-error {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border: 1px solid #f87171;
+  color: #991b1b;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.auth-error::before {
+  content: '⚠';
+  background-color: #ef4444;
+  color: white;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+/* Enhanced links */
+.auth-links {
+  margin-top: 2rem;
+  text-align: center;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.auth-links p {
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+}
+
+.auth-links a {
+  color: #4CAF50;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.auth-links a:hover {
+  color: #45a049;
+  text-decoration: underline;
+}
+
+/* Responsive design enhancements */
+@media (max-width: 768px) {
+  .auth-form-container {
+    padding: 1.5rem;
+    margin: 1rem;
+    border-radius: 8px;
+  }
+  
+  .enhanced-form .form-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .form-section {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .form-section-title {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .auth-button {
+    padding: 0.875rem 1.5rem;
+    font-size: 0.875rem;
+  }
+  
+  .auth-form-container h2 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-form-container {
+    padding: 1rem;
+    margin: 0.5rem;
+  }
+  
+  .form-section {
+    padding: 0.75rem;
+  }
+  
+  .form-section-title {
+    font-size: 0.875rem;
+  }
+  
+  .auth-button {
+    padding: 0.75rem 1rem;
+    font-size: 0.8125rem;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .form-section {
+    border-width: 2px;
+  }
+  
+  .auth-button {
+    border: 2px solid #4CAF50;
+  }
+  
+  .auth-button:disabled {
+    border-color: #9ca3af;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .auth-button,
+  .auth-button::before,
+  .loading-spinner {
+    transition: none;
+    animation: none;
+  }
+  
+  .auth-button:hover {
+    transform: none;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .auth-form-container {
+    background-color: #1f2937;
+    border-color: #374151;
+  }
+  
+  .form-section {
+    background-color: #111827;
+    border-color: #374151;
+  }
+  
+  .form-section-title {
+    color: #f3f4f6;
+    border-color: #4b5563;
+  }
+  
+  .auth-form-container h2 {
+    color: #f3f4f6;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .auth-subtitle {
+    color: #d1d5db;
+  }
+  
+  .form-validation-hint {
+    color: #d1d5db;
+  }
+  
+  .farmer-specific-fields {
+    background-color: #064e3b;
+    border-color: #065f46;
+  }
+  
+  .farmer-specific-fields::before {
+    color: #6ee7b7;
+  }
+  
+  .form-errors {
+    background-color: #7f1d1d;
+    border-color: #dc2626;
+  }
+  
+  .auth-links {
+    border-color: #4b5563;
+  }
+  
+  .auth-links p {
+    color: #d1d5db;
+  }
+}
+
+/* Print styles */
+@media print {
+  .auth-form-container {
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+  
+  .auth-button,
+  .loading-spinner {
+    display: none;
+  }
+  
+  .form-section {
+    break-inside: avoid;
   }
 }

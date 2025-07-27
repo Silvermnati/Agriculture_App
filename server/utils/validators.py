@@ -84,7 +84,7 @@ def validate_phone_number(phone: str) -> bool:
     if not phone:
         return True  # Phone is optional
     # Allow international format with + and digits, spaces, hyphens
-    pattern = r'^\+?[1-9]\d{1,14}$'
+    pattern = r'^\+?[1-9]\d{6,14}$'$'
     cleaned_phone = re.sub(r'[\s\-\(\)]', '', phone)
     return re.match(pattern, cleaned_phone) is not None
 
@@ -290,7 +290,7 @@ def validate_agricultural_data(data: Dict[str, Any], data_type: str) -> Validati
             if not role_result.success:
                 result.errors.update(role_result.errors)
         
-        if 'phone_number' in data and not validate_phone_number(data['phone_number']):
+        if 'phone_number' in data and data['phone_number'] and not validate_phone_number(data['phone_number']):
             result.add_error('phone_number', 'Invalid phone number format')
         
         # Validate agricultural fields

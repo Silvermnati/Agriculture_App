@@ -1,0 +1,255 @@
+.form-field {
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.form-field__label {
+  display: block;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.form-field__required {
+  color: #ef4444;
+  margin-left: 0.25rem;
+}
+
+.form-field__input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.form-field__input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  color: #111827;
+  background-color: #ffffff;
+  transition: all 0.2s ease-in-out;
+  outline: none;
+}
+
+.form-field__input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-field__input--error {
+  border-color: #ef4444;
+  background-color: #fef2f2;
+}
+
+.form-field__input--error:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.form-field__input--valid {
+  border-color: #10b981;
+  background-color: #f0fdf4;
+}
+
+.form-field__input--valid:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.form-field__input:disabled {
+  background-color: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.form-field__input::placeholder {
+  color: #9ca3af;
+}
+
+/* Textarea specific styles */
+.form-field__input[type="textarea"] {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Select specific styles */
+.form-field__input[type="select"] {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+}
+
+.form-field__status {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.form-field__status-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.form-field__status-icon--valid {
+  background-color: #10b981;
+  color: white;
+}
+
+.form-field__status-icon--error {
+  background-color: #ef4444;
+  color: white;
+}
+
+.form-field__counter {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.form-field__counter--warning {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.form-field__help {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.form-field__error {
+  color: #ef4444;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.form-field__error::before {
+  content: "⚠";
+  font-size: 0.875rem;
+}
+
+.form-field__help-text {
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.form-field__help-text::before {
+  content: "ℹ";
+  font-size: 0.875rem;
+  color: #3b82f6;
+}
+
+/* Focus states */
+.form-field--focused .form-field__label {
+  color: #3b82f6;
+}
+
+.form-field--error .form-field__label {
+  color: #ef4444;
+}
+
+.form-field--valid .form-field__label {
+  color: #10b981;
+}
+
+.form-field--disabled {
+  opacity: 0.6;
+}
+
+.form-field--disabled .form-field__label {
+  color: #6b7280;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .form-field {
+    margin-bottom: 1rem;
+  }
+  
+  .form-field__input {
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+  }
+  
+  .form-field__label {
+    font-size: 0.8125rem;
+  }
+  
+  .form-field__help {
+    font-size: 0.8125rem;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .form-field__input {
+    border-width: 3px;
+  }
+  
+  .form-field__input:focus {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .form-field__input {
+    transition: none;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .form-field__label {
+    color: #f3f4f6;
+  }
+  
+  .form-field__input {
+    background-color: #1f2937;
+    border-color: #4b5563;
+    color: #f3f4f6;
+  }
+  
+  .form-field__input:focus {
+    border-color: #60a5fa;
+  }
+  
+  .form-field__input--error {
+    background-color: #7f1d1d;
+    border-color: #ef4444;
+  }
+  
+  .form-field__input--valid {
+    background-color: #064e3b;
+    border-color: #10b981;
+  }
+  
+  .form-field__help-text {
+    color: #d1d5db;
+  }
+  
+  .form-field__counter {
+    color: #d1d5db;
+  }
+}

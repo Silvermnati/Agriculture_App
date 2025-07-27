@@ -2,8 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { register, reset } from '../../store/slices/authSlice';
-import { FARMING_TYPES, COUNTRIES } from '../../utils/constants';
-import { getValidationError } from '../../utils/helpers';
+import { FARMING_TYPES, COUNTRIES, COUNTRIES_WITH_PHONE_DATA } from '../../utils/constants';
+import { validateForm, formatValidationMessage } from '../../utils/helpers';
+import CountryDetectionService from '../../utils/countryDetectionService';
+import FormField from '../common/FormField/FormField';
+import PasswordField from '../common/PasswordField/PasswordField';
+import PhoneNumberField from '../common/PhoneNumberField/PhoneNumberField';
 import './Auth.css';
 
 const RegisterForm = () => {
@@ -16,6 +20,7 @@ const RegisterForm = () => {
     gender: 'male',
     role: 'farmer',
     phone_number: '',
+    phone_country_code: '',
     country: '',
     city: '',
     farm_size: '',
@@ -24,79 +29,181 @@ const RegisterForm = () => {
     farming_type: 'organic',
   });
   
-  const [showPassword, setShowPassword] = useState(false);
-  const [passwordMatch, setPasswordMatch] = useState(true);
-  const [validationErrors, setValidationErrors] = useState({});
+  const [validationState, setValidationState] = useState({});
+  const [formErrors, setFormErrors] = useState({});
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [detectedCountry, setDetectedCountry] = useState('');
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { isLoading, isError, isSuccess, message } = useSelector((state) => state.auth);
 
+  // Initialize country detection
   useEffect(() => {
-    // Redirect to home page if registration is successful
+    const initializeCountry = async () => {
+      try {
+        const country = await CountryDetectionService.getCountryPreference();
+        setDetectedCountry(country);
+        
+        // Set default country if not already set
+        if (!formData.country && !formData.phone_country_code) {
+          setFormData(prev => ({
+            ...prev,
+            country: CountryDetectionService.getCountryData(country)?.name || '',
+            phone_country_code: country
+          }));
+        }
+      } catch (error) {
+        console.warn('Failed to detect country:', error);
+        setDetectedCountry('US');
+      }
+    };
+
+    initializeCountry();
+  }, []);
+
+  // Redirect on successful registration
+  useEffect(() => {
     if (isSuccess) {
       const timer = setTimeout(() => {
         navigate('/');
-      }, 1500); // Redirect after 1.5 seconds to show success message
+      }, 1500);
       
       return () => clearTimeout(timer);
     }
     
-    // Reset auth state when component unmounts
     return () => {
       dispatch(reset());
     };
   }, [isSuccess, dispatch, navigate]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
+  // Update form validity when validation state changes
+  useEffect(() => {
+    const requiredFields = ['email', 'password', 'first_name', 'last_name'];
+    const allRequiredValid = requiredFields.every(field => validationState[field] !== false);
+    const passwordsMatch = formData.password === formData.confirmPassword;
+    const hasNoErrors = Object.keys(formErrors).length === 0;
+    
+    setIsFormValid(allRequiredValid && passwordsMatch && hasNoErrors);
+  }, [validationState, formData.password, formData.confirmPassword, formErrors]);
+
+  const handleFieldChange = (fieldName, value) => {
+    setFormData(prev => ({
       ...prev,
-      [name]: value,
+      [fieldName]: value
     }));
-    
-    // Check password match
-    if (name === 'confirmPassword' || name === 'password') {
-      if (name === 'confirmPassword') {
-        setPasswordMatch(formData.password === value);
-      } else {
-        setPasswordMatch(formData.confirmPassword === value);
-      }
-    }
-    
-    // Validate field
-    const error = getValidationError(name, value);
-    if (error) {
-      setValidationErrors(prev => ({
+  };
+
+  const handlePhoneChange = (phoneValue, countryCode) => {
+    setFormData(prev => {
+      const newData = {
         ...prev,
-        [name]: error
+        phone_number: phoneValue,
+        phone_country_code: countryCode
+      };
+
+      // Sync country field if it's empty or different
+      const countryData = CountryDetectionService.getCountryData(countryCode);
+      if (countryData && (!prev.country || prev.country !== countryData.name)) {
+        // Ask user if they want to update country field
+        if (prev.country && prev.country !== countryData.name) {
+          const shouldUpdate = window.confirm(
+            `Would you like to update your country to ${countryData.name} to match your phone number?`
+          );
+          if (shouldUpdate) {
+            newData.country = countryData.name;
+          }
+        } else {
+          newData.country = countryData.name;
+        }
+      }
+
+      return newData;
+    });
+  };
+
+  const handleCountryChange = (countryName) => {
+    setFormData(prev => ({
+      ...prev,
+      country: countryName
+    }));
+
+    // Sync phone country code
+    const countryData = COUNTRIES_WITH_PHONE_DATA.find(c => c.name === countryName);
+    if (countryData && countryData.code !== formData.phone_country_code) {
+      setFormData(current => ({
+        ...current,
+        phone_country_code: countryData.code
+      }));
+      
+      // Store the preference
+      CountryDetectionService.storeCountryPreference(countryData.code);
+    }
+  };
+
+  const handleValidationChange = (fieldName, isValid, error) => {
+    setValidationState(prev => ({
+      ...prev,
+      [fieldName]: isValid
+    }));
+
+    if (error) {
+      setFormErrors(prev => ({
+        ...prev,
+        [fieldName]: error
       }));
     } else {
-      setValidationErrors(prev => {
+      setFormErrors(prev => {
         const newErrors = { ...prev };
-        delete newErrors[name];
+        delete newErrors[fieldName];
         return newErrors;
       });
+    }
+  };
+
+  const scrollToFirstError = () => {
+    const firstErrorField = Object.keys(formErrors)[0];
+    if (firstErrorField) {
+      const element = document.querySelector(`[name="${firstErrorField}"]`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.focus();
+      }
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     
+    // Validate entire form
+    const validationResult = validateForm(formData, {
+      phone_number: { countryCode: formData.phone_country_code }
+    });
+
+    if (!validationResult.isValid) {
+      setFormErrors(validationResult.errors);
+      scrollToFirstError();
+      return;
+    }
+
+    // Check password match
     if (formData.password !== formData.confirmPassword) {
-      setPasswordMatch(false);
+      setFormErrors(prev => ({
+        ...prev,
+        confirmPassword: 'Passwords do not match'
+      }));
+      scrollToFirstError();
       return;
     }
     
-    // Remove confirmPassword before sending to API
-    const { confirmPassword, ...registerData } = formData;
+    // Prepare data for submission
+    const { confirmPassword, phone_country_code, ...registerData } = formData;
     
-    // Ensure farm_size is a number if provided
+    // Convert numeric fields
     if (registerData.farm_size) {
       registerData.farm_size = parseFloat(registerData.farm_size);
     }
     
-    // Ensure farming_experience is a number if provided
     if (registerData.farming_experience) {
       registerData.farming_experience = parseInt(registerData.farming_experience, 10);
     }
@@ -112,240 +219,256 @@ const RegisterForm = () => {
       {isError && <div className="auth-error">{message}</div>}
       {isSuccess && <div className="auth-success">Registration successful!</div>}
       
-      <form className="auth-form" onSubmit={handleSubmit}>
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="first_name">First Name</label>
-            <input
-              type="text"
-              id="first_name"
-              name="first_name"
+      <form className="auth-form enhanced-form" onSubmit={handleSubmit}>
+        {/* Form-level errors */}
+        {Object.keys(formErrors).length > 0 && (
+          <div className="form-errors" role="alert">
+            <h4>Please correct the following errors:</h4>
+            <ul>
+              {Object.entries(formErrors).map(([field, error]) => (
+                <li key={field}>{error}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Personal Information */}
+        <div className="form-section">
+          <h3 className="form-section-title">Personal Information</h3>
+          
+          <div className="form-row">
+            <FormField
+              label="First Name"
               value={formData.first_name}
-              onChange={handleChange}
+              onChange={(value) => handleFieldChange('first_name', value)}
+              type="text"
+              name="first_name"
               placeholder="Enter your first name"
               required
+              helpText="Your first name as it appears on official documents"
+              maxLength={50}
+              onValidationChange={(isValid, error) => handleValidationChange('first_name', isValid, error)}
             />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="last_name">Last Name</label>
-            <input
-              type="text"
-              id="last_name"
-              name="last_name"
+            
+            <FormField
+              label="Last Name"
               value={formData.last_name}
-              onChange={handleChange}
+              onChange={(value) => handleFieldChange('last_name', value)}
+              type="text"
+              name="last_name"
               placeholder="Enter your last name"
               required
+              helpText="Your last name as it appears on official documents"
+              maxLength={50}
+              onValidationChange={(isValid, error) => handleValidationChange('last_name', isValid, error)}
+            />
+          </div>
+          
+          <FormField
+            label="Gender"
+            value={formData.gender}
+            onChange={(value) => handleFieldChange('gender', value)}
+            type="select"
+            name="gender"
+            required
+            helpText="This helps us provide personalized content"
+            options={[
+              { value: 'male', label: 'Male' },
+              { value: 'female', label: 'Female' },
+              { value: 'other', label: 'Other' }
+            ]}
+          />
+        </div>
+
+        {/* Contact Information */}
+        <div className="form-section">
+          <h3 className="form-section-title">Contact Information</h3>
+          
+          <FormField
+            label="Email Address"
+            value={formData.email}
+            onChange={(value) => handleFieldChange('email', value)}
+            type="email"
+            name="email"
+            placeholder="Enter your email address"
+            required
+            helpText="We'll use this to send you important updates and notifications"
+            onValidationChange={(isValid, error) => handleValidationChange('email', isValid, error)}
+          />
+
+          <PhoneNumberField
+            label="Phone Number (Optional)"
+            value={formData.phone_number}
+            countryCode={formData.phone_country_code}
+            onChange={handlePhoneChange}
+            name="phone_number"
+            placeholder="Enter your phone number"
+            defaultCountry={detectedCountry}
+            onValidationChange={(isValid) => handleValidationChange('phone_number', isValid)}
+          />
+
+          <div className="form-row">
+            <FormField
+              label="Country"
+              value={formData.country}
+              onChange={handleCountryChange}
+              type="select"
+              name="country"
+              helpText="Select your country of residence"
+              options={[
+                { value: '', label: 'Select your country' },
+                ...COUNTRIES.map(country => ({ value: country, label: country }))
+              ]}
+            />
+            
+            <FormField
+              label="City"
+              value={formData.city}
+              onChange={(value) => handleFieldChange('city', value)}
+              type="text"
+              name="city"
+              placeholder="Enter your city"
+              helpText="Your city or nearest major city"
+              maxLength={100}
             />
           </div>
         </div>
-        
-        <div className="form-group">
-          <label htmlFor="gender">Gender</label>
-          <select
-            id="gender"
-            name="gender"
-            value={formData.gender}
-            onChange={handleChange}
-          >
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="other">Other</option>
-          </select>
+
+        {/* Security */}
+        <div className="form-section">
+          <h3 className="form-section-title">Security</h3>
+          
+          <div className="form-row">
+            <PasswordField
+              label="Password"
+              value={formData.password}
+              onChange={(value) => handleFieldChange('password', value)}
+              name="password"
+              placeholder="Create a strong password"
+              required
+              showRequirements={true}
+              onValidationChange={(isValid) => handleValidationChange('password', isValid)}
+            />
+            
+            <FormField
+              label="Confirm Password"
+              value={formData.confirmPassword}
+              onChange={(value) => handleFieldChange('confirmPassword', value)}
+              type="password"
+              name="confirmPassword"
+              placeholder="Confirm your password"
+              required
+              helpText="Re-enter your password to confirm"
+              validation={[
+                {
+                  validator: (value) => value === formData.password,
+                  message: 'Passwords do not match'
+                }
+              ]}
+              onValidationChange={(isValid, error) => handleValidationChange('confirmPassword', isValid, error)}
+            />
+          </div>
         </div>
-        
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="Enter your email"
-            className={validationErrors.email ? 'input-error' : ''}
+
+        {/* Professional Information */}
+        <div className="form-section">
+          <h3 className="form-section-title">Professional Information</h3>
+          
+          <FormField
+            label="I am a:"
+            value={formData.role}
+            onChange={(value) => handleFieldChange('role', value)}
+            type="select"
+            name="role"
             required
+            helpText="Select your primary role in agriculture"
+            options={[
+              { value: 'farmer', label: 'Farmer' },
+              { value: 'expert', label: 'Agricultural Expert' },
+              { value: 'supplier', label: 'Supplier' },
+              { value: 'researcher', label: 'Researcher' },
+              { value: 'student', label: 'Student' }
+            ]}
           />
-          {validationErrors.email && (
-            <div className="field-error">{validationErrors.email}</div>
+          
+          {formData.role === 'farmer' && (
+            <div className="farmer-specific-fields">
+              <div className="form-row">
+                <FormField
+                  label="Farm Size"
+                  value={formData.farm_size}
+                  onChange={(value) => handleFieldChange('farm_size', value)}
+                  type="number"
+                  name="farm_size"
+                  placeholder="Enter farm size"
+                  helpText="Size of your farming area"
+                  min="0.01"
+                  step="0.01"
+                />
+                
+                <FormField
+                  label="Unit"
+                  value={formData.farm_size_unit}
+                  onChange={(value) => handleFieldChange('farm_size_unit', value)}
+                  type="select"
+                  name="farm_size_unit"
+                  helpText="Unit of measurement"
+                  options={[
+                    { value: 'hectares', label: 'Hectares' },
+                    { value: 'acres', label: 'Acres' }
+                  ]}
+                />
+              </div>
+              
+              <div className="form-row">
+                <FormField
+                  label="Years of Experience"
+                  value={formData.farming_experience}
+                  onChange={(value) => handleFieldChange('farming_experience', value)}
+                  type="number"
+                  name="farming_experience"
+                  placeholder="Years of farming experience"
+                  helpText="How many years have you been farming?"
+                  min="0"
+                  max="100"
+                />
+                
+                <FormField
+                  label="Farming Type"
+                  value={formData.farming_type}
+                  onChange={(value) => handleFieldChange('farming_type', value)}
+                  type="select"
+                  name="farming_type"
+                  helpText="Your primary farming approach"
+                  options={FARMING_TYPES.map(type => ({ value: type.value, label: type.label }))}
+                />
+              </div>
+            </div>
           )}
         </div>
-
-        <div className="form-group">
-          <label htmlFor="phone_number">Phone Number (Optional)</label>
-          <input
-            type="tel"
-            id="phone_number"
-            name="phone_number"
-            value={formData.phone_number}
-            onChange={handleChange}
-            placeholder="Enter your phone number"
-          />
-        </div>
-
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="country">Country</label>
-            <select
-              id="country"
-              name="country"
-              value={formData.country}
-              onChange={handleChange}
-            >
-              <option value="">Select your country</option>
-              {COUNTRIES.map(country => (
-                <option key={country} value={country}>
-                  {country}
-                </option>
-              ))}
-            </select>
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="city">City</label>
-            <input
-              type="text"
-              id="city"
-              name="city"
-              value={formData.city}
-              onChange={handleChange}
-              placeholder="Enter your city"
-            />
-          </div>
-        </div>
         
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <div className="password-input">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Enter your password"
-                required
-              />
-            </div>
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm Password</label>
-            <div className="password-input">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                id="confirmPassword"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                placeholder="Confirm your password"
-                required
-              />
-            </div>
-          </div>
-        </div>
-        
-        {!passwordMatch && (
-          <div className="auth-error">Passwords do not match</div>
-        )}
-        
-        <div className="form-group">
+        <div className="form-actions">
           <button 
-            type="button" 
-            className="toggle-password-btn"
-            onClick={() => setShowPassword(!showPassword)}
+            type="submit" 
+            className={`auth-button ${isFormValid ? 'auth-button--ready' : ''}`}
+            disabled={isLoading || !isFormValid}
           >
-            {showPassword ? 'Hide Password' : 'Show Password'}
+            {isLoading ? (
+              <>
+                <span className="loading-spinner"></span>
+                Registering...
+              </>
+            ) : (
+              'Create Account'
+            )}
           </button>
+          
+          {!isFormValid && (
+            <p className="form-validation-hint">
+              Please fill in all required fields correctly to continue
+            </p>
+          )}
         </div>
-        
-        <div className="form-group">
-          <label htmlFor="role">I am a:</label>
-          <select
-            id="role"
-            name="role"
-            value={formData.role}
-            onChange={handleChange}
-            required
-          >
-            <option value="farmer">Farmer</option>
-            <option value="expert">Agricultural Expert</option>
-            <option value="supplier">Supplier</option>
-            <option value="researcher">Researcher</option>
-            <option value="student">Student</option>
-          </select>
-        </div>
-        
-        {formData.role === 'farmer' && (
-          <>
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="farm_size">Farm Size</label>
-                <input
-                  type="number"
-                  id="farm_size"
-                  name="farm_size"
-                  value={formData.farm_size}
-                  onChange={handleChange}
-                  placeholder="Enter farm size"
-                />
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="farm_size_unit">Unit</label>
-                <select
-                  id="farm_size_unit"
-                  name="farm_size_unit"
-                  value={formData.farm_size_unit}
-                  onChange={handleChange}
-                >
-                  <option value="hectares">Hectares</option>
-                  <option value="acres">Acres</option>
-                </select>
-              </div>
-            </div>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="farming_experience">Years of Experience</label>
-                <input
-                  type="number"
-                  id="farming_experience"
-                  name="farming_experience"
-                  value={formData.farming_experience}
-                  onChange={handleChange}
-                  placeholder="Years of farming experience"
-                />
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="farming_type">Farming Type</label>
-                <select
-                  id="farming_type"
-                  name="farming_type"
-                  value={formData.farming_type}
-                  onChange={handleChange}
-                >
-                  {FARMING_TYPES.map(type => (
-                    <option key={type.value} value={type.value}>
-                      {type.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </>
-        )}
-        
-        <button 
-          type="submit" 
-          className="auth-button"
-          disabled={isLoading || !passwordMatch}
-        >
-          {isLoading ? 'Registering...' : 'Register'}
-        </button>
       </form>
       
       <div className="auth-links">
