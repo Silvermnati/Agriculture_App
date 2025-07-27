@@ -508,9 +508,31 @@ def delete_post(current_user, post_id, resource=None):
 def add_comment(post_id, current_user=None):
     """
     Handle both GET and POST requests for comments.
-    GET: Retrieve comments for a post
-    POST: Add a new comment to a post
+    GET: Retrieve comments for a post (no auth required)
+    POST: Add a new comment to a post (auth required)
     """
+    # For POST requests, require authentication
+    if request.method == 'POST':
+        # Check if user is authenticated for POST requests
+        token = request.headers.get('Authorization')
+        if not token or not token.startswith('Bearer '):
+            return create_error_response('AUTHENTICATION_REQUIRED', 'Authentication required', status_code=401)
+        
+        # Extract and verify token
+        try:
+            import jwt
+            from server.config import Config
+            token = token.split(' ')[1]  # Remove 'Bearer ' prefix
+            payload = jwt.decode(token, Config.SECRET_KEY, algorithms=['HS256'])
+            from server.models.user import User
+            current_user = User.query.get(payload['user_id'])
+            if not current_user:
+                return create_error_response('INVALID_TOKEN', 'Invalid token', status_code=401)
+        except jwt.ExpiredSignatureError:
+            return create_error_response('TOKEN_EXPIRED', 'Token has expired', status_code=401)
+        except jwt.InvalidTokenError:
+            return create_error_response('INVALID_TOKEN', 'Invalid token', status_code=401)
+    
     try:
         # Convert string post_id to UUID
         if isinstance(post_id, str):

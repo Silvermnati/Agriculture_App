@@ -130,7 +130,11 @@ export const postsAPI = {
     return api.put(`${API_ENDPOINTS.POSTS.BASE}/${postId}`, postData);
   },
   deletePost: (postId) => api.delete(`${API_ENDPOINTS.POSTS.BASE}/${postId}`),
-  addComment: (postId, commentData) => api.post(API_ENDPOINTS.POSTS.COMMENTS(postId), commentData),
+  addComment: (postId, commentData) => {
+    console.log('API: Adding comment to post:', postId, 'with data:', commentData);
+    console.log('API: Token in localStorage:', localStorage.getItem('token') ? 'Present' : 'Missing');
+    return api.post(API_ENDPOINTS.POSTS.COMMENTS(postId), commentData);
+  },
   getComments: (postId) => api.get(API_ENDPOINTS.POSTS.COMMENTS(postId)),
   toggleLike: (postId) => api.post(API_ENDPOINTS.POSTS.LIKE(postId))
 };
