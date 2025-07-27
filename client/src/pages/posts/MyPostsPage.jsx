@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Plus, Filter } from 'lucide-react';
@@ -12,34 +12,30 @@ const MyPostsPage = () => {
   const { user, isAuthenticated } = useSelector(state => state.auth);
   const { posts, isLoading, isError, message } = useSelector(state => state.posts);
   
-  const [filter, setFilter] = useState('all'); // all, published, draft, archived
-  const [myPosts, setMyPosts] = useState([]);
+  const [filter, setFilter] = useState('all');
 
   useEffect(() => {
-    if (isAuthenticated && user) {
-      // Fetch all posts and filter client-side for now
-      // In a real app, you'd want to add author filtering to the API
-      dispatch(getPosts({}));
+    if (isAuthenticated && user?.id) {
+      dispatch(getPosts({ authorId: user.id }));
     }
-  }, [dispatch, isAuthenticated, user]);
+  }, [dispatch, isAuthenticated, user?.id]);
 
-  useEffect(() => {
-    if (posts && user) {
-      // Filter posts by current user
-      const userPosts = posts.filter(post => 
-        post.author?.user_id === user.id || 
-        post.author_id === user.id
-      );
-      
-      // Apply status filter
-      let filteredPosts = userPosts;
-      if (filter !== 'all') {
-        filteredPosts = userPosts.filter(post => post.status === filter);
-      }
-      
-      setMyPosts(filteredPosts);
-    }
-  }, [posts, user, filter]);
+  const { myPosts, filterCounts } = useMemo(() => {
+    const userPosts = posts || [];
+
+    const counts = {
+      all: userPosts.length,
+      published: userPosts.filter(p => p.status === 'published').length,
+      draft: userPosts.filter(p => p.status === 'draft').length,
+      archived: userPosts.filter(p => p.status === 'archived').length,
+    };
+
+    const filteredPosts = filter === 'all'
+      ? userPosts
+      : userPosts.filter(post => post.status === filter);
+
+    return { myPosts: filteredPosts, filterCounts: counts };
+  }, [posts, filter]);
 
   if (!isAuthenticated) {
     return (
@@ -50,24 +46,6 @@ const MyPostsPage = () => {
       </div>
     );
   }
-
-  const getFilterCounts = () => {
-    if (!posts || !user) return { all: 0, published: 0, draft: 0, archived: 0 };
-    
-    const userPosts = posts.filter(post => 
-      post.author?.user_id === user.id || 
-      post.author_id === user.id
-    );
-    
-    return {
-      all: userPosts.length,
-      published: userPosts.filter(p => p.status === 'published').length,
-      draft: userPosts.filter(p => p.status === 'draft').length,
-      archived: userPosts.filter(p => p.status === 'archived').length
-    };
-  };
-
-  const filterCounts = getFilterCounts();
 
   return (
     <div className="my-posts-page">

@@ -1,7 +1,7 @@
 // pages/Posts/PostsPage.jsx
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link } from 'react-router-dom'; // Import Link
+import { Link } from 'react-router-dom';
 import { getPosts, reset } from '../../store/slices/postsSlice';
 import PostList from '../../components/posts/PostList';
 import PostFilters from '../../components/posts/PostFilters';
