@@ -160,7 +160,8 @@ export const postsAPI = {
     return api.post(API_ENDPOINTS.POSTS.COMMENTS(postId), commentData);
   },
   getComments: (postId) => api.get(API_ENDPOINTS.POSTS.COMMENTS(postId)),
-  toggleLike: (postId) => api.post(API_ENDPOINTS.POSTS.LIKE(postId))
+  toggleLike: (postId) => api.post(API_ENDPOINTS.POSTS.LIKE(postId)),
+  deleteComment: (commentId) => api.delete(API_ENDPOINTS.COMMENTS.DELETE(commentId))
 };
 
 // Communities API calls

@@ -9,6 +9,10 @@
   align-items: center;
   min-height: 400px;
   text-align: center;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  padding: 2rem;
 }
 
 .become-expert-content {
@@ -17,19 +21,19 @@
 }
 
 .become-expert-icon {
-  color: #f59e0b;
+  color: #4CAF50; /* Green icon */
   margin-bottom: 1.5rem;
 }
 
 .become-expert-content h2 {
   font-size: 2rem;
   font-weight: 700;
-  color: #1f2937;
+  color: #212529;
   margin-bottom: 1rem;
 }
 
 .become-expert-content p {
-  color: #6b7280;
+  color: #495057;
   font-size: 1.125rem;
   margin-bottom: 1.5rem;
 }
@@ -37,12 +41,13 @@
 .benefits-list {
   text-align: left;
   margin: 1.5rem 0;
-  color: #374151;
+  color: #495057;
+  list-style: disc;
+  padding-left: 1.5rem;
 }
 
 .benefits-list li {
   margin-bottom: 0.5rem;
-  padding-left: 0.5rem;
 }
 
 .expert-profile-content {
@@ -56,7 +61,7 @@
   align-items: flex-start;
   margin-bottom: 2rem;
   padding-bottom: 2rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e9ecef;
 }
 
 .expert-header-main {
@@ -70,7 +75,7 @@
 .expert-title-section h2 {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1f2937;
+  color: #212529;
   margin: 0 0 0.5rem 0;
 }
 
@@ -84,8 +89,8 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: #fef3c7;
-  color: #92400e;
+  background: #d4edda; /* Light green */
+  color: #155724; /* Dark green */
   padding: 0.5rem 1rem;
   border-radius: 20px;
   font-size: 0.875rem;
@@ -100,18 +105,18 @@
 }
 
 .availability-badge.success {
-  background: #d1fae5;
-  color: #065f46;
+  background: #d4edda;
+  color: #155724;
 }
 
 .availability-badge.warning {
-  background: #fef3c7;
-  color: #92400e;
+  background: #fff3cd;
+  color: #856404;
 }
 
 .availability-badge.danger {
-  background: #fee2e2;
-  color: #991b1b;
+  background: #f8d7da;
+  color: #721c24;
 }
 
 .expert-rating {
@@ -126,19 +131,19 @@
 }
 
 .star {
-  color: #d1d5db;
+  color: #e0e0e0; /* Light grey for empty stars */
 }
 
 .star.filled {
-  color: #fbbf24;
+  color: #ffc107; /* Gold for filled stars */
 }
 
 .star.half-filled {
-  color: #fbbf24;
+  color: #ffc107;
 }
 
 .rating-text {
-  color: #6b7280;
+  color: #6c757d;
   font-size: 0.875rem;
 }
 
@@ -151,17 +156,18 @@
 
 .expert-stat-card {
   background: white;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #e9ecef;
   border-radius: 12px;
   padding: 1.5rem;
   display: flex;
   align-items: center;
   gap: 1rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .stat-icon {
-  color: #10b981;
-  background: #f0fdf4;
+  color: #4CAF50; /* Green icon */
+  background: #e8f5e9; /* Light green background */
   padding: 0.75rem;
   border-radius: 12px;
 }
@@ -174,12 +180,12 @@
   display: block;
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1f2937;
+  color: #212529;
   margin-bottom: 0.25rem;
 }
 
 .stat-label {
-  color: #6b7280;
+  color: #6c757d;
   font-size: 0.875rem;
 }
 
@@ -192,15 +198,16 @@
 
 .expert-detail-card {
   background: white;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #e9ecef;
   border-radius: 12px;
   padding: 1.5rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .detail-card-title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1f2937;
+  color: #343a40;
   margin: 0 0 1rem 0;
 }
 
@@ -217,7 +224,7 @@
 }
 
 .detail-icon {
-  color: #10b981;
+  color: #4CAF50; /* Green icon */
   margin-top: 0.125rem;
 }
 
@@ -228,12 +235,12 @@
 .detail-label {
   display: block;
   font-weight: 500;
-  color: #374151;
+  color: #343a40;
   margin-bottom: 0.25rem;
 }
 
 .detail-value {
-  color: #6b7280;
+  color: #6c757d;
 }
 
 .specializations-list {
@@ -243,13 +250,13 @@
 }
 
 .specialization-tag {
-  background: #f0fdf4;
-  color: #166534;
+  background: #e9ecef;
+  color: #495057;
   padding: 0.5rem 1rem;
   border-radius: 20px;
   font-size: 0.875rem;
   font-weight: 500;
-  border: 1px solid #bbf7d0;
+  border: 1px solid #dee2e6;
 }
 
 .languages-list {
@@ -262,7 +269,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #6b7280;
+  color: #6c757d;
 }
 
 .bio-card {
@@ -270,7 +277,7 @@
 }
 
 .expert-bio {
-  color: #6b7280;
+  color: #495057;
   line-height: 1.6;
 }
 
@@ -283,14 +290,14 @@
 .expert-insights-section h3 {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1f2937;
+  color: #343a40;
   margin-bottom: 1rem;
 }
 
 .activity-placeholder {
   text-align: center;
   padding: 3rem;
-  color: #9ca3af;
+  color: #adb5bd;
 }
 
 .activity-placeholder svg {
@@ -305,9 +312,10 @@
 
 .insight-card {
   background: white;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #e9ecef;
   border-radius: 12px;
   padding: 1.5rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .insight-header {
@@ -319,12 +327,12 @@
 
 .insight-header h4 {
   font-weight: 600;
-  color: #1f2937;
+  color: #343a40;
   margin: 0;
 }
 
 .insight-header svg {
-  color: #10b981;
+  color: #4CAF50; /* Green icon */
 }
 
 .insight-stats {
@@ -342,11 +350,11 @@
 .insight-value {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #1f2937;
+  color: #212529;
 }
 
 .insight-label {
-  color: #6b7280;
+  color: #6c757d;
   font-size: 0.875rem;
 }
 

@@ -74,7 +74,7 @@ const Image = ({
         <img
           src={imageState.currentSrc}
           alt={alt}
-          className={`image ${imageState.loading ? 'image-loading-state' : ''}`}
+          className={`image ${className} ${imageState.loading ? 'image-loading-state' : ''}`}
           onLoad={handleImageLoad}
           onError={handleImageError}
           {...props}

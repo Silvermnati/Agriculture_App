@@ -1,98 +1,57 @@
+/* === Image Component: The container that holds the image === */
 .image-container {
+  width: 100%;
+  height: 100%;
+  display: block;
   position: relative;
-  display: inline-block;
+  background-color: #f3f4f6; /* The grey background for loading/error */
   overflow: hidden;
 }
 
-.image {
+/* === The actual <img> element === */
+.image-container .image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: opacity 0.3s ease;
+  object-position: center;
+  display: block;
 }
 
-.image-loading-state {
-  opacity: 0;
-}
-
+/* === Error and Loading States (FIXED) === */
+.image-error,
 .image-loading {
-  position: absolute;
+  position: absolute; /* Position over the image container */
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #f3f4f6;
-  z-index: 1;
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white overlay */
+  color: #6b7280;
+  z-index: 1; /* Ensure it's above the image */
 }
 
+.image-error-icon,
+.image-loading-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Subtle spinner for image loading (FIXED) */
 .image-loading-spinner {
-  width: 24px;
-  height: 24px;
-  border: 2px solid #e5e7eb;
-  border-top: 2px solid #10b981;
-  border-radius: 50%;
+  border: 3px solid #f3f3f3; /* Light grey border */
+  border-top: 3px solid #28a745; /* Green top border */
+  border-radius: 50%; /* Ensure it's a perfect circle */
+  width: 30px;
+  height: 30px;
   animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
-}
-
-.image-error {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  min-height: 200px;
-  color: #6b7280;
-}
-
-.image-error-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  text-align: center;
-  padding: 20px;
-}
-
-.image-error-icon {
-  font-size: 32px;
-  opacity: 0.5;
-}
-
-.image-error-text {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.image-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #f3f4f6;
-  color: #6b7280;
-  min-height: 200px;
-  border-radius: 8px;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .image-error {
-    min-height: 150px;
-  }
-  
-  .image-error-icon {
-    font-size: 24px;
-  }
-  
-  .image-error-text {
-    font-size: 12px;
-  }
 }
