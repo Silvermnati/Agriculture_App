@@ -301,6 +301,13 @@ def get_post(post_id):
     """
     Get a single post with full details, optimized to prevent N+1 queries.
     """
+    try:
+        # Convert string post_id to UUID
+        if isinstance(post_id, str):
+            post_id = uuid.UUID(post_id)
+    except ValueError:
+        return create_error_response('INVALID_POST_ID', 'Invalid post ID format', status_code=400)
+    
     # --- Performance Fix: Eager load related data in a single query ---
     post = Post.query.options(
         joinedload(Post.author),
@@ -361,6 +368,12 @@ def update_post(current_user, post_id, resource=None):
         ...other fields to update...
     }
     """
+    try:
+        # Convert string post_id to UUID
+        if isinstance(post_id, str):
+            post_id = uuid.UUID(post_id)
+    except ValueError:
+        return create_error_response('INVALID_POST_ID', 'Invalid post ID format', status_code=400)
     post = resource  # Provided by resource_owner_required decorator
     
     # Handle both JSON and form data
@@ -468,6 +481,13 @@ def delete_post(current_user, post_id, resource=None):
     """
     Delete (archive) a post.
     """
+    try:
+        # Convert string post_id to UUID
+        if isinstance(post_id, str):
+            post_id = uuid.UUID(post_id)
+    except ValueError:
+        return create_error_response('INVALID_POST_ID', 'Invalid post ID format', status_code=400)
+    
     post = resource  # Provided by resource_owner_required decorator
     
     # Soft delete (archive) the post
@@ -484,6 +504,13 @@ def add_comment(post_id, current_user=None):
     GET: Retrieve comments for a post
     POST: Add a new comment to a post
     """
+    try:
+        # Convert string post_id to UUID
+        if isinstance(post_id, str):
+            post_id = uuid.UUID(post_id)
+    except ValueError:
+        return create_error_response('INVALID_POST_ID', 'Invalid post ID format', status_code=400)
+    
     post = Post.query.get(post_id)
     
     if not post:
@@ -600,6 +627,13 @@ def toggle_like(current_user, post_id):
     """
     Toggle like on a post.
     """
+    try:
+        # Convert string post_id to UUID
+        if isinstance(post_id, str):
+            post_id = uuid.UUID(post_id)
+    except ValueError:
+        return create_error_response('INVALID_POST_ID', 'Invalid post ID format', status_code=400)
+    
     post = Post.query.get(post_id)
     
     if not post:
