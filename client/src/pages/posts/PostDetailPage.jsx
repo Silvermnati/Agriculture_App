@@ -15,19 +15,16 @@ const PostDetailPage = () => {
   const location = useLocation();
   const { currentPost, postComments, isLoading, isError, message } = useSelector(state => state.posts);
 
-  const fetchData = () => {
+  useEffect(() => {
     if (postId) {
       dispatch(getPost(postId));
       dispatch(getComments(postId));
     }
-  };
-
-  useEffect(() => {
-    fetchData();
+    
     return () => {
       dispatch(clearCurrentPost());
     };
-  }, [dispatch, fetchData, postId]);
+  }, [dispatch, postId]);
 
   useEffect(() => {
     if (location.hash === '#comments' && !isLoading) {
@@ -49,8 +46,15 @@ const PostDetailPage = () => {
     return <div className="container"><LoadingSpinner text="Loading post..." /></div>;
   }
 
+  const handleRetry = () => {
+    if (postId) {
+      dispatch(getPost(postId));
+      dispatch(getComments(postId));
+    }
+  };
+
   if (isError) {
-    return <div className="container"><ErrorMessage message={message || 'Failed to load post.'} onRetry={fetchData} /></div>;
+    return <div className="container"><ErrorMessage message={message || 'Failed to load post.'} onRetry={handleRetry} /></div>;
   }
 
   if (!currentPost) {

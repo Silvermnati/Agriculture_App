@@ -60,7 +60,7 @@ const RegisterForm = () => {
     };
 
     initializeCountry();
-  }, []);
+  }, [formData.country, formData.phone_country_code]);
 
   // Redirect on successful registration
   useEffect(() => {

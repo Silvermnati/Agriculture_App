@@ -16,7 +16,10 @@ api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`;
+      console.log('API: Adding token to request:', token.substring(0, 20) + '...');
+    } else {
+      console.warn('API: No token found in localStorage');
     }
     return config;
   },
@@ -31,15 +34,23 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Handle token expiration
-    if (error.response && error.response.status === 401) {
-      // Check if the error is due to token expiration
-      if (error.response.data.message === 'Token has expired') {
-        // Clear local storage
+    console.error('API Error:', error.response?.data || error.message);
+    
+    if (error.response?.status === 401) {
+      const errorCode = error.response?.data?.error?.code;
+      const errorMessage = error.response?.data?.error?.message || error.response?.data?.message;
+      
+      if (errorCode === 'TOKEN_EXPIRED' || errorCode === 'INVALID_TOKEN' || errorMessage === 'Token has expired') {
+        console.warn('Token expired or invalid, clearing auth data');
+        
+        // Clear auth data
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         
-        // Redirect to login page
+        // Show user-friendly message
+        alert('Your session has expired. Please log in again.');
+        
+        // Redirect to login
         window.location.href = '/login';
       }
     }
