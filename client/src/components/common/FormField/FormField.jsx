@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { validateField, formatValidationMessage } from '../../../utils/helpers';
 import './FormField.css';
 
@@ -27,31 +27,49 @@ const FormField = ({
   const [focused, setFocused] = useState(false);
   const [touched, setTouched] = useState(false);
   const [validationResult, setValidationResult] = useState({ isValid: true, error: null });
+  const onValidationChangeRef = useRef(onValidationChange);
 
-  // Validate field when value changes
+  // Update the ref when the callback changes
   useEffect(() => {
-    if (touched || value) {
-      const result = validateField(name, value, { maxLength, minLength, ...props });
-      
-      // Run custom validation rules
-      if (result.isValid && validation.length > 0) {
-        for (const rule of validation) {
-          if (!rule.validator(value)) {
-            result.isValid = false;
-            result.error = formatValidationMessage(rule.message, { value, maxLength, minLength });
-            break;
-          }
+    onValidationChangeRef.current = onValidationChange;
+  }, [onValidationChange]);
+
+  // Store validation rules in a ref to avoid dependency issues
+  const validationRef = useRef(validation);
+  useEffect(() => {
+    validationRef.current = validation;
+  }, [validation]);
+
+  // Validation effect - run basic validation and custom rules
+  useEffect(() => {
+    if (!touched && !value) {
+      setValidationResult({ isValid: true, error: null });
+      return;
+    }
+    
+    let result = validateField(name, value, { maxLength, minLength });
+    
+    // Run custom validation rules if basic validation passes
+    const currentValidation = validationRef.current;
+    if (result.isValid && currentValidation && currentValidation.length > 0) {
+      for (const rule of currentValidation) {
+        if (!rule.validator(value)) {
+          result = {
+            isValid: false,
+            error: formatValidationMessage(rule.message, { value, maxLength, minLength })
+          };
+          break;
         }
       }
-      
-      setValidationResult(result);
-      
-      // Notify parent of validation change
-      if (onValidationChange) {
-        onValidationChange(result.isValid, result.error);
-      }
     }
-  }, [value, touched, name, maxLength, minLength, validation, onValidationChange]);
+    
+    setValidationResult(result);
+    
+    // Notify parent of validation change using ref to avoid dependency issues
+    if (onValidationChangeRef.current) {
+      onValidationChangeRef.current(result.isValid, result.error);
+    }
+  }, [value, touched, name, maxLength, minLength]);
 
   const handleFocus = (e) => {
     setFocused(true);

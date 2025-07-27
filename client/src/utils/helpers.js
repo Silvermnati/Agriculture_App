@@ -1,6 +1,8 @@
 /**
  * Utility functions for the application
  */
+import { VALIDATION } from './constants';
+import CountryDetectionService from './countryDetectionService';
 
 /**
  * Check if the current user can manage (edit/delete) a post
@@ -95,10 +97,13 @@ export const getValidationError = (fieldName, value, options = {}) => {
     case 'phone_number':
       if (!value) return null; // Phone is optional
       if (options.countryCode) {
-        const { validatePhoneNumber, getPhoneExample } = require('./countryDetectionService').default;
-        if (!validatePhoneNumber(value, options.countryCode)) {
-          const example = getPhoneExample(options.countryCode);
-          return `Please enter a valid phone number${example ? `. Example: ${example}` : ''}`;
+        try {
+          if (!CountryDetectionService.validatePhoneNumber(value, options.countryCode)) {
+            const example = CountryDetectionService.getPhoneExample(options.countryCode);
+            return `Please enter a valid phone number${example ? `. Example: ${example}` : ''}`;
+          }
+        } catch (error) {
+          console.warn('Phone validation failed:', error);
         }
       }
       return null;
@@ -114,7 +119,6 @@ export const getValidationError = (fieldName, value, options = {}) => {
  * @returns {Object} - Validation result with details
  */
 export const validatePassword = (password) => {
-  const { VALIDATION } = require('./constants');
   const requirements = VALIDATION.PASSWORD.REQUIREMENTS;
   
   const result = {

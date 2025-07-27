@@ -55,22 +55,28 @@ const PhoneNumberField = ({
     }
   }, [searchQuery]);
 
+  // Store callback in ref to avoid dependency issues
+  const onValidationChangeRef = useRef(onValidationChange);
+  useEffect(() => {
+    onValidationChangeRef.current = onValidationChange;
+  }, [onValidationChange]);
+
   // Validate phone number when value or country changes
   useEffect(() => {
     if (value) {
       const valid = CountryDetectionService.validatePhoneNumber(value, selectedCountry);
       setIsValid(valid);
       
-      if (onValidationChange) {
-        onValidationChange(valid);
+      if (onValidationChangeRef.current) {
+        onValidationChangeRef.current(valid);
       }
     } else {
       setIsValid(false);
-      if (onValidationChange) {
-        onValidationChange(true); // Empty is valid if not required
+      if (onValidationChangeRef.current) {
+        onValidationChangeRef.current(true); // Empty is valid if not required
       }
     }
-  }, [value, selectedCountry, onValidationChange]);
+  }, [value, selectedCountry]);
 
   // Close dropdown when clicking outside
   useEffect(() => {

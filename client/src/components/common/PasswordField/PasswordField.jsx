@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { validatePassword } from '../../../utils/helpers';
 import { VALIDATION } from '../../../utils/constants';
 import FormField from '../FormField/FormField';
@@ -25,15 +25,21 @@ const PasswordField = ({
     strengthPercentage: 0
   });
 
+  // Store callback in ref to avoid dependency issues
+  const onValidationChangeRef = useRef(onValidationChange);
+  useEffect(() => {
+    onValidationChangeRef.current = onValidationChange;
+  }, [onValidationChange]);
+
   // Validate password when value changes
   useEffect(() => {
     const result = validatePassword(value || '');
     setValidationResult(result);
     
-    if (onValidationChange) {
-      onValidationChange(result.isValid);
+    if (onValidationChangeRef.current) {
+      onValidationChangeRef.current(result.isValid);
     }
-  }, [value, onValidationChange]);
+  }, [value]);
 
   const handleFocus = () => {
     setFocused(true);
