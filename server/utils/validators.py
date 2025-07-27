@@ -11,7 +11,7 @@ from flask import jsonify
 
 # Agricultural constants
 VALID_SEASONS = ['spring', 'summer', 'fall', 'winter', 'year-round']
-VALID_FARMING_TYPES = ['organic', 'conventional', 'mixed', 'hydroponic', 'permaculture']
+VALID_FARMING_TYPES = ['organic', 'conventional', 'mixed', 'hydroponic', 'permaculture', 'biodynamic', 'aquaponic']
 VALID_SOIL_TYPES = ['clay', 'sandy', 'loamy', 'silty', 'peaty', 'chalky', 'mixed']
 VALID_CLIMATE_TYPES = ['tropical', 'subtropical', 'temperate', 'arid', 'semi-arid', 'mediterranean']
 VALID_WATER_REQUIREMENTS = ['low', 'moderate', 'high', 'very-high']
