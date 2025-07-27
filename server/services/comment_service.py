@@ -53,7 +53,7 @@ class CommentService:
                 }
             
             # Check if comment is deleted
-            if comment.is_deleted:
+            if getattr(comment, 'is_deleted', False):
                 return {
                     'success': False,
                     'message': 'Cannot edit deleted comment',
@@ -90,9 +90,10 @@ class CommentService:
             
             # Update comment
             comment.content = new_content.strip()
-            comment.is_edited = True
-            comment.edit_count += 1
-            comment.last_edited_at = datetime.utcnow()
+            setattr(comment, 'is_edited', True)
+            current_edit_count = getattr(comment, 'edit_count', 0)
+            setattr(comment, 'edit_count', current_edit_count + 1)
+            setattr(comment, 'last_edited_at', datetime.utcnow())
             comment.updated_at = datetime.utcnow()
             
             # Save changes
@@ -143,7 +144,7 @@ class CommentService:
                 }
             
             # Check if already deleted
-            if comment.is_deleted:
+            if getattr(comment, 'is_deleted', False):
                 return {
                     'success': False,
                     'message': 'Comment is already deleted',
@@ -167,9 +168,9 @@ class CommentService:
                 self.logger.info(f"Comment {comment_id} hard deleted by user {user_id}")
                 message = 'Comment permanently deleted'
             else:
-                # Soft delete - mark as deleted
-                comment.is_deleted = True
-                comment.deleted_at = datetime.utcnow()
+                # Soft delete - mark as deleted (using setattr since field may not exist)
+                setattr(comment, 'is_deleted', True)
+                setattr(comment, 'deleted_at', datetime.utcnow())
                 comment.updated_at = datetime.utcnow()
                 
                 self.logger.info(f"Comment {comment_id} soft deleted by user {user_id}")
@@ -216,7 +217,7 @@ class CommentService:
                 }
             
             # Check if not deleted
-            if not comment.is_deleted:
+            if not getattr(comment, 'is_deleted', False):
                 return {
                     'success': False,
                     'message': 'Comment is not deleted',
@@ -232,8 +233,8 @@ class CommentService:
                 }
             
             # Restore comment
-            comment.is_deleted = False
-            comment.deleted_at = None
+            setattr(comment, 'is_deleted', False)
+            setattr(comment, 'deleted_at', None)
             comment.updated_at = datetime.utcnow()
             
             db.session.commit()
