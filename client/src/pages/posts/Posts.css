@@ -1,15 +1,133 @@
+/* === Posts Page: A professional and clean page container === */
 .posts-page {
-  max-width: 900px;
-  margin: 2rem auto;
-  padding: 1rem;
+  background-color: #f8f9fa;
+  padding: 2rem 1rem;
 }
 
-.posts-page h1 {
-  text-align: center;
+/* === Header & Featured Section (Corrected & Final Design) === */
+.header-and-featured-section {
+  max-width: 1200px;
+  margin: 0 auto 2.5rem auto;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 3rem;
+  align-items: start;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  padding: 3rem;
+}
+
+/* Left side text content */
+.hero-text-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.hero-text-content h1 {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 1rem;
+}
+
+.hero-text-content p {
+  font-size: 1rem;
+  color: #4b5563;
+  line-height: 1.6;
+  flex-grow: 1;
   margin-bottom: 2rem;
 }
 
-.error-message {
-  color: red;
-  text-align: center;
+.contribute-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #28a745;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: background-color 0.2s ease;
+  border: none;
+  align-self: flex-start;
+}
+
+.contribute-btn:hover {
+  background-color: #218838;
+}
+
+/* === Right side featured post (IMAGE FIX) === */
+.simplified-featured-card-link {
+  display: block;
+  border-radius: 4px;
+  overflow: hidden; /* This is crucial */
+  position: relative;
+  background-color: #f3f4f6; /* The grey background */
+  height: 320px; /* Give the container a fixed height */
+}
+
+.simplified-featured-post-image {
+  /* Force the image to fill the container */
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* This scales the image to cover the area */
+  object-position: center; /* Center the image */
+}
+
+.simplified-featured-post-title-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0) 100%);
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  color: white;
+}
+
+.simplified-featured-post-title-overlay h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+/* === Posts Content Layout: The main grid for content and sidebar === */
+.posts-content-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 2.5rem;
+  align-items: flex-start;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.main-content-area {
+  min-width: 0;
+}
+
+.sidebar-area {
+  position: sticky;
+  top: 20px;
+}
+
+/* === Responsive Design === */
+@media (max-width: 992px) {
+  .header-and-featured-section {
+    grid-template-columns: 1fr;
+    padding: 2rem;
+    gap: 2rem;
+  }
+
+  .posts-content-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar-area {
+    position: static;
+    margin-top: 2.5rem;
+  }
 }

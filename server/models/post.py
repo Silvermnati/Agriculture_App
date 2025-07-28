@@ -94,15 +94,27 @@ class Post(db.Model):
         author_info = { 'name': 'Unknown Author', 'avatar_url': None, 'role': None }
         if self.author:
             author_info['name'] = f"{self.author.first_name} {self.author.last_name}"
-            author_info['avatar_url'] = self.author.avatar_url
+            # Fix avatar URL to use full path or default
+            if self.author.avatar_url:
+                author_info['avatar_url'] = self.author.avatar_url
+            else:
+                author_info['avatar_url'] = 'https://agriculture-app-1-u2a6.onrender.com/static/default-avatar.png'
             author_info['role'] = self.author.role
+
+        # Fix featured image URL to use full path
+        featured_image_url = None
+        if self.featured_image_url:
+            if self.featured_image_url.startswith('http'):
+                featured_image_url = self.featured_image_url
+            else:
+                featured_image_url = f"https://agriculture-app-1-u2a6.onrender.com/static/{self.featured_image_url}"
 
         post_dict = {
             'id': str(self.post_id), # Keep 'id' for frontend convenience
             'post_id': str(self.post_id), # Keep 'post_id' for backend consistency
             'title': self.title,
             'excerpt': self.excerpt,
-            'featured_image_url': self.featured_image_url,
+            'featured_image_url': featured_image_url,
             'author': author_info,
             'category': self.category.to_dict() if self.category else None,
             'related_crops': self.related_crops or [],
@@ -132,6 +144,13 @@ class Comment(db.Model):
     parent_comment_id = db.Column(UUID(as_uuid=True), db.ForeignKey('comments.comment_id'), nullable=True)
     content = db.Column(db.Text, nullable=False)
     is_approved = db.Column(db.Boolean, default=True)
+    # Edit tracking fields
+    is_edited = db.Column(db.Boolean, default=False, nullable=False)
+    edit_count = db.Column(db.Integer, default=0, nullable=False)
+    last_edited_at = db.Column(db.DateTime, nullable=True)
+    # Soft deletion fields
+    is_deleted = db.Column(db.Boolean, default=False, nullable=False)
+    deleted_at = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -140,9 +159,9 @@ class Comment(db.Model):
     user = db.relationship('User', backref=db.backref('comments', lazy=True))
     parent_comment = db.relationship('Comment', remote_side=[comment_id], backref=db.backref('replies', lazy=True))
     
-    def to_dict(self):
+    def to_dict(self, include_replies=True):
         """Convert comment to dictionary."""
-        return {
+        comment_dict = {
             'comment_id': str(self.comment_id),
             'parent_comment_id': str(self.parent_comment_id) if self.parent_comment_id else None,
             'content': self.content,
@@ -151,10 +170,19 @@ class Comment(db.Model):
                 'name': f"{self.user.first_name} {self.user.last_name}",
                 'avatar_url': self.user.avatar_url
             } if self.user else None,
+            'is_edited': self.is_edited,
+            'edit_count': self.edit_count,
+            'last_edited_at': self.last_edited_at.isoformat() if self.last_edited_at else None,
+            'is_deleted': self.is_deleted,
+            'deleted_at': self.deleted_at.isoformat() if self.deleted_at else None,
             'created_at': self.created_at.isoformat(),
-            'updated_at': self.updated_at.isoformat(),
-            'replies': [reply.to_dict() for reply in self.replies] if hasattr(self, 'replies') else []
+            'updated_at': self.updated_at.isoformat()
         }
+        
+        if include_replies:
+            comment_dict['replies'] = [reply.to_dict() for reply in self.replies]
+        
+        return comment_dict
 
 
 class ArticlePostLike(db.Model):
@@ -168,3 +196,40 @@ class ArticlePostLike(db.Model):
     # Relationships
     post = db.relationship('Post', backref=db.backref('likes', lazy=True))
     user = db.relationship('User', backref=db.backref('article_likes', lazy=True))
+
+
+class CommentEdit(db.Model):
+    """Comment edit history model."""
+    __tablename__ = 'comment_edits'
+    
+    edit_id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    comment_id = db.Column(UUID(as_uuid=True), db.ForeignKey('comments.comment_id'), nullable=False)
+    original_content = db.Column(db.Text, nullable=False)
+    new_content = db.Column(db.Text, nullable=False)
+    edited_by = db.Column(UUID(as_uuid=True), db.ForeignKey('users.user_id'), nullable=False)
+    edit_reason = db.Column(db.String(255), nullable=True)
+    edited_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    
+    # Relationships
+    comment = db.relationship('Comment', backref=db.backref('edit_history', lazy=True))
+    editor = db.relationship('User', backref=db.backref('comment_edits', lazy=True))
+    
+    def to_dict(self):
+        """Convert comment edit to dictionary."""
+        return {
+            'edit_id': str(self.edit_id),
+            'comment_id': str(self.comment_id),
+            'original_content': self.original_content,
+            'new_content': self.new_content,
+            'edited_by': str(self.edited_by),
+            'editor': {
+                'user_id': str(self.editor.user_id),
+                'name': f"{self.editor.first_name} {self.editor.last_name}",
+                'avatar_url': self.editor.avatar_url
+            } if self.editor else None,
+            'edit_reason': self.edit_reason,
+            'edited_at': self.edited_at.isoformat()
+        }
+    
+    def __repr__(self):
+        return f'<CommentEdit {self.edit_id} - {self.comment_id}>'

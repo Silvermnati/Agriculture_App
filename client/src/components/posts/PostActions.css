@@ -1,0 +1,59 @@
+/* === Post Actions: Dropdown menu for edit/delete === */
+.post-actions {
+  position: relative;
+  display: inline-block;
+}
+
+.post-actions-trigger {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+  color: #666;
+  transition: all 0.2s ease;
+}
+
+.post-actions-trigger:hover {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.post-actions-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  min-width: 150px;
+  overflow: hidden;
+}
+
+.post-action-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  text-align: left;
+  transition: background-color 0.2s ease;
+}
+
+.post-action-item:hover {
+  background-color: #f8f9fa;
+}
+
+.post-action-item.edit {
+  color: #007bff;
+}
+
+.post-action-item.delete {
+  color: #dc3545;
+}

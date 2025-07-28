@@ -1,0 +1,453 @@
+.phone-number-field {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.phone-number-field__label {
+  display: block;
+  font-weight: 600;
+  color: #14532d;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.phone-number-field__required {
+  color: #ef4444;
+  margin-left: 0.25rem;
+}
+
+.phone-number-field__help {
+  margin-top: 0.5rem;
+}
+
+.phone-number-field__error {
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.phone-number-field__error::before {
+  content: '🌿';
+  font-size: 0.875rem;
+}
+
+.phone-number-field__input-field {
+  margin-bottom: 0;
+}
+
+.phone-number-field__input-container {
+  display: flex;
+  align-items: stretch;
+  position: relative;
+}
+
+.phone-number-field__country-selector {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.phone-number-field__country-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background-color: #f9fafb;
+  border: 2px solid #d1d5db;
+  border-right: none;
+  border-radius: 0.5rem 0 0 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  min-width: 7rem;
+  height: 100%;
+}
+
+.phone-number-field__country-button:hover {
+  background-color: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.phone-number-field__country-button:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  z-index: 1;
+}
+
+.phone-number-field__country-flag {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.phone-number-field__country-code {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.phone-number-field__dropdown-arrow {
+  width: 1rem;
+  height: 1rem;
+  color: #6b7280;
+  transition: transform 0.2s ease-in-out;
+}
+
+.phone-number-field__dropdown-arrow--open {
+  transform: rotate(180deg);
+}
+
+.phone-number-field__dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #ffffff;
+  border: 2px solid #d1d5db;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  z-index: 50;
+  max-height: 16rem;
+  overflow: hidden;
+  margin-top: 0.25rem;
+}
+
+.phone-number-field__search-container {
+  padding: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.phone-number-field__search {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s ease-in-out;
+}
+
+.phone-number-field__search:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.phone-number-field__country-list {
+  max-height: 12rem;
+  overflow-y: auto;
+}
+
+.phone-number-field__country-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  text-align: left;
+}
+
+.phone-number-field__country-option:hover {
+  background-color: #f3f4f6;
+}
+
+.phone-number-field__country-option:focus {
+  outline: none;
+  background-color: #e0e7ff;
+}
+
+.phone-number-field__country-option--selected {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+.phone-number-field__country-option--selected:hover {
+  background-color: #bfdbfe;
+}
+
+.phone-number-field__country-name {
+  flex: 1;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.phone-number-field__country-option--selected .phone-number-field__country-name {
+  color: #1d4ed8;
+  font-weight: 500;
+}
+
+.phone-number-field__no-results {
+  padding: 1rem;
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.phone-number-field__input {
+  flex: 1;
+  padding: 0.75rem 3rem 0.75rem 1rem;
+  border: 2px solid #d1d5db;
+  border-left: none;
+  border-radius: 0 0.5rem 0.5rem 0;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  color: #111827;
+  background-color: #ffffff;
+  transition: all 0.2s ease-in-out;
+  outline: none;
+}
+
+.phone-number-field__input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.phone-number-field__input--error {
+  border-color: #ef4444;
+  background-color: #fef2f2;
+}
+
+.phone-number-field__input--error:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.phone-number-field__input--valid {
+  border-color: #10b981;
+  background-color: #f0fdf4;
+}
+
+.phone-number-field__input--valid:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.phone-number-field__validation-indicator {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.phone-number-field__validation-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.phone-number-field__validation-icon--valid {
+  background-color: #10b981;
+  color: white;
+}
+
+.phone-number-field__validation-icon--error {
+  background-color: #ef4444;
+  color: white;
+}
+
+.phone-number-field__format-example {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.phone-number-field__format-label {
+  font-weight: 500;
+}
+
+.phone-number-field__format-text {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  background-color: #f3f4f6;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  color: #374151;
+}
+
+/* Focus states for the entire component */
+.phone-number-field__input:focus ~ .phone-number-field__validation-indicator,
+.phone-number-field__country-button:focus {
+  z-index: 1;
+}
+
+/* Error states for country selector */
+.phone-number-field__input--error ~ .phone-number-field__country-button {
+  border-color: #ef4444;
+}
+
+.phone-number-field__input--valid ~ .phone-number-field__country-button {
+  border-color: #10b981;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .phone-number-field__country-button {
+    padding: 0.625rem 0.75rem;
+    min-width: 6rem;
+  }
+  
+  .phone-number-field__country-code {
+    font-size: 0.8125rem;
+  }
+  
+  .phone-number-field__input {
+    padding: 0.625rem 2.75rem 0.625rem 0.875rem;
+    font-size: 0.875rem;
+  }
+  
+  .phone-number-field__dropdown {
+    max-height: 14rem;
+  }
+  
+  .phone-number-field__country-list {
+    max-height: 10rem;
+  }
+  
+  .phone-number-field__country-option {
+    padding: 0.625rem;
+    gap: 0.5rem;
+  }
+  
+  .phone-number-field__country-name {
+    font-size: 0.8125rem;
+  }
+  
+  .phone-number-field__format-example {
+    font-size: 0.8125rem;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .phone-number-field__country-button,
+  .phone-number-field__input {
+    border-width: 3px;
+  }
+  
+  .phone-number-field__dropdown {
+    border-width: 3px;
+  }
+  
+  .phone-number-field__validation-icon--valid {
+    border: 2px solid #059669;
+  }
+  
+  .phone-number-field__validation-icon--error {
+    border: 2px solid #dc2626;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .phone-number-field__country-button,
+  .phone-number-field__input,
+  .phone-number-field__dropdown-arrow,
+  .phone-number-field__country-option {
+    transition: none;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .phone-number-field__country-button {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #f3f4f6;
+  }
+  
+  .phone-number-field__country-button:hover {
+    background-color: #4b5563;
+    border-color: #6b7280;
+  }
+  
+  .phone-number-field__country-button:focus {
+    border-color: #60a5fa;
+  }
+  
+  .phone-number-field__country-code {
+    color: #f3f4f6;
+  }
+  
+  .phone-number-field__dropdown-arrow {
+    color: #d1d5db;
+  }
+  
+  .phone-number-field__input {
+    background-color: #1f2937;
+    border-color: #4b5563;
+    color: #f3f4f6;
+  }
+  
+  .phone-number-field__input:focus {
+    border-color: #60a5fa;
+  }
+  
+  .phone-number-field__dropdown {
+    background-color: #1f2937;
+    border-color: #4b5563;
+  }
+  
+  .phone-number-field__search {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #f3f4f6;
+  }
+  
+  .phone-number-field__search:focus {
+    border-color: #60a5fa;
+  }
+  
+  .phone-number-field__country-option:hover {
+    background-color: #374151;
+  }
+  
+  .phone-number-field__country-option:focus {
+    background-color: #1e3a8a;
+  }
+  
+  .phone-number-field__country-option--selected {
+    background-color: #1e40af;
+    color: #dbeafe;
+  }
+  
+  .phone-number-field__country-option--selected:hover {
+    background-color: #1d4ed8;
+  }
+  
+  .phone-number-field__country-name {
+    color: #f3f4f6;
+  }
+  
+  .phone-number-field__country-option--selected .phone-number-field__country-name {
+    color: #dbeafe;
+  }
+  
+  .phone-number-field__no-results {
+    color: #d1d5db;
+  }
+  
+  .phone-number-field__format-example {
+    color: #d1d5db;
+  }
+  
+  .phone-number-field__format-text {
+    background-color: #374151;
+    color: #f3f4f6;
+  }
+}

@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { Star, MapPin, MessageSquare, UserPlus } from "lucide-react";
+import ConsultationBooking from "./ConsultationBooking";
 
 const ExpertCard = ({ expert, onFollow, onMessage, isFollowing }) => {
+  const [showBookingModal, setShowBookingModal] = useState(false);
   const {
     id,
     name,
@@ -52,8 +54,12 @@ const ExpertCard = ({ expert, onFollow, onMessage, isFollowing }) => {
       <div className="text-lg font-semibold text-gray-800 mb-4">
         ${hourly_rate} / hour
       </div>
-      <button className="w-full bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 mb-2">
-        Book Consultation
+      <button 
+        onClick={() => setShowBookingModal(true)}
+        className="w-full bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 mb-2"
+        disabled={availability_status === 'unavailable'}
+      >
+        {availability_status === 'unavailable' ? 'Unavailable' : 'Book Consultation'}
       </button>
       <div className="flex w-full gap-2">
         <button
@@ -75,6 +81,13 @@ const ExpertCard = ({ expert, onFollow, onMessage, isFollowing }) => {
           Message
         </button>
       </div>
+
+      {/* Consultation Booking Modal */}
+      <ConsultationBooking
+        expert={expert}
+        isOpen={showBookingModal}
+        onClose={() => setShowBookingModal(false)}
+      />
     </div>
   );
 };

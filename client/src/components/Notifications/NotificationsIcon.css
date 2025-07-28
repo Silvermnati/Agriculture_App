@@ -1,0 +1,80 @@
+/* /client/src/components/notifications/NotificationIcon.css */
+.notification-icon-container {
+  position: relative; 
+  display: inline-block; 
+}
+
+.notification-icon {
+  font-size: 1.2rem; 
+  color: #ffffff; 
+  cursor: pointer;
+  padding: 5px;
+  transition: color 0.2s ease-in-out;
+}
+
+.notification-icon:hover {
+  color: #d4d4d4; 
+}
+
+.notification-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 5px;
+  font-size: 0.7em;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: 100%; 
+  right: 0;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  width: 250px; 
+  z-index: 1000; 
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.notification-item {
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-item.read {
+  color: #888;
+}
+
+.notification-item.unread {
+  font-weight: bold;
+}
+
+.notification-error {
+  color: #d9534f; 
+  font-style: italic;
+}
+
+.mark-as-read-btn {
+  background: none;
+  border: 1px solid #ccc;
+  color: #555;
+  padding: 2px 6px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.8em;
+  margin-left: 10px;
+}
+
+.mark-as-read-btn:hover {
+  background-color: #f0f0f0;
+}

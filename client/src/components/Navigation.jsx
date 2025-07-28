@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { logout } from '../store/slices/authSlice';
+import NotificationBell from './Notifications/NotificationBell';
 import './Navigation.css';
 
 const Navigation = () => {
@@ -60,6 +61,9 @@ const Navigation = () => {
             <>
               <li className="nav-item">
                 <Link to="/profile" className="nav-link">Profile</Link>
+              </li>
+              <li className="nav-item">
+                <NotificationBell />
               </li>
               {user?.role === 'admin' && (
                 <li className="nav-item">

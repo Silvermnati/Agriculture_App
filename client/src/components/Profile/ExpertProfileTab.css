@@ -1,0 +1,383 @@
+/* Expert Profile Tab Styles */
+.expert-profile-tab {
+  padding: 2rem;
+}
+
+.become-expert-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  text-align: center;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  padding: 2rem;
+}
+
+.become-expert-content {
+  max-width: 600px;
+  padding: 2rem;
+}
+
+.become-expert-icon {
+  color: #4CAF50; /* Green icon */
+  margin-bottom: 1.5rem;
+}
+
+.become-expert-content h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #212529;
+  margin-bottom: 1rem;
+}
+
+.become-expert-content p {
+  color: #495057;
+  font-size: 1.125rem;
+  margin-bottom: 1.5rem;
+}
+
+.benefits-list {
+  text-align: left;
+  margin: 1.5rem 0;
+  color: #495057;
+  list-style: disc;
+  padding-left: 1.5rem;
+}
+
+.benefits-list li {
+  margin-bottom: 0.5rem;
+}
+
+.expert-profile-content {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.expert-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.expert-header-main {
+  flex: 1;
+}
+
+.expert-title-section {
+  margin-bottom: 1rem;
+}
+
+.expert-title-section h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #212529;
+  margin: 0 0 0.5rem 0;
+}
+
+.expert-verification {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.verified-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #d4edda; /* Light green */
+  color: #155724; /* Dark green */
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.availability-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.availability-badge.success {
+  background: #d4edda;
+  color: #155724;
+}
+
+.availability-badge.warning {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.availability-badge.danger {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.expert-rating {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.rating-stars {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.star {
+  color: #e0e0e0; /* Light grey for empty stars */
+}
+
+.star.filled {
+  color: #ffc107; /* Gold for filled stars */
+}
+
+.star.half-filled {
+  color: #ffc107;
+}
+
+.rating-text {
+  color: #6c757d;
+  font-size: 0.875rem;
+}
+
+.expert-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.expert-stat-card {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.stat-icon {
+  color: #4CAF50; /* Green icon */
+  background: #e8f5e9; /* Light green background */
+  padding: 0.75rem;
+  border-radius: 12px;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #212529;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  color: #6c757d;
+  font-size: 0.875rem;
+}
+
+.expert-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.expert-detail-card {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.detail-card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #343a40;
+  margin: 0 0 1rem 0;
+}
+
+.detail-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.detail-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.detail-icon {
+  color: #4CAF50; /* Green icon */
+  margin-top: 0.125rem;
+}
+
+.detail-content {
+  flex: 1;
+}
+
+.detail-label {
+  display: block;
+  font-weight: 500;
+  color: #343a40;
+  margin-bottom: 0.25rem;
+}
+
+.detail-value {
+  color: #6c757d;
+}
+
+.specializations-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.specialization-tag {
+  background: #e9ecef;
+  color: #495057;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid #dee2e6;
+}
+
+.languages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.language-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6c757d;
+}
+
+.bio-card {
+  grid-column: 1 / -1;
+}
+
+.expert-bio {
+  color: #495057;
+  line-height: 1.6;
+}
+
+.expert-activity-section,
+.expert-insights-section {
+  margin-bottom: 2rem;
+}
+
+.expert-activity-section h3,
+.expert-insights-section h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #343a40;
+  margin-bottom: 1rem;
+}
+
+.activity-placeholder {
+  text-align: center;
+  padding: 3rem;
+  color: #adb5bd;
+}
+
+.activity-placeholder svg {
+  margin-bottom: 1rem;
+}
+
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.insight-card {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.insight-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.insight-header h4 {
+  font-weight: 600;
+  color: #343a40;
+  margin: 0;
+}
+
+.insight-header svg {
+  color: #4CAF50; /* Green icon */
+}
+
+.insight-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.insight-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.insight-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #212529;
+}
+
+.insight-label {
+  color: #6c757d;
+  font-size: 0.875rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .expert-profile-tab {
+    padding: 1rem;
+  }
+  
+  .expert-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .expert-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .expert-details-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .insights-grid {
+    grid-template-columns: 1fr;
+  }
+}

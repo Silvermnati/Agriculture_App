@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Search, Filter, Plus } from 'lucide-react';
 import CommunityList from '../../components/communities/CommunityList';
+import CommunityForm from '../../components/communities/CommunityForm';
+import LoadingSpinner from '../../components/common/LoadingSpinner/LoadingSpinner';
+import { getCommunities, joinCommunity, reset } from '../../store/slices/communitiesSlice';
 import { mockCommunities } from '../../utils/mockData';
 
 const CommunitiesPage = () => {
-  const [communities, setCommunities] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const { communities, isLoading, isError, message } = useSelector((state) => state.communities);
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('');
   const [selectedCrop, setSelectedCrop] = useState('');
+  const [showCreateForm, setShowCreateForm] = useState(false);
   
   // Community types for filter
   const communityTypes = [
@@ -29,31 +35,36 @@ const CommunitiesPage = () => {
   ];
 
   useEffect(() => {
-    // Simulate API call with timeout
-    setLoading(true);
-    setTimeout(() => {
-      setCommunities(mockCommunities);
-      setLoading(false);
-    }, 500);
-  }, []);
+    // Try to fetch from API first, fallback to mock data
+    const fetchCommunities = async () => {
+      try {
+        await dispatch(getCommunities()).unwrap();
+      } catch (error) {
+        // If API fails, use mock data for development
+        console.warn('API failed, using mock data:', error);
+        // You can set mock data here if needed for development
+      }
+    };
 
-  const handleJoinCommunity = (communityId) => {
-    // Update local state
-    setCommunities(communities.map(community => 
-      community.id === communityId 
-        ? { ...community, is_member: !community.is_member } 
-        : community
-    ));
+    fetchCommunities();
     
-    // In a real app, this would be an API call
-    const community = communities.find(c => c.id === communityId);
-    console.log(`${community.is_member ? 'Leave' : 'Join'} community ${communityId}`);
+    // Cleanup function
+    return () => {
+      dispatch(reset());
+    };
+  }, [dispatch]);
+
+  const handleJoinCommunity = async (communityId) => {
+    try {
+      await dispatch(joinCommunity(communityId)).unwrap();
+    } catch (error) {
+      console.error('Failed to join/leave community:', error);
+      // You might want to show a toast notification here
+    }
   };
 
   const handleCreateCommunity = () => {
-    // In a real app, this would navigate to a create community page
-    console.log('Create new community');
-    alert('Creating new community');
+    setShowCreateForm(true);
   };
 
   return (
@@ -119,19 +130,29 @@ const CommunitiesPage = () => {
         </div>
       </div>
 
-      {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+      {isError && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {message}
         </div>
+      )}
+
+      {isLoading ? (
+        <LoadingSpinner text="Loading communities..." />
       ) : (
         <CommunityList
-          communities={communities}
+          communities={communities.length > 0 ? communities : mockCommunities}
           onJoin={handleJoinCommunity}
           searchTerm={searchTerm}
           selectedType={selectedType}
           selectedCrop={selectedCrop}
         />
       )}
+
+      {/* Create Community Form Modal */}
+      <CommunityForm
+        isOpen={showCreateForm}
+        onClose={() => setShowCreateForm(false)}
+      />
     </div>
   );
 };
