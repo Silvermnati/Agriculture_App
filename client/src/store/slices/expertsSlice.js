@@ -64,8 +64,10 @@ export const expertsSlice = createSlice({
       })
       .addCase(getExperts.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.experts = action.payload.experts;
-        state.pagination = action.payload.pagination;
+        // Ensure we always get an array for experts
+        const experts = action.payload.experts || action.payload.data || action.payload;
+        state.experts = Array.isArray(experts) ? experts : [];
+        state.pagination = action.payload.pagination || {};
       })
       .addCase(getExperts.rejected, (state, action) => {
         state.isLoading = false;
