@@ -1,122 +1,348 @@
-/* === Register Page: Main container === */
+/*
+ * =====================================================================================
+ *    File: /home/codegoddy/Desktop/Agriculture_App/client/src/pages/Register/Register.css
+ *  Description: Main stylesheet for the user registration page.
+ * =====================================================================================
+ */
+
+/* === Base & Layout === */
 .register-page {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: calc(100vh - 70px); /* Adjust based on header height */
-  background-color: #f8f9fa; /* A light, neutral background */
+  min-height: 100vh;
+  background-color: #f9fafb; /* Lighter, softer gray */
   padding: 2rem 1rem;
+  box-sizing: border-box;
 }
 
-/* === Register Content: Two-column layout === */
 .register-content {
-  max-width: 1200px; /* Wider to accommodate more content */
   width: 100%;
-  margin: 0 auto;
+  max-width: 1200px;
+  margin: 2rem auto;
   display: grid;
-  grid-template-columns: 1fr 1.2fr; /* Give slightly more space to the form */
-  gap: 3rem;
-  align-items: center;
+  grid-template-columns: 1fr 1.5fr; /* Give more space to the form */
+  align-items: stretch; /* Make columns equal height */
   background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+  border-radius: 16px; /* Softer radius */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07); /* Deeper shadow */
   overflow: hidden;
 }
 
-/* === Register Info Section (Left Column) === */
+/* === Informational Side (Left) === */
 .register-info {
-  padding: 3rem;
-  background-color: #f0fdf4; /* A very light green to complement the theme */
-  height: 100%;
+  padding: 4rem 3rem;
+  background: linear-gradient(135deg, #f0fdf4, #e6f7f0); /* Subtle green gradient */
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
 .register-info h1 {
-  color: #2c5530; /* Deep, natural green */
-  font-size: 2.25rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
+  color: #1a3a1e; /* Darker, more visible green */
+  font-size: 2.5rem;
+  font-weight: 800;
   line-height: 1.2;
+  margin-bottom: 1.5rem;
 }
 
 .register-info > p {
-  color: #555;
-  font-size: 1rem;
-  margin-bottom: 2rem;
-  line-height: 1.6;
+  font-size: 1.1rem;
+  line-height: 1.7;
+  margin-bottom: 2.5rem;
+  color: #3a5a40;
 }
 
 .register-benefits {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2rem;
 }
 
 .benefit {
   display: flex;
-  align-items: flex-start;
-  gap: 1rem;
+  align-items: center;
+  gap: 1.5rem;
 }
 
 .benefit-icon {
-  font-size: 1.75rem;
-  color: #28a745; /* Theme green for icons */
-  margin-top: 0.25rem;
-}
-
-.benefit-content h3 {
-  color: #2c5530;
-  margin: 0 0 0.25rem 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.benefit-content p {
-  color: #555;
-  margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.5;
-}
-
-/* === Register Form Wrapper (Right Column) === */
-.register-form-wrapper {
-  padding: 2rem;
+  font-size: 2rem;
+  background-color: rgba(40, 167, 69, 0.1);
+  color: #28a745;
+  border-radius: 50%;
+  padding: 0.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+.benefit-content h3 {
+  color: #1a3a1e; /* Darker green */
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem 0;
+}
+
+.benefit-content p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #3a5a40;
+  margin: 0;
+}
+
+/* === Form Side (Right) === */
+.register-form-wrapper {
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.auth-form-container {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  background: none;
+}
+
+.auth-form-container h2 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #111827; /* Very dark gray for high contrast */
+  text-align: left;
+  margin-bottom: 0.75rem;
+}
+
+.auth-subtitle {
+  font-size: 1.1rem;
+  color: #4b5563; /* Darker subtitle */
+  text-align: left;
+  margin-bottom: 2.5rem;
+}
+
+/* === Form Structure & Sections === */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.form-section {
+  border-top: 1px solid #e9ecef;
+  padding-top: 1.5rem;
+}
+
+.form-section:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.form-section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937; /* Darker section title */
+  margin-bottom: 1.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+/* === Form Fields & Inputs === */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #374151; /* Darker label */
+  font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group select {
+  padding: 0.875rem 1.125rem;
+  border: 1px solid #d1d5db; /* Slightly darker border for better visibility */
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: #ffffff; /* Explicitly white background */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #28a745;
+  background-color: #fff;
+  box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.15); /* More visible focus ring */
+}
+
+.form-group .help-text {
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-top: 0.25rem;
+}
+
+/* === Error & Validation States === */
+.input-error {
+  border-color: #e53e3e !important; /* Important to override focus styles */
+  background-color: #fff5f5;
+}
+
+.field-error {
+  color: #e53e3e;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-top: 0.25rem;
+}
+
+.form-errors {
+  background-color: #fff5f5;
+  border: 1px solid #e53e3e;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-errors h4 {
+  color: #c53030;
+  margin: 0 0 0.5rem 0;
+}
+
+.form-errors ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #c53030;
+}
+
+/* === Password Specifics === */
+.password-input {
+  position: relative;
+}
+
+.toggle-password {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #6c757d;
+  cursor: pointer;
+}
+
+/* === Buttons & Links === */
+.form-actions {
+  margin-top: 1rem;
+}
+
+.auth-button {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #34d399, #28a745);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-button:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 7px 20px rgba(40, 167, 69, 0.25);
+}
+
+.auth-button:disabled {
+  background: #e9ecef;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+.auth-button .loading-spinner {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-right: 0.75rem;
+}
+
+.form-validation-hint {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-top: 1rem;
+}
+
+.auth-links {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.auth-links a {
+  color: #28a745;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-links a:hover {
+  text-decoration: underline;
+}
+
 /* === Responsive Design === */
-@media (max-width: 992px) {
+@media (max-width: 1024px) {
   .register-content {
-    grid-template-columns: 1fr; /* Stack columns on smaller screens */
+    grid-template-columns: 1fr;
     gap: 0;
   }
 
   .register-info {
-    padding: 2rem;
+    padding: 3rem 2rem;
     text-align: center;
   }
 
-  .register-benefits {
-    max-width: 500px;
-    margin: 0 auto;
-    text-align: left;
+  .register-form-wrapper {
+    padding: 2.5rem 2rem;
   }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .register-info h1 {
+    font-size: 2rem;
+  }
+
+  .auth-form-container h2 {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 480px) {
   .register-page {
-    padding: 1rem 0.5rem;
+    padding: 1rem 0;
   }
 
-  .register-info {
-    padding: 1.5rem;
+  .register-content {
+    margin: 1rem;
+    border-radius: 12px;
   }
 
-  .register-form-wrapper {
-    padding: 1.5rem;
+  .register-form-wrapper, .register-info {
+    padding: 2rem 1.5rem;
   }
 }

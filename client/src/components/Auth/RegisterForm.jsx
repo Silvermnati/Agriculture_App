@@ -8,7 +8,7 @@ import CountryDetectionService from '../../utils/countryDetectionService';
 import FormField from '../common/FormField/FormField';
 import PasswordField from '../common/PasswordField/PasswordField';
 import PhoneNumberField from '../common/PhoneNumberField/PhoneNumberField';
-import './Auth.css';
+import '../../pages/Register/Register.css';
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
