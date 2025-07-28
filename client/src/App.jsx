@@ -73,6 +73,7 @@ const AppRoutes = () => {
         <Route path="/notifications/history" element={isAuthenticated ? <NotificationHistory /> : <Navigate to="/login" />} />
         
         {/* Admin routes */}
+        <Route path="/admin" element={<Navigate to="/admin/login" />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
       </Routes>

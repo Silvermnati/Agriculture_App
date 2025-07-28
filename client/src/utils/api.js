@@ -310,4 +310,27 @@ export const commentsAPI = {
   getEditHistory: (commentId) => api.get(API_ENDPOINTS.COMMENTS.EDIT_HISTORY(commentId))
 };
 
+// Admin API calls
+export const adminAPI = {
+  // Users management
+  getAllUsers: (params) => api.get('/admin/users', { params }),
+  getUserById: (userId) => api.get(`/admin/users/${userId}`),
+  updateUserStatus: (userId) => api.patch(`/admin/users/${userId}/status`),
+  deleteUser: (userId) => api.delete(`/admin/users/${userId}`),
+  
+  // Analytics and stats
+  getStats: () => api.get('/admin/stats'),
+  getRecentActivity: (params) => api.get('/admin/activity', { params }),
+  
+  // Posts management (using existing posts API with admin privileges)
+  getAllPosts: (params) => api.get('/posts', { params }),
+  updatePostStatus: (postId, status) => api.patch(`/posts/${postId}/status`, { status }),
+  
+  // Communities management (using existing communities API)
+  getAllCommunities: (params) => api.get('/communities', { params }),
+  
+  // System management
+  getSystemHealth: () => api.get('/health')
+};
+
 export default api;
