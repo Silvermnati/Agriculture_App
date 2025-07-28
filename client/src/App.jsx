@@ -6,6 +6,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import ExpertsPage from './pages/Experts/ExpertsPage';
 import NotificationSettings from './pages/Notifications/NotificationSettings';
 import NotificationHistory from './pages/Notifications/NotificationHistory';
+import AdminLogin from './pages/Admin/AdminLogin';
+import AdminDashboard from './pages/Admin/AdminDashboard';
 
 import store from './store';
 import Layout from './components/Layout/Layout';
@@ -69,6 +71,10 @@ const AppRoutes = () => {
         <Route path="/profile/:userId" element={isAuthenticated ? <ProfilePage /> : <Navigate to="/login" />} />
         <Route path="/notifications" element={isAuthenticated ? <NotificationSettings /> : <Navigate to="/login" />} />
         <Route path="/notifications/history" element={isAuthenticated ? <NotificationHistory /> : <Navigate to="/login" />} />
+        
+        {/* Admin routes */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
       </Routes>
     </Layout>
   );

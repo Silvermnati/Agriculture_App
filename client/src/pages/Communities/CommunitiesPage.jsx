@@ -5,7 +5,6 @@ import CommunityList from '../../components/communities/CommunityList';
 import CommunityForm from '../../components/communities/CommunityForm';
 import LoadingSpinner from '../../components/common/LoadingSpinner/LoadingSpinner';
 import { getCommunities, joinCommunity, reset } from '../../store/slices/communitiesSlice';
-import { mockCommunities } from '../../utils/mockData';
 
 const CommunitiesPage = () => {
   const dispatch = useDispatch();
@@ -35,18 +34,7 @@ const CommunitiesPage = () => {
   ];
 
   useEffect(() => {
-    // Try to fetch from API first, fallback to mock data
-    const fetchCommunities = async () => {
-      try {
-        await dispatch(getCommunities()).unwrap();
-      } catch (error) {
-        // If API fails, use mock data for development
-        console.warn('API failed, using mock data:', error);
-        // You can set mock data here if needed for development
-      }
-    };
-
-    fetchCommunities();
+    dispatch(getCommunities());
     
     // Cleanup function
     return () => {
@@ -130,17 +118,32 @@ const CommunitiesPage = () => {
         </div>
       </div>
 
-      {isError && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {message}
-        </div>
-      )}
-
       {isLoading ? (
         <LoadingSpinner text="Loading communities..." />
+      ) : isError ? (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <p>{message}</p>
+          <button 
+            onClick={() => dispatch(getCommunities())}
+            className="mt-2 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+          >
+            Try Again
+          </button>
+        </div>
+      ) : communities.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="text-gray-500 text-lg mb-4">No communities found</div>
+          <p className="text-gray-400">Be the first to create a community!</p>
+          <button 
+            onClick={handleCreateCommunity}
+            className="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          >
+            Create Community
+          </button>
+        </div>
       ) : (
         <CommunityList
-          communities={communities.length > 0 ? communities : mockCommunities}
+          communities={communities}
           onJoin={handleJoinCommunity}
           searchTerm={searchTerm}
           selectedType={selectedType}
