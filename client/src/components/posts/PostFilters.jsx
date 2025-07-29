@@ -129,22 +129,22 @@ const PostFilters = ({ filters, onFilterChange }) => {
     <div className="post-filters">
       <div className="filter-group">
         <strong>Crops</strong>
-        {availableCrops.map(crop => (
-          <label key={crop}>
-            <input type="checkbox" name="crop" value={crop} checked={filters.crop?.includes(crop) || false} onChange={handleMultiChange} />
-            {crop}
-          </label>
-        ))}
+        <select name="crop" onChange={handleSingleChange} value={filters.crop || ''}>
+          <option value="">All Crops</option>
+          {availableCrops.map(crop => (
+            <option key={crop} value={crop}>{crop}</option>
+          ))}
+        </select>
       </div>
 
       <div className="filter-group">
         <strong>Locations</strong>
-        {availableLocations.map(location => (
-          <label key={location}>
-            <input type="checkbox" name="location" value={location} checked={filters.location?.includes(location) || false} onChange={handleMultiChange} />
-            {location}
-          </label>
-        ))}
+        <select name="location" onChange={handleSingleChange} value={filters.location || ''}>
+          <option value="">All Locations</option>
+          {availableLocations.map(location => (
+            <option key={location} value={location}>{location}</option>
+          ))}
+        </select>
       </div>
 
       <div className="filter-group">

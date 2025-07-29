@@ -30,7 +30,7 @@ const PostList = ({
   }
 
   return (
-    <div className="post-list">
+    <div className="post-list-grid">
       {posts.map((post) => (
         <PostCard 
           key={post.id || post.post_id} 

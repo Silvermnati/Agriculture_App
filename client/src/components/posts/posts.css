@@ -1,17 +1,28 @@
-/* === Post Card (Final Professional Design) === */
+/* === Post List Grid Layout === */
+.post-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+/* === Post Card (Grid-Optimized Design) === */
 .post-card {
   background: #ffffff;
-  border-radius: 4px;
+  border-radius: 8px;
   border: 1px solid #e5e7eb;
   overflow: hidden;
-  margin-bottom: 2rem;
   display: flex;
   flex-direction: column;
-  transition: box-shadow 0.2s ease;
+  transition: all 0.3s ease;
+  height: 100%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .post-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+  border-color: #d1d5db;
 }
 
 /* === Post Card Image Container === */
@@ -391,6 +402,81 @@
   font-size: 0.95rem;
   color: #4b5563;
   line-height: 1.6;
+}
+
+/* === Responsive Grid Layout === */
+@media (max-width: 1200px) {
+  .post-list-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .post-list-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .post-card {
+    border-radius: 6px;
+  }
+
+  .post-card-image {
+    height: 200px;
+  }
+
+  .post-card-content {
+    padding: 1.25rem;
+  }
+
+  .post-card-title {
+    font-size: 1.1rem;
+  }
+
+  .post-card-excerpt {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .post-list-grid {
+    gap: 1rem;
+  }
+
+  .post-card-content {
+    padding: 1rem;
+  }
+
+  .post-card-image {
+    height: 180px;
+  }
+
+  .post-card-title {
+    font-size: 1rem;
+  }
+
+  .post-card-excerpt {
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+
+  .post-card-footer {
+    padding-top: 0.75rem;
+  }
+
+  .author-avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .author-info span.author-name {
+    font-size: 0.85rem;
+  }
+
+  .author-info span.author-role {
+    font-size: 0.7rem;
+  }
 }
 
 /* Responsive adjustments for Post Detail Page */
