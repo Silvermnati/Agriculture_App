@@ -81,7 +81,7 @@ export const API_ENDPOINTS = {
     CONSULTATIONS: '/consultations'
   },
   UPLOAD: {
-    BASE: '/upload'
+    BASE: '/uploads'
   },
   PAYMENTS: {
     BASE: '/payments',
