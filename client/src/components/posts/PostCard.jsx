@@ -121,21 +121,12 @@ const PostCard = ({ post, showActions = true }) => {
               </div>
             </div>
             
-            {/* Follow Button for post author - TEMPORARY: Always show for testing */}
-            {post.author?.user_id && (
-              <div className="post-author-follow" style={{ 
-                backgroundColor: '#e3f2fd', 
-                padding: '8px', 
-                borderRadius: '4px',
-                marginTop: '8px',
-                border: '1px solid #2196f3'
-              }}>
-                <div style={{ fontSize: '10px', marginBottom: '4px', color: '#666' }}>
-                  Debug: User={currentUser?.user_id}, Author={post.author.user_id}, Own={isOwnPost ? 'yes' : 'no'}
-                </div>
+            {/* Follow Button for post author */}
+            {currentUser && !isOwnPost && post.author?.user_id && (
+              <div className="post-author-follow">
                 <FollowButton 
                   userId={post.author.user_id}
-                  initialFollowState={post.author.is_following}
+                  initialFollowState={post.author.is_following || false}
                   showStats={false}
                   size="small"
                 />
