@@ -6,6 +6,7 @@ import LoadingSpinner from '../../components/common/LoadingSpinner/LoadingSpinne
 import ErrorMessage from '../../components/common/ErrorMessage/ErrorMessage';
 import CommentSection from '../../components/posts/CommentSection';
 import Image from '../../components/common/Image/Image';
+import FollowButton from '../../components/common/FollowButton/FollowButton';
 import { Calendar } from 'lucide-react';
 import '../../components/posts/posts.css';
 
@@ -14,6 +15,7 @@ const PostDetailPage = () => {
   const dispatch = useDispatch();
   const location = useLocation();
   const { currentPost, postComments, isLoading, isError, message } = useSelector(state => state.posts);
+  const currentUser = useSelector(state => state.auth.user);
 
   useEffect(() => {
     if (postId) {
@@ -72,11 +74,22 @@ const PostDetailPage = () => {
         <h1>{currentPost.title || 'Untitled Post'}</h1>
         <div className="author-bar">
           <Image src={currentPost.author?.avatar_url} alt={currentPost.author?.name || 'Author'} className="avatar" fallbackType="avatar" />
-          <div>
+          <div className="author-info">
             <strong>{currentPost.author?.name || 'Unknown Author'}</strong>
             <small><Calendar size={14} /> Published on {formatDate(currentPost.published_at || currentPost.created_at)}</small>
           </div>
-          {currentPost.category && <span className="category">{currentPost.category.name}</span>}
+          <div className="author-actions">
+            {currentPost.category && <span className="category">{currentPost.category.name}</span>}
+            {/* Follow Button for post author */}
+            {currentUser && currentUser.user_id !== currentPost.author?.user_id && currentPost.author?.user_id && (
+              <FollowButton 
+                userId={currentPost.author.user_id}
+                initialFollowState={currentPost.author.is_following}
+                showStats={false}
+                size="medium"
+              />
+            )}
+          </div>
         </div>
         <div className="post-content" dangerouslySetInnerHTML={{ __html: currentPost.content || '<p>No content available</p>' }} />
       </article>

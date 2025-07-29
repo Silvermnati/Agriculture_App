@@ -17,8 +17,8 @@ import { logout } from '../../store/slices/authSlice';
 import CropManagement from '../../components/Admin/CropManagement';
 import LocationManagement from '../../components/Admin/LocationManagement';
 import CategoryManagement from '../../components/Admin/CategoryManagement';
-import UserManagement from '../../components/Admin/UserManagement';
-import PostManagement from '../../components/Admin/PostManagement';
+import UserManagement from './components/UsersManagement';
+import PostManagement from './components/PostsManagement';
 import CommunityManagement from '../../components/Admin/CommunityManagement';
 import SystemStats from '../../components/Admin/SystemStats';
 

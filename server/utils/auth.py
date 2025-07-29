@@ -210,3 +210,33 @@ def verified_user_required(f):
         return f(current_user, *args, **kwargs)
     
     return decorated
+
+de
+f get_current_user_optional():
+    """
+    Get current user from token if available, return None if not authenticated.
+    This is useful for endpoints that work with or without authentication.
+    """
+    token = None
+    
+    # Get token from header
+    if 'Authorization' in request.headers:
+        auth_header = request.headers['Authorization']
+        if auth_header.startswith('Bearer '):
+            token = auth_header.split(' ')[1]
+    
+    if not token:
+        return None
+    
+    try:
+        # Decode token
+        data = jwt.decode(token, current_app.config['JWT_SECRET_KEY'], algorithms=['HS256'])
+        current_user = User.query.filter_by(user_id=data['user_id']).first()
+        
+        if not current_user or not current_user.is_active:
+            return None
+            
+        return current_user
+        
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+        return None

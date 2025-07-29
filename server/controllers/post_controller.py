@@ -16,7 +16,7 @@ from server.utils.validators import validate_agricultural_data, sanitize_html_co
 from server.utils.error_handlers import create_error_response, create_success_response
 from server.utils.rate_limiter import rate_limit_moderate, rate_limit_lenient
 
-def get_posts():
+def get_posts(current_user=None):
     """
     Get paginated posts with agricultural filters.
     
@@ -149,6 +149,17 @@ def get_posts():
             comment_count=counts.get('comment_count', 0),
             like_count=counts.get('like_count', 0)
         )
+        
+        # Add is_following status for the post author
+        if current_user and post.author:
+            from server.services.follow_service import follow_service
+            is_following = follow_service.is_following(
+                follower_id=str(current_user.user_id),
+                following_id=str(post.author.user_id)
+            )
+            if post_dict['author']:
+                post_dict['author']['is_following'] = is_following
+        
         posts.append(post_dict)
     
     return create_success_response(
@@ -297,7 +308,7 @@ def create_post(current_user):
     )
 
 
-def get_post(post_id):
+def get_post(post_id, current_user=None):
     """
     Get a single post with full details, optimized to prevent N+1 queries.
     """
@@ -352,6 +363,16 @@ def get_post(post_id):
         post_data = post.to_dict(include_content=True)
         post_data['comments'] = top_level_comments
         post_data['like_count'] = like_count
+        
+        # Add is_following status for the post author
+        if current_user and post.author:
+            from server.services.follow_service import follow_service
+            is_following = follow_service.is_following(
+                follower_id=str(current_user.user_id),
+                following_id=str(post.author.user_id)
+            )
+            if post_data['author']:
+                post_data['author']['is_following'] = is_following
 
         return create_success_response(data=post_data)
         

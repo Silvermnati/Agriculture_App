@@ -1,35 +1,36 @@
 /* Posts Page Styles */
 .posts-page {
-  min-height: 100vh;
-  background-color: #f8fafc;
+  min-height: 100vh !important;
+  background-color: #f8fafc !important;
 }
 
 .posts-page .container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem 1rem;
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 2rem 1rem !important;
 }
 
 /* Page Header */
 .page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 2rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  margin-bottom: 2rem !important;
+  padding-bottom: 1.5rem !important;
+  border-bottom: 1px solid #e2e8f0 !important;
 }
 
 .header-content h1 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #1a202c;
-  margin-bottom: 0.5rem;
+  font-size: 2.5rem !important;
+  font-weight: 700 !important;
+  color: #1a202c !important;
+  margin-bottom: 0.5rem !important;
 }
 
 .header-content p {
-  font-size: 1.1rem;
-  color: #64748b;
+  font-size: 1.1rem !important;
+  color: #64748b !important;
+  margin-bottom: 0 !important;
 }
 
 .btn-primary {

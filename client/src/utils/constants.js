@@ -98,9 +98,9 @@ export const API_ENDPOINTS = {
     HISTORY: '/notifications/history'
   },
   FOLLOW: {
-    FOLLOW_USER: (userId) => `/users/${userId}/follow`,
-    FOLLOWERS: (userId) => `/users/${userId}/followers`,
-    FOLLOWING: (userId) => `/users/${userId}/following`
+    FOLLOW_USER: (userId) => `/follow/users/${userId}/follow`,
+    FOLLOWERS: (userId) => `/follow/users/${userId}/followers`,
+    FOLLOWING: (userId) => `/follow/users/${userId}/following`
   },
   COMMENTS: {
     EDIT: (commentId) => `/comments/${commentId}`,
