@@ -12,10 +12,32 @@ const CommunityDetailPage = () => {
   const { currentCommunity, communityPosts, isLoading, isError, message } = useSelector((state) => state.communities);
   const { user } = useSelector((state) => state.auth);
 
+  // Early return if communityId is invalid
+  if (!communityId || communityId === 'undefined' || communityId === 'null') {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <h3 className="font-bold">Invalid Community</h3>
+          <p>The community ID is missing or invalid. Please check the URL and try again.</p>
+          <a 
+            href="/communities" 
+            className="mt-2 inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          >
+            Back to Communities
+          </a>
+        </div>
+      </div>
+    );
+  }
+
   useEffect(() => {
-    if (communityId) {
+    console.log('CommunityDetailPage - communityId:', communityId);
+    
+    if (communityId && communityId !== 'undefined') {
       dispatch(getCommunity(communityId));
       dispatch(getCommunityPosts({ communityId }));
+    } else {
+      console.error('Invalid communityId:', communityId);
     }
     
     return () => {
@@ -108,7 +130,7 @@ const CommunityDetailPage = () => {
                 key={post.id}
                 post={post}
                 currentUser={user}
-                communityId={currentCommunity.id}
+                communityId={currentCommunity.id || currentCommunity.community_id}
                 onLike={handleLike}
                 onComment={handleComment}
                 onShare={handleShare}

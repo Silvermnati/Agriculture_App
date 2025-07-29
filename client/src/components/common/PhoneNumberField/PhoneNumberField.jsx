@@ -114,22 +114,15 @@ const PhoneNumberField = ({
   };
 
   const handlePhoneChange = (newValue) => {
-    // Clean the input - allow digits, spaces, parentheses, hyphens, and plus sign
-    const cleanedValue = CountryDetectionService.cleanPhoneInput(newValue);
+    // Only allow digits, spaces, parentheses, hyphens, and plus sign
+    // But don't format while typing - let user type freely
+    const cleanedValue = newValue.replace(/[^\d\s\(\)\-\+]/g, '');
     
-    // Don't auto-format while typing - just pass the cleaned value
+    // Pass the cleaned but unformatted value
     onChange(cleanedValue, selectedCountry);
   };
 
-  const handlePhoneBlur = () => {
-    setFocused(false);
-    
-    // Format the phone number when user finishes typing (on blur)
-    if (value && value.length > 3) {
-      const formattedValue = CountryDetectionService.formatPhoneNumber(value, selectedCountry);
-      onChange(formattedValue, selectedCountry);
-    }
-  };
+  
 
   const handleInputFocus = () => {
     setFocused(true);
@@ -259,7 +252,6 @@ const PhoneNumberField = ({
             value={value || ''}
             onChange={(e) => handlePhoneChange(e.target.value)}
             onFocus={handleInputFocus}
-            onBlur={handlePhoneBlur}
             placeholder={placeholder || phoneExample}
             className={`phone-number-field__input ${value && !isValid ? 'phone-number-field__input--error' : ''} ${value && isValid ? 'phone-number-field__input--valid' : ''}`}
             name={name}
