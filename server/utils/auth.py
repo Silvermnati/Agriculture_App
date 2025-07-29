@@ -211,8 +211,8 @@ def verified_user_required(f):
     
     return decorated
 
-de
-f get_current_user_optional():
+
+def get_current_user_optional():
     """
     Get current user from token if available, return None if not authenticated.
     This is useful for endpoints that work with or without authentication.
