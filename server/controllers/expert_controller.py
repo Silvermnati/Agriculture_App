@@ -6,6 +6,7 @@ from server.models.expert import ExpertProfile, Consultation, ExpertReview
 from server.models.user import User
 from server.database import db
 from server.utils.auth import token_required, role_required
+from server.utils.error_handlers import create_error_response, create_success_response
 
 @token_required
 def get_experts(current_user):
@@ -101,7 +102,6 @@ def get_expert(current_user, expert_id):
 
 
 @token_required
-@role_required(['expert'])
 def create_expert_profile(current_user):
     """
     Create or update expert profile.
@@ -156,6 +156,10 @@ def create_expert_profile(current_user):
         )
         
         db.session.add(expert)
+        
+        # Update user role to expert
+        current_user.role = 'expert'
+        
         db.session.commit()
         
         return jsonify({

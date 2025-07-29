@@ -115,10 +115,14 @@ const MpesaPaymentModal = ({
         amount: parseFloat(amount),
         currency,
         description,
-        consultation_id: consultationId
+        consultation_id: consultationId,
+        payment_type: consultationId ? 'consultation' : 'general'
       };
 
-      const response = await paymentsAPI.initiatePayment(paymentData);
+      // Use consultation payment endpoint if consultationId is provided
+      const response = consultationId 
+        ? await paymentsAPI.initiateConsultationPayment(paymentData)
+        : await paymentsAPI.initiatePayment(paymentData);
       const { payment_id, checkout_request_id } = response.data;
 
       setPaymentId(payment_id);
@@ -231,7 +235,7 @@ const MpesaPaymentModal = ({
               <div className="instructions-title">How to pay:</div>
               <ul className="instructions-list">
                 <li>Enter your M-Pesa registered phone number</li>
-                <li>Click "Pay Now" to initiate payment</li>
+                <li>Click "Pay Now&quot; to initiate payment</li>
                 <li>Check your phone for M-Pesa prompt</li>
                 <li>Enter your M-Pesa PIN to complete payment</li>
               </ul>

@@ -181,7 +181,7 @@ export const communitiesAPI = {
 export const expertsAPI = {
   getExperts: (params) => api.get(API_ENDPOINTS.EXPERTS.BASE, { params }),
   getExpert: (expertId) => api.get(`${API_ENDPOINTS.EXPERTS.BASE}/${expertId}`),
-  createExpertProfile: (expertData) => api.post(API_ENDPOINTS.EXPERTS.BASE, expertData),
+  createExpertProfile: (expertData) => api.post(`${API_ENDPOINTS.EXPERTS.BASE}/profile`, expertData),
   updateExpertProfile: (expertId, expertData) => api.put(`${API_ENDPOINTS.EXPERTS.BASE}/${expertId}`, expertData),
   bookConsultation: (consultationData) => api.post(API_ENDPOINTS.EXPERTS.CONSULTATIONS, consultationData),
   getConsultations: () => api.get(API_ENDPOINTS.EXPERTS.CONSULTATIONS)
@@ -281,6 +281,7 @@ export const uploadAPI = {
 // Payments API calls
 export const paymentsAPI = {
   initiatePayment: (paymentData) => api.post(API_ENDPOINTS.PAYMENTS.INITIATE, paymentData),
+  initiateConsultationPayment: (paymentData) => api.post('/payments/consultation/initiate', paymentData),
   getPaymentStatus: (paymentId) => api.get(API_ENDPOINTS.PAYMENTS.STATUS(paymentId)),
   getPaymentHistory: (params) => api.get(API_ENDPOINTS.PAYMENTS.HISTORY, { params }),
   requestRefund: (paymentId, refundData) => api.post(API_ENDPOINTS.PAYMENTS.REFUND(paymentId), refundData)
