@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import PropTypes from 'prop-types';
 import { Lock, Plus, MessageSquare, Users } from "lucide-react";
-import { mockUsers } from "../../utils/mockData";
 
 const CommunityDetail = ({ community, posts, onCreatePost }) => {
   const [activeTab, setActiveTab] = useState("posts");
@@ -20,8 +19,9 @@ const CommunityDetail = ({ community, posts, onCreatePost }) => {
 
   // Get random members for display
   const getRandomMembers = () => {
-    // In a real app, this would come from the API
-    return mockUsers.slice(0, 5);
+    // TODO: This should come from the API - community members endpoint
+    // For now, return empty array until API integration is complete
+    return [];
   };
 
   const handleJoinCommunity = () => {
@@ -206,27 +206,37 @@ const CommunityDetail = ({ community, posts, onCreatePost }) => {
           {activeTab === "members" && (
             <div>
               <h3 className="text-lg font-semibold mb-4">Community Members</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {getRandomMembers().map((member) => (
-                  <div key={member.id} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg">
-                    <img
-                      src={member.avatar}
-                      alt={member.name}
-                      className="w-12 h-12 rounded-full object-cover"
-                    />
-                    <div>
-                      <h4 className="font-medium text-gray-900">{member.name}</h4>
-                      <p className="text-sm text-gray-500">{member.role}</p>
-                    </div>
+              {getRandomMembers().length > 0 ? (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {getRandomMembers().map((member) => (
+                      <div key={member.id} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg">
+                        <img
+                          src={member.avatar}
+                          alt={member.name}
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
+                        <div>
+                          <h4 className="font-medium text-gray-900">{member.name}</h4>
+                          <p className="text-sm text-gray-500">{member.role}</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-              <div className="mt-4 text-center">
-                <button className="flex items-center justify-center space-x-2 mx-auto px-4 py-2 border border-gray-300 rounded-md text-gray-600 hover:bg-gray-50">
-                  <Users className="w-4 h-4" />
-                  <span>View All Members</span>
-                </button>
-              </div>
+                  <div className="mt-4 text-center">
+                    <button className="flex items-center justify-center space-x-2 mx-auto px-4 py-2 border border-gray-300 rounded-md text-gray-600 hover:bg-gray-50">
+                      <Users className="w-4 h-4" />
+                      <span>View All Members</span>
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-8">
+                  <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500">Member list will be available soon.</p>
+                  <p className="text-sm text-gray-400 mt-2">This feature is being integrated with the API.</p>
+                </div>
+              )}
             </div>
           )}
 

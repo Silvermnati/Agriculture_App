@@ -5,6 +5,7 @@ import {
   transformProfileToBackendUser, 
   ensureCompleteProfile 
 } from '../../utils/userDataAdapter';
+import { updateUserData } from './authSlice';
 
 // Async thunks for profile operations
 
@@ -66,6 +67,9 @@ export const uploadProfilePicture = createAsyncThunk(
       // Update localStorage
       if (profileResponse.data?.user) {
         localStorage.setItem('user', JSON.stringify(profileResponse.data.user));
+        
+        // Update auth slice with new user data
+        thunkAPI.dispatch(updateUserData({ avatar_url: imageUrl }));
       }
       
       return {

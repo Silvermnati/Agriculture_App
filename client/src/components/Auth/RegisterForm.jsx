@@ -8,7 +8,6 @@ import CountryDetectionService from '../../utils/countryDetectionService';
 import FormField from '../common/FormField/FormField';
 import PasswordField from '../common/PasswordField/PasswordField';
 import PhoneNumberField from '../common/PhoneNumberField/PhoneNumberField';
-import './Auth.css';
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
@@ -23,6 +22,7 @@ const RegisterForm = () => {
     phone_country_code: '',
     country: '',
     city: '',
+    bio: '',
     farm_size: '',
     farm_size_unit: 'hectares',
     farming_experience: '',
@@ -65,11 +65,7 @@ const RegisterForm = () => {
   // Redirect on successful registration
   useEffect(() => {
     if (isSuccess) {
-      const timer = setTimeout(() => {
-        navigate('/');
-      }, 1500);
-      
-      return () => clearTimeout(timer);
+      navigate('/');
     }
     
     return () => {
@@ -199,6 +195,18 @@ const RegisterForm = () => {
     // Prepare data for submission
     const { confirmPassword, phone_country_code, ...registerData } = formData;
     
+    // Format phone number properly if provided
+    if (registerData.phone_number && phone_country_code) {
+      // Ensure phone number is in international format
+      const countryData = CountryDetectionService.getCountryData(phone_country_code);
+      if (countryData && !registerData.phone_number.startsWith(countryData.phoneCode)) {
+        registerData.phone_number = CountryDetectionService.formatPhoneNumber(
+          registerData.phone_number, 
+          phone_country_code
+        );
+      }
+    }
+    
     // Convert numeric fields
     if (registerData.farm_size) {
       registerData.farm_size = parseFloat(registerData.farm_size);
@@ -208,137 +216,91 @@ const RegisterForm = () => {
       registerData.farming_experience = parseInt(registerData.farming_experience, 10);
     }
     
+    // Remove empty optional fields to avoid backend validation issues
+    Object.keys(registerData).forEach(key => {
+      if (registerData[key] === '' || registerData[key] === null || registerData[key] === undefined) {
+        delete registerData[key];
+      }
+    });
+    
     dispatch(register(registerData));
   };
 
   return (
-    <div className="auth-form-container">
-      <h2>Join Agricultural Super App</h2>
-      <p className="auth-subtitle">Connect with agricultural experts and share knowledge</p>
+    <div className="w-full">
+      <h2 className="text-2xl font-bold text-gray-900 mb-1">Create your account</h2>
+      <p className="text-sm text-gray-600 mb-6">Already have an account? <a href="/login" className="font-medium text-green-600 hover:text-green-500">Sign in</a></p>
       
-      {isError && <div className="auth-error">{message}</div>}
-      {isSuccess && <div className="auth-success">Registration successful!</div>}
-      
-      <form className="auth-form enhanced-form" onSubmit={handleSubmit}>
-        {/* Form-level errors */}
-        {Object.keys(formErrors).length > 0 && (
-          <div className="form-errors" role="alert">
-            <h4>Please correct the following errors:</h4>
-            <ul>
-              {Object.entries(formErrors).map(([field, error]) => (
-                <li key={field}>{error}</li>
-              ))}
-            </ul>
+      {isError && <div className="rounded-md bg-red-50 p-4 mb-4">
+        <div className="flex">
+          <div className="flex-shrink-0">
+            <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
           </div>
-        )}
-
-        {/* Personal Information */}
-        <div className="form-section">
-          <h3 className="form-section-title">Personal Information</h3>
-          
-          <div className="form-row">
-            <FormField
-              label="First Name"
-              value={formData.first_name}
-              onChange={(value) => handleFieldChange('first_name', value)}
-              type="text"
-              name="first_name"
-              placeholder="Enter your first name"
-              required
-              helpText="Your first name as it appears on official documents"
-              maxLength={50}
-              onValidationChange={(isValid, error) => handleValidationChange('first_name', isValid, error)}
-            />
-            
-            <FormField
-              label="Last Name"
-              value={formData.last_name}
-              onChange={(value) => handleFieldChange('last_name', value)}
-              type="text"
-              name="last_name"
-              placeholder="Enter your last name"
-              required
-              helpText="Your last name as it appears on official documents"
-              maxLength={50}
-              onValidationChange={(isValid, error) => handleValidationChange('last_name', isValid, error)}
-            />
-          </div>
-          
-          <FormField
-            label="Gender"
-            value={formData.gender}
-            onChange={(value) => handleFieldChange('gender', value)}
-            type="select"
-            name="gender"
-            required
-            helpText="This helps us provide personalized content"
-            options={[
-              { value: 'male', label: 'Male' },
-              { value: 'female', label: 'Female' },
-              { value: 'other', label: 'Other' }
-            ]}
-          />
-        </div>
-
-        {/* Contact Information */}
-        <div className="form-section">
-          <h3 className="form-section-title">Contact Information</h3>
-          
-          <FormField
-            label="Email Address"
-            value={formData.email}
-            onChange={(value) => handleFieldChange('email', value)}
-            type="email"
-            name="email"
-            placeholder="Enter your email address"
-            required
-            helpText="We'll use this to send you important updates and notifications"
-            onValidationChange={(isValid, error) => handleValidationChange('email', isValid, error)}
-          />
-
-          <PhoneNumberField
-            label="Phone Number (Optional)"
-            value={formData.phone_number}
-            countryCode={formData.phone_country_code}
-            onChange={handlePhoneChange}
-            name="phone_number"
-            placeholder="Enter your phone number"
-            defaultCountry={detectedCountry}
-            onValidationChange={(isValid) => handleValidationChange('phone_number', isValid)}
-          />
-
-          <div className="form-row">
-            <FormField
-              label="Country"
-              value={formData.country}
-              onChange={handleCountryChange}
-              type="select"
-              name="country"
-              helpText="Select your country of residence"
-              options={[
-                { value: '', label: 'Select your country' },
-                ...COUNTRIES.map(country => ({ value: country, label: country }))
-              ]}
-            />
-            
-            <FormField
-              label="City"
-              value={formData.city}
-              onChange={(value) => handleFieldChange('city', value)}
-              type="text"
-              name="city"
-              placeholder="Enter your city"
-              helpText="Your city or nearest major city"
-              maxLength={100}
-            />
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-red-800">{message}</h3>
           </div>
         </div>
+      </div>}
+      
+      <form className="space-y-6" onSubmit={handleSubmit}>
+        <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
+          <div className="sm:col-span-1">
+            <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">
+              First name
+            </label>
+            <div className="mt-1">
+              <input
+                type="text"
+                name="first_name"
+                id="first_name"
+                autoComplete="given-name"
+                required
+                value={formData.first_name}
+                onChange={(e) => handleFieldChange('first_name', e.target.value)}
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+              />
+            </div>
+          </div>
 
-        {/* Security */}
-        <div className="form-section">
-          <h3 className="form-section-title">Security</h3>
-          
-          <div className="form-row">
+          <div className="sm:col-span-1">
+            <label htmlFor="last_name" className="block text-sm font-medium text-gray-700">
+              Last name
+            </label>
+            <div className="mt-1">
+              <input
+                type="text"
+                name="last_name"
+                id="last_name"
+                autoComplete="family-name"
+                required
+                value={formData.last_name}
+                onChange={(e) => handleFieldChange('last_name', e.target.value)}
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="sm:col-span-2">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              Email address
+            </label>
+            <div className="mt-1">
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={formData.email}
+                onChange={(e) => handleFieldChange('email', e.target.value)}
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="sm:col-span-2">
             <PasswordField
               label="Password"
               value={formData.password}
@@ -349,131 +311,227 @@ const RegisterForm = () => {
               showRequirements={true}
               onValidationChange={(isValid) => handleValidationChange('password', isValid)}
             />
-            
-            <FormField
+          </div>
+
+          <div className="sm:col-span-2">
+            <PasswordField
               label="Confirm Password"
               value={formData.confirmPassword}
-              onChange={(value) => handleFieldChange('confirmPassword', value)}
-              type="password"
+              onChange={(value) => {
+                handleFieldChange('confirmPassword', value);
+                // Validate password match
+                const passwordsMatch = value === formData.password;
+                const error = value && !passwordsMatch ? 'Passwords do not match' : null;
+                handleValidationChange('confirmPassword', passwordsMatch || !value, error);
+              }}
               name="confirmPassword"
               placeholder="Confirm your password"
               required
-              helpText="Re-enter your password to confirm"
-              validation={[
-                {
-                  validator: (value) => value === formData.password,
-                  message: 'Passwords do not match'
-                }
-              ]}
-              onValidationChange={(isValid, error) => handleValidationChange('confirmPassword', isValid, error)}
+              showRequirements={false}
             />
+            {formData.confirmPassword && formData.password !== formData.confirmPassword && (
+              <p className="mt-1 text-sm text-red-600">Passwords do not match</p>
+            )}
+          </div>
+
+          <div className="sm:col-span-1">
+            <label htmlFor="gender" className="block text-sm font-medium text-gray-700">
+              Gender
+            </label>
+            <div className="mt-1">
+              <select
+                id="gender"
+                name="gender"
+                value={formData.gender}
+                onChange={(e) => handleFieldChange('gender', e.target.value)}
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+              >
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+                <option value="prefer_not_to_say">Prefer not to say</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="sm:col-span-1">
+            <label htmlFor="role" className="block text-sm font-medium text-gray-700">
+              Role
+            </label>
+            <div className="mt-1">
+              <select
+                id="role"
+                name="role"
+                value={formData.role}
+                onChange={(e) => handleFieldChange('role', e.target.value)}
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+              >
+                <option value="farmer">Farmer</option>
+                <option value="expert">Agricultural Expert</option>
+                <option value="supplier">Supplier</option>
+                <option value="researcher">Researcher</option>
+                <option value="student">Student</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="sm:col-span-2">
+            <PhoneNumberField
+              label="Phone Number"
+              value={formData.phone_number}
+              countryCode={formData.phone_country_code}
+              onChange={handlePhoneChange}
+              placeholder="Enter your phone number"
+              name="phone_number"
+              onValidationChange={(isValid) => handleValidationChange('phone_number', isValid)}
+            />
+          </div>
+
+          <div className="sm:col-span-1">
+            <label htmlFor="country" className="block text-sm font-medium text-gray-700">
+              Country
+            </label>
+            <div className="mt-1">
+              <select
+                id="country"
+                name="country"
+                value={formData.country}
+                onChange={(e) => handleCountryChange(e.target.value)}
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+              >
+                <option value="">Select Country</option>
+                {COUNTRIES.map((country) => (
+                  <option key={country} value={country}>
+                    {country}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="sm:col-span-1">
+            <label htmlFor="city" className="block text-sm font-medium text-gray-700">
+              City
+            </label>
+            <div className="mt-1">
+              <input
+                type="text"
+                name="city"
+                id="city"
+                value={formData.city}
+                onChange={(e) => handleFieldChange('city', e.target.value)}
+                placeholder="Enter your city"
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="sm:col-span-2">
+            <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
+              Bio (Optional)
+            </label>
+            <div className="mt-1">
+              <textarea
+                id="bio"
+                name="bio"
+                rows={3}
+                value={formData.bio || ''}
+                onChange={(e) => handleFieldChange('bio', e.target.value)}
+                placeholder="Tell us about yourself and your agricultural interests..."
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="sm:col-span-1">
+            <label htmlFor="farm_size" className="block text-sm font-medium text-gray-700">
+              Farm Size (Optional)
+            </label>
+            <div className="mt-1">
+              <input
+                type="number"
+                name="farm_size"
+                id="farm_size"
+                step="0.01"
+                min="0"
+                value={formData.farm_size}
+                onChange={(e) => handleFieldChange('farm_size', e.target.value)}
+                placeholder="Enter farm size"
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="sm:col-span-1">
+            <label htmlFor="farm_size_unit" className="block text-sm font-medium text-gray-700">
+              Unit
+            </label>
+            <div className="mt-1">
+              <select
+                id="farm_size_unit"
+                name="farm_size_unit"
+                value={formData.farm_size_unit}
+                onChange={(e) => handleFieldChange('farm_size_unit', e.target.value)}
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+              >
+                <option value="hectares">Hectares</option>
+                <option value="acres">Acres</option>
+                <option value="square_meters">Square Meters</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="sm:col-span-1">
+            <label htmlFor="farming_experience" className="block text-sm font-medium text-gray-700">
+              Farming Experience (Years)
+            </label>
+            <div className="mt-1">
+              <input
+                type="number"
+                name="farming_experience"
+                id="farming_experience"
+                min="0"
+                max="100"
+                value={formData.farming_experience}
+                onChange={(e) => handleFieldChange('farming_experience', e.target.value)}
+                placeholder="Years of experience"
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="sm:col-span-1">
+            <label htmlFor="farming_type" className="block text-sm font-medium text-gray-700">
+              Farming Type
+            </label>
+            <div className="mt-1">
+              <select
+                id="farming_type"
+                name="farming_type"
+                value={formData.farming_type}
+                onChange={(e) => handleFieldChange('farming_type', e.target.value)}
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+              >
+                {FARMING_TYPES.map((type) => (
+                  <option key={type.value} value={type.value}>
+                    {type.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
-        {/* Professional Information */}
-        <div className="form-section">
-          <h3 className="form-section-title">Professional Information</h3>
-          
-          <FormField
-            label="I am a:"
-            value={formData.role}
-            onChange={(value) => handleFieldChange('role', value)}
-            type="select"
-            name="role"
-            required
-            helpText="Select your primary role in agriculture"
-            options={[
-              { value: 'farmer', label: 'Farmer' },
-              { value: 'expert', label: 'Agricultural Expert' },
-              { value: 'supplier', label: 'Supplier' },
-              { value: 'researcher', label: 'Researcher' },
-              { value: 'student', label: 'Student' }
-            ]}
-          />
-          
-          {formData.role === 'farmer' && (
-            <div className="farmer-specific-fields">
-              <div className="form-row">
-                <FormField
-                  label="Farm Size"
-                  value={formData.farm_size}
-                  onChange={(value) => handleFieldChange('farm_size', value)}
-                  type="number"
-                  name="farm_size"
-                  placeholder="Enter farm size"
-                  helpText="Size of your farming area"
-                  min="0.01"
-                  step="0.01"
-                />
-                
-                <FormField
-                  label="Unit"
-                  value={formData.farm_size_unit}
-                  onChange={(value) => handleFieldChange('farm_size_unit', value)}
-                  type="select"
-                  name="farm_size_unit"
-                  helpText="Unit of measurement"
-                  options={[
-                    { value: 'hectares', label: 'Hectares' },
-                    { value: 'acres', label: 'Acres' }
-                  ]}
-                />
-              </div>
-              
-              <div className="form-row">
-                <FormField
-                  label="Years of Experience"
-                  value={formData.farming_experience}
-                  onChange={(value) => handleFieldChange('farming_experience', value)}
-                  type="number"
-                  name="farming_experience"
-                  placeholder="Years of farming experience"
-                  helpText="How many years have you been farming?"
-                  min="0"
-                  max="100"
-                />
-                
-                <FormField
-                  label="Farming Type"
-                  value={formData.farming_type}
-                  onChange={(value) => handleFieldChange('farming_type', value)}
-                  type="select"
-                  name="farming_type"
-                  helpText="Your primary farming approach"
-                  options={FARMING_TYPES.map(type => ({ value: type.value, label: type.label }))}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-        
-        <div className="form-actions">
-          <button 
-            type="submit" 
-            className={`auth-button ${isFormValid ? 'auth-button--ready' : ''}`}
+        <div>
+          <button
+            type="submit"
             disabled={isLoading || !isFormValid}
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
           >
-            {isLoading ? (
-              <>
-                <span className="loading-spinner"></span>
-                Registering...
-              </>
-            ) : (
-              'Create Account'
-            )}
+            {isLoading ? 'Creating account...' : 'Create Account'}
           </button>
-          
-          {!isFormValid && (
-            <p className="form-validation-hint">
-              Please fill in all required fields correctly to continue
-            </p>
-          )}
         </div>
       </form>
-      
-      <div className="auth-links">
-        <p>Already have an account? <a href="/login">Login</a></p>
-      </div>
     </div>
   );
 };
