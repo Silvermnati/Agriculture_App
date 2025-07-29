@@ -4,6 +4,11 @@ import { Lock, Plus, MessageSquare, Users } from "lucide-react";
 
 const CommunityDetail = ({ community, posts, onCreatePost }) => {
   const [activeTab, setActiveTab] = useState("posts");
+  
+  // Debug logging
+  console.log('CommunityDetail - community:', community);
+  console.log('CommunityDetail - posts:', posts);
+  console.log('CommunityDetail - activeTab:', activeTab);
 
   if (!community) return <div>Community not found</div>;
 
@@ -26,7 +31,8 @@ const CommunityDetail = ({ community, posts, onCreatePost }) => {
 
   const handleJoinCommunity = () => {
     // In a real app, this would be an API call
-    console.log(`Join community ${community.id}`);
+    const communityId = community.id || community.community_id;
+    console.log(`Join community ${communityId}`);
     alert(`Joined community: ${community.name}`);
   };
 
@@ -34,7 +40,8 @@ const CommunityDetail = ({ community, posts, onCreatePost }) => {
     if (onCreatePost) {
       onCreatePost();
     } else {
-      console.log(`Create post in community ${community.id}`);
+      const communityId = community.id || community.community_id;
+      console.log(`Create post in community ${communityId}`);
       alert(`Creating new post in ${community.name}`);
     }
   };
@@ -51,8 +58,7 @@ const CommunityDetail = ({ community, posts, onCreatePost }) => {
           />
           <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end">
             <div className="p-6 text-white">
-              <h1 className="text-3xl font-bold mb-2">{community.name}</h1>
-              <p className="text-lg opacity-90">{community.description}</p>
+              <h1 className="text-3xl font-bold">{community.name}</h1>
             </div>
           </div>
         </div>
@@ -158,46 +164,70 @@ const CommunityDetail = ({ community, posts, onCreatePost }) => {
               </button>
 
               {posts && posts.length > 0 ? (
-                posts.map((post) => (
-                  <div
-                    key={post.id}
-                    className="border-b border-gray-200 pb-4 last:border-b-0"
-                  >
-                    <div className="flex items-start space-x-3">
-                      <img
-                        src={post.author.avatar}
-                        alt={post.author.name}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-1">
-                          <span className="font-medium text-gray-900">
-                            {post.author.name}
-                          </span>
-                          <span className="text-gray-500 text-sm">
-                            {formatDate(post.timestamp)}
-                          </span>
-                        </div>
-                        <h4 className="font-medium text-gray-900 mb-2">
-                          {post.title}
-                        </h4>
-                        <p className="text-gray-700 mb-3">{post.content}</p>
-                        <div className="flex items-center space-x-4 text-sm text-gray-500">
-                          <button className="hover:text-green-600">
-                            👍 {post.likes}
-                          </button>
-                          <button className="hover:text-green-600">
-                            <MessageSquare className="w-4 h-4 inline mr-1" />
-                            {post.comments}
-                          </button>
+                posts.map((post) => {
+                  // Handle different post data structures
+                  const postId = post.id || post.post_id;
+                  const author = post.author || { name: 'Unknown User', avatar: '/default-avatar.png' };
+                  const authorName = author.name || author.first_name + ' ' + author.last_name || 'Unknown User';
+                  const authorAvatar = author.avatar || author.avatar_url || '/default-avatar.png';
+                  const postDate = post.timestamp || post.created_at || post.published_at;
+                  const postTitle = post.title || 'Untitled Post';
+                  const postContent = post.content || post.body || 'No content available';
+                  const postLikes = post.likes || post.like_count || 0;
+                  const postComments = post.comments || post.comment_count || 0;
+
+                  return (
+                    <div
+                      key={postId}
+                      className="border-b border-gray-200 pb-4 last:border-b-0"
+                    >
+                      <div className="flex items-start space-x-3">
+                        <img
+                          src={authorAvatar}
+                          alt={authorName}
+                          className="w-10 h-10 rounded-full object-cover"
+                          onError={(e) => {
+                            e.target.src = 'https://via.placeholder.com/40x40?text=U';
+                          }}
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <span className="font-medium text-gray-900">
+                              {authorName}
+                            </span>
+                            <span className="text-gray-500 text-sm">
+                              {postDate ? formatDate(postDate) : 'Unknown date'}
+                            </span>
+                          </div>
+                          <h4 className="font-medium text-gray-900 mb-2">
+                            {postTitle}
+                          </h4>
+                          <p className="text-gray-700 mb-3">{postContent}</p>
+                          <div className="flex items-center space-x-4 text-sm text-gray-500">
+                            <button className="hover:text-green-600">
+                              👍 {postLikes}
+                            </button>
+                            <button className="hover:text-green-600">
+                              <MessageSquare className="w-4 h-4 inline mr-1" />
+                              {postComments}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <div className="text-center py-8">
-                  <p className="text-gray-500">No posts in this community yet.</p>
+                  <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500 text-lg font-medium">No posts in this community yet</p>
+                  <p className="text-gray-400 text-sm mt-2">Be the first to start a conversation!</p>
+                  <button 
+                    className="mt-4 bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition-colors"
+                    onClick={handleCreatePost}
+                  >
+                    Create First Post
+                  </button>
                 </div>
               )}
             </div>
