@@ -253,6 +253,11 @@ const postsSlice = createSlice({
         state.message = action.payload;
       })
       // Toggle Like
+      .addCase(toggleLike.pending, (state) => {
+        // Don't set global loading for likes to avoid UI freezing
+        state.isError = false;
+        state.message = '';
+      })
       .addCase(toggleLike.fulfilled, (state, action) => {
         const { postId, liked, like_count } = action.payload;
         
@@ -269,6 +274,10 @@ const postsSlice = createSlice({
         if (state.currentPost && (state.currentPost.id === postId || state.currentPost.post_id === postId)) {
           updatePostLikeState(state.currentPost);
         }
+      })
+      .addCase(toggleLike.rejected, (state, action) => {
+        state.isError = true;
+        state.message = action.payload;
       })
       // Add Comment
       .addCase(addComment.pending, (state) => {

@@ -11,17 +11,21 @@ const PostInteraction = ({ post }) => {
   const { isAuthenticated } = useSelector(state => state.auth);
   const { isLoading } = useSelector(state => state.posts);
 
-  const handleLikeClick = (e) => {
+  const handleLikeClick = async (e) => {
     e.stopPropagation(); 
     if (!isAuthenticated) {
       navigate('/login'); 
       return;
     }
     const postId = post.id || post.post_id;
-    dispatch(toggleLike(postId));
+    try {
+      await dispatch(toggleLike(postId)).unwrap();
+    } catch (error) {
+      console.error('Failed to toggle like:', error);
+    }
   };
 
-  const isLiked = post.userHasLiked;
+  const isLiked = post.userHasLiked || false;
 
   return (
     <>

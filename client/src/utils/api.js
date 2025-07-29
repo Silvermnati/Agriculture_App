@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { API_ENDPOINTS } from './constants';
 
-// Create axios instance. Always use the production API URL since we don't have a local backend
+// Create axios instance - temporarily using production API for development
 const API_URL = 'https://agriculture-app-1-u2a6.onrender.com/api';
 
 const api = axios.create({
@@ -181,7 +181,7 @@ export const communitiesAPI = {
 export const expertsAPI = {
   getExperts: (params) => api.get(API_ENDPOINTS.EXPERTS.BASE, { params }),
   getExpert: (expertId) => api.get(`${API_ENDPOINTS.EXPERTS.BASE}/${expertId}`),
-  createExpertProfile: (expertData) => api.post(API_ENDPOINTS.EXPERTS.BASE, expertData),
+  createExpertProfile: (expertData) => api.post(`${API_ENDPOINTS.EXPERTS.BASE}/profile`, expertData),
   updateExpertProfile: (expertId, expertData) => api.put(`${API_ENDPOINTS.EXPERTS.BASE}/${expertId}`, expertData),
   bookConsultation: (consultationData) => api.post(API_ENDPOINTS.EXPERTS.CONSULTATIONS, consultationData),
   getConsultations: () => api.get(API_ENDPOINTS.EXPERTS.CONSULTATIONS)
@@ -281,6 +281,7 @@ export const uploadAPI = {
 // Payments API calls
 export const paymentsAPI = {
   initiatePayment: (paymentData) => api.post(API_ENDPOINTS.PAYMENTS.INITIATE, paymentData),
+  initiateConsultationPayment: (paymentData) => api.post('/payments/consultation/initiate', paymentData),
   getPaymentStatus: (paymentId) => api.get(API_ENDPOINTS.PAYMENTS.STATUS(paymentId)),
   getPaymentHistory: (params) => api.get(API_ENDPOINTS.PAYMENTS.HISTORY, { params }),
   requestRefund: (paymentId, refundData) => api.post(API_ENDPOINTS.PAYMENTS.REFUND(paymentId), refundData)
@@ -308,6 +309,29 @@ export const commentsAPI = {
   editComment: (commentId, commentData) => api.put(API_ENDPOINTS.COMMENTS.EDIT(commentId), commentData),
   deleteComment: (commentId) => api.delete(API_ENDPOINTS.COMMENTS.DELETE(commentId)),
   getEditHistory: (commentId) => api.get(API_ENDPOINTS.COMMENTS.EDIT_HISTORY(commentId))
+};
+
+// Admin API calls
+export const adminAPI = {
+  // Users management
+  getAllUsers: (params) => api.get('/admin/users', { params }),
+  getUserById: (userId) => api.get(`/admin/users/${userId}`),
+  updateUserStatus: (userId) => api.patch(`/admin/users/${userId}/status`),
+  deleteUser: (userId) => api.delete(`/admin/users/${userId}`),
+  
+  // Analytics and stats
+  getStats: () => api.get('/admin/stats'),
+  getRecentActivity: (params) => api.get('/admin/activity', { params }),
+  
+  // Posts management (using existing posts API with admin privileges)
+  getAllPosts: (params) => api.get('/posts', { params }),
+  updatePostStatus: (postId, status) => api.patch(`/posts/${postId}/status`, { status }),
+  
+  // Communities management (using existing communities API)
+  getAllCommunities: (params) => api.get('/communities', { params }),
+  
+  // System management
+  getSystemHealth: () => api.get('/health')
 };
 
 export default api;

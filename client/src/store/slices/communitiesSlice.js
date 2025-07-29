@@ -145,7 +145,9 @@ export const communitiesSlice = createSlice({
       })
       .addCase(getCommunities.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.communities = action.payload.communities || action.payload;
+        // Ensure we always get an array for communities
+        const communities = action.payload.communities || action.payload.data || action.payload;
+        state.communities = Array.isArray(communities) ? communities : [];
         state.pagination = action.payload.pagination || {};
       })
       .addCase(getCommunities.rejected, (state, action) => {

@@ -227,9 +227,7 @@ const PhoneNumberField = ({
                         key={country.code}
                         type="button"
                         onClick={() => handleCountrySelect(country)}
-                        className={`phone-number-field__country-option ${
-                          country.code === selectedCountry ? 'phone-number-field__country-option--selected' : ''
-                        }`}
+                        className={`phone-number-field__country-option ${country.code === selectedCountry ? 'phone-number-field__country-option--selected' : ''}`}
                         role="option"
                         aria-selected={country.code === selectedCountry}
                       >
@@ -263,11 +261,7 @@ const PhoneNumberField = ({
             onFocus={handleInputFocus}
             onBlur={handlePhoneBlur}
             placeholder={placeholder || phoneExample}
-            className={`phone-number-field__input ${
-              value && !isValid ? 'phone-number-field__input--error' : ''
-            } ${
-              value && isValid ? 'phone-number-field__input--valid' : ''
-            }`}
+            className={`phone-number-field__input ${value && !isValid ? 'phone-number-field__input--error' : ''} ${value && isValid ? 'phone-number-field__input--valid' : ''}`}
             name={name}
             required={required}
             autoComplete="tel"

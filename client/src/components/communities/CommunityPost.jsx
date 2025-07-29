@@ -4,11 +4,10 @@ import { MessageSquare, Heart, Share2 } from "lucide-react";
 import PostHeader from "./PostHeader";
 import PostContent from "./PostContent";
 import CommentItem from "./CommentItem";
-import { getCommentsForPost, getCurrentUser } from "../../utils/mockData";
 
 const CommunityPost = ({ 
   post, 
-  currentUser = getCurrentUser(), // Default to mock current user if not provided
+  currentUser, // Current user should be passed from parent component
   communityId,
   onLike, 
   onComment, 
@@ -34,10 +33,10 @@ const CommunityPost = ({
   useEffect(() => {
     if (showComments && comments.length === 0) {
       setIsLoading(true);
-      // Simulate API call with timeout
+      // TODO: Replace with actual API call to fetch comments
+      // For now, just set loading to false since we don't have comments API integrated yet
       setTimeout(() => {
-        const postComments = getCommentsForPost(post.id);
-        setComments(postComments);
+        setComments([]); // Empty array until API integration is complete
         setIsLoading(false);
       }, 500);
     }

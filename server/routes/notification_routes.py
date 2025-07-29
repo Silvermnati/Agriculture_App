@@ -113,6 +113,44 @@ def mark_notification_read(current_user, notification_id):
         return create_error_response('MARK_READ_FAILED', f'Failed to mark notification as read: {str(e)}', status_code=500)
 
 
+@notification_bp.route('/mark-read', methods=['POST'])
+@token_required
+def mark_notifications_read(current_user):
+    """Mark multiple notifications as read."""
+    try:
+        data = request.get_json()
+        if not data or 'notification_ids' not in data:
+            return create_error_response('MISSING_NOTIFICATION_IDS', 'notification_ids array is required', status_code=400)
+        
+        notification_ids = data['notification_ids']
+        if not isinstance(notification_ids, list):
+            return create_error_response('INVALID_NOTIFICATION_IDS', 'notification_ids must be an array', status_code=400)
+        
+        # Update notifications
+        updated_count = Notification.query.filter(
+            and_(
+                Notification.notification_id.in_(notification_ids),
+                Notification.user_id == current_user.user_id,
+                Notification.read_at.is_(None)
+            )
+        ).update({
+            'read_at': datetime.utcnow(),
+            'status': 'read'
+        }, synchronize_session=False)
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': f'Marked {updated_count} notifications as read',
+            'updated_count': updated_count
+        }), 200
+        
+    except Exception as e:
+        current_app.logger.error(f"Error marking notifications as read: {str(e)}")
+        db.session.rollback()
+        return create_error_response('MARK_READ_FAILED', f'Failed to mark notifications as read: {str(e)}', status_code=500)
+
+
 @notification_bp.route('/mark-all-read', methods=['POST'])
 @token_required
 def mark_all_notifications_read(current_user):

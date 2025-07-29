@@ -16,7 +16,7 @@ from server.utils.validators import validate_agricultural_data, sanitize_html_co
 from server.utils.error_handlers import create_error_response, create_success_response
 from server.utils.rate_limiter import rate_limit_moderate, rate_limit_lenient
 
-def get_posts():
+def get_posts(current_user=None):
     """
     Get paginated posts with agricultural filters.
     
@@ -149,6 +149,17 @@ def get_posts():
             comment_count=counts.get('comment_count', 0),
             like_count=counts.get('like_count', 0)
         )
+        
+        # Add is_following status for the post author
+        if current_user and post.author:
+            from server.services.follow_service import follow_service
+            is_following = follow_service.is_following(
+                follower_id=str(current_user.user_id),
+                following_id=str(post.author.user_id)
+            )
+            if post_dict['author']:
+                post_dict['author']['is_following'] = is_following
+        
         posts.append(post_dict)
     
     return create_success_response(
@@ -297,7 +308,7 @@ def create_post(current_user):
     )
 
 
-def get_post(post_id):
+def get_post(post_id, current_user=None):
     """
     Get a single post with full details, optimized to prevent N+1 queries.
     """
@@ -352,6 +363,16 @@ def get_post(post_id):
         post_data = post.to_dict(include_content=True)
         post_data['comments'] = top_level_comments
         post_data['like_count'] = like_count
+        
+        # Add is_following status for the post author
+        if current_user and post.author:
+            from server.services.follow_service import follow_service
+            is_following = follow_service.is_following(
+                follower_id=str(current_user.user_id),
+                following_id=str(post.author.user_id)
+            )
+            if post_data['author']:
+                post_data['author']['is_following'] = is_following
 
         return create_success_response(data=post_data)
         
@@ -505,34 +526,10 @@ def delete_post(current_user, post_id, resource=None):
     return create_success_response(message='Post archived successfully')
 
 
-def add_comment(post_id, current_user=None):
+def get_comments(post_id):
     """
-    Handle both GET and POST requests for comments.
-    GET: Retrieve comments for a post (no auth required)
-    POST: Add a new comment to a post (auth required)
+    Get comments for a post (no authentication required).
     """
-    # For POST requests, require authentication
-    if request.method == 'POST':
-        # Check if user is authenticated for POST requests
-        token = request.headers.get('Authorization')
-        if not token or not token.startswith('Bearer '):
-            return create_error_response('AUTHENTICATION_REQUIRED', 'Authentication required', status_code=401)
-        
-        # Extract and verify token
-        try:
-            import jwt
-            from flask import current_app
-            token = token.split(' ')[1]  # Remove 'Bearer ' prefix
-            payload = jwt.decode(token, current_app.config['JWT_SECRET_KEY'], algorithms=['HS256'])
-            from server.models.user import User
-            current_user = User.query.filter_by(user_id=payload['user_id']).first()
-            if not current_user:
-                return create_error_response('INVALID_TOKEN', 'Invalid token', status_code=401)
-        except jwt.ExpiredSignatureError:
-            return create_error_response('TOKEN_EXPIRED', 'Token has expired', status_code=401)
-        except jwt.InvalidTokenError:
-            return create_error_response('INVALID_TOKEN', 'Invalid token', status_code=401)
-    
     try:
         # Convert string post_id to UUID
         if isinstance(post_id, str):
@@ -545,109 +542,121 @@ def add_comment(post_id, current_user=None):
     if not post:
         return create_error_response('POST_NOT_FOUND', 'Post not found', status_code=404)
     
-    if request.method == 'GET':
-        # Get comments for the post
-        all_comments = Comment.query.options(
-            joinedload(Comment.user)
-        ).filter_by(post_id=post_id).order_by(Comment.created_at.asc()).all()
+    # Get comments for the post
+    all_comments = Comment.query.options(
+        joinedload(Comment.user)
+    ).filter_by(post_id=post_id).order_by(Comment.created_at.asc()).all()
 
-        comment_map = {comment.comment_id: comment.to_dict(include_replies=False) for comment in all_comments}
-        
-        # Initialize replies list for each comment
-        for comment_data in comment_map.values():
-            comment_data['replies'] = []
-
-        top_level_comments = []
-        for comment in all_comments:
-            comment_data = comment_map[comment.comment_id]
-            if comment.parent_comment_id:
-                parent = comment_map.get(comment.parent_comment_id)
-                if parent:
-                    parent['replies'].append(comment_data)
-            else:
-                top_level_comments.append(comment_data)
-
-        return create_success_response(data=top_level_comments)
+    comment_map = {comment.comment_id: comment.to_dict(include_replies=False) for comment in all_comments}
     
-    elif request.method == 'POST':
-        # Add a new comment (requires authentication)
-        if not current_user:
-            return create_error_response('AUTHENTICATION_REQUIRED', 'Authentication required', status_code=401)
+    # Initialize replies list for each comment
+    for comment_data in comment_map.values():
+        comment_data['replies'] = []
+
+    top_level_comments = []
+    for comment in all_comments:
+        comment_data = comment_map[comment.comment_id]
+        if comment.parent_comment_id:
+            parent = comment_map.get(comment.parent_comment_id)
+            if parent:
+                parent['replies'].append(comment_data)
+        else:
+            top_level_comments.append(comment_data)
+
+    return create_success_response(data=top_level_comments)
+
+
+@token_required
+def add_comment(current_user, post_id):
+    """
+    Add a new comment to a post (requires authentication).
+    """
+    try:
+        # Convert string post_id to UUID
+        if isinstance(post_id, str):
+            post_id = uuid.UUID(post_id)
+    except ValueError:
+        return create_error_response('INVALID_POST_ID', 'Invalid post ID format', status_code=400)
+    
+    post = Post.query.get(post_id)
+    
+    if not post:
+        return create_error_response('POST_NOT_FOUND', 'Post not found', status_code=404)
+    
+    data = request.get_json()
+    
+    if not data or not data.get('content'):
+        return create_error_response('MISSING_CONTENT', 'Comment content is required')
+    
+    # Validate comment content length
+    content = data.get('content', '').strip()
+    if len(content) < 1:
+        return create_error_response('INVALID_CONTENT', 'Comment content cannot be empty')
+    if len(content) > 1000:
+        return create_error_response('CONTENT_TOO_LONG', 'Comment content cannot exceed 1000 characters')
+    
+    # Sanitize comment content
+    sanitized_content = sanitize_html_content(content)
+    
+    # Validate parent comment if provided
+    parent_comment_id = data.get('parent_comment_id')
+    if parent_comment_id:
+        parent_comment = Comment.query.filter_by(
+            comment_id=parent_comment_id, 
+            post_id=post_id
+        ).first()
+        if not parent_comment:
+            return create_error_response('INVALID_PARENT', 'Parent comment not found')
+    
+    # Create comment
+    comment = Comment(
+        post_id=post_id,
+        user_id=current_user.user_id,
+        content=sanitized_content,
+        parent_comment_id=parent_comment_id
+    )
+    
+    db.session.add(comment)
+    db.session.commit()
+    
+    # Send notification to post author (if not commenting on own post)
+    if str(post.author_id) != str(current_user.user_id):
+        try:
+            from server.models.notifications import Notification
+            from server.services.notification_service import notification_service
             
-        data = request.get_json()
-        
-        if not data or not data.get('content'):
-            return create_error_response('MISSING_CONTENT', 'Comment content is required')
-        
-        # Validate comment content length
-        content = data.get('content', '').strip()
-        if len(content) < 1:
-            return create_error_response('INVALID_CONTENT', 'Comment content cannot be empty')
-        if len(content) > 1000:
-            return create_error_response('CONTENT_TOO_LONG', 'Comment content cannot exceed 1000 characters')
-        
-        # Sanitize comment content
-        sanitized_content = sanitize_html_content(content)
-        
-        # Validate parent comment if provided
-        parent_comment_id = data.get('parent_comment_id')
-        if parent_comment_id:
-            parent_comment = Comment.query.filter_by(
-                comment_id=parent_comment_id, 
-                post_id=post_id
-            ).first()
-            if not parent_comment:
-                return create_error_response('INVALID_PARENT', 'Parent comment not found')
-        
-        # Create comment
-        comment = Comment(
-            post_id=post_id,
-            user_id=current_user.user_id,
-            content=sanitized_content,
-            parent_comment_id=parent_comment_id
-        )
-        
-        db.session.add(comment)
-        db.session.commit()
-        
-        # Send notification to post author (if not commenting on own post)
-        if str(post.author_id) != str(current_user.user_id):
-            try:
-                from server.models.notifications import Notification
-                from server.services.notification_service import notification_service
-                
-                notification = Notification(
-                    user_id=post.author_id,
-                    type='new_comment',
-                    title='New Comment',
-                    message=f'{current_user.first_name} {current_user.last_name} commented on your post: {post.title}',
-                    data={
-                        'comment_id': str(comment.comment_id),
-                        'post_id': str(post.post_id),
-                        'post_title': post.title,
-                        'commenter_id': str(current_user.user_id),
-                        'commenter_name': f'{current_user.first_name} {current_user.last_name}',
-                        'comment_content': content[:100] + '...' if len(content) > 100 else content
-                    },
-                    channels=['push', 'in_app']
-                )
-                
-                db.session.add(notification)
-                db.session.commit()
-                
-                # Send notification asynchronously
-                import asyncio
-                asyncio.run(notification_service.send_notification(notification))
-                
-            except Exception as e:
-                current_app.logger.error(f"Error sending comment notification: {str(e)}")
-                # Don't fail the comment creation if notification fails
-        
-        return create_success_response(
-            data={'comment': comment.to_dict()},
-            message='Comment added successfully',
-            status_code=201
-        )
+            notification = Notification(
+                user_id=post.author_id,
+                type='new_comment',
+                title='New Comment',
+                message=f'{current_user.first_name} {current_user.last_name} commented on your post: {post.title}',
+                data={
+                    'comment_id': str(comment.comment_id),
+                    'post_id': str(post.post_id),
+                    'post_title': post.title,
+                    'commenter_id': str(current_user.user_id),
+                    'commenter_name': f'{current_user.first_name} {current_user.last_name}',
+                    'comment_content': content[:100] + '...' if len(content) > 100 else content
+                },
+                channels=['push', 'in_app']
+            )
+            
+            db.session.add(notification)
+            db.session.commit()
+            
+            # Send notification asynchronously
+            import asyncio
+            asyncio.run(notification_service.send_notification(notification))
+            
+        except Exception as e:
+            current_app.logger.error(f"Error sending comment notification: {str(e)}")
+            # Don't fail the comment creation if notification fails
+    
+    return create_success_response(
+        data={'comment': comment.to_dict()},
+        message='Comment added successfully',
+        status_code=201
+    )
 
 
 @token_required

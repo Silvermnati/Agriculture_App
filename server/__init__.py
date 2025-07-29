@@ -52,6 +52,7 @@ def create_app(config_name='default'):
         from server.routes.payment_routes import payment_bp
         from server.routes.follow_routes import follow_bp
         from server.routes.comment_routes import comment_bp
+        from server.routes.admin_routes import admin_bp
         
         app.register_blueprint(auth_bp)
         app.register_blueprint(post_bp)
@@ -69,6 +70,7 @@ def create_app(config_name='default'):
         app.register_blueprint(payment_bp)
         app.register_blueprint(follow_bp)
         app.register_blueprint(comment_bp)
+        app.register_blueprint(admin_bp)
         
         print("✅ All blueprints registered successfully")
     except ImportError as e:
