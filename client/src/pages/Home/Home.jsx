@@ -1,186 +1,224 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getPosts } from '../../store/slices/postsSlice';
+import { 
+  Sprout, 
+  Users, 
+  BookOpen, 
+  TrendingUp, 
+  ArrowRight, 
+  Play,
+  CheckCircle,
+  Star,
+  MessageSquare,
+  Heart,
+  Eye,
+  Calendar,
+  Award,
+  Shield,
+  Zap
+} from 'lucide-react';
 import LoadingSpinner from '../../components/common/LoadingSpinner/LoadingSpinner';
 import ErrorMessage from '../../components/common/ErrorMessage/ErrorMessage';
 import Image from '../../components/common/Image/Image';
-import './Home.css';
+
+
 
 const Home = () => {
   const dispatch = useDispatch();
   const { posts, isLoading, isError, message } = useSelector((state) => state.posts);
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+    const [activeFeature, setActiveFeature] = useState(0);
+
+  const testimonials = [
+    {
+      id: 1,
+      name: "John Mathews",
+      role: "Organic Farmer, Iowa",
+      content: "AgriConnect has transformed how I manage my farm. The expert advice helped me increase my yield by 30% while using fewer resources. The community support is invaluable.",
+      imageUrl: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1974&auto=format&fit=crop"
+    },
+    {
+      id: 2,
+      name: "Maria Rodriguez",
+      role: "Small-scale Farmer, California",
+      content: "As a first-generation farmer, I had so many questions. The experts on AgriConnect guided me through every challenge, from soil preparation to market strategies.",
+      imageUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=2070&auto=format&fit=crop"
+    },
+    {
+      id: 3,
+      name: "David Okonkwo",
+      role: "Livestock Specialist, Texas",
+      content: "The platform connects me with farmers who need my expertise. It's created new business opportunities while helping me contribute to sustainable agriculture.",
+      imageUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=2070&auto=format&fit=crop"
+    }
+  ];
 
   useEffect(() => {
-    // Fetch a limited number of posts for the home page blog section
-    dispatch(getPosts({ page: 1, per_page: 3 }));
+    dispatch(getPosts({ page: 1, per_page: 6 }));
   }, [dispatch]);
+
+  const features = [
+    {
+      icon: <Users className="w-8 h-8" />,
+      title: "Expert Network",
+      description: "Connect with certified agricultural experts worldwide",
+      stats: "500+ Experts"
+    },
+    {
+      icon: <BookOpen className="w-8 h-8" />,
+      title: "Knowledge Base",
+      description: "Access thousands of articles, guides, and research papers",
+      stats: "10,000+ Articles"
+    },
+    {
+      icon: <MessageSquare className="w-8 h-8" />,
+      title: "Community Forums",
+      description: "Join discussions with farmers from around the globe",
+      stats: "50,000+ Members"
+    },
+    {
+      icon: <TrendingUp className="w-8 h-8" />,
+      title: "Market Insights",
+      description: "Get real-time market data and price predictions",
+      stats: "Live Data"
+    }
+  ];
+
+  const stats = [
+    { icon: <Users className="w-6 h-6" />, value: "50,000+", label: "Active Farmers" },
+    { icon: <Award className="w-6 h-6" />, value: "500+", label: "Certified Experts" },
+    { icon: <BookOpen className="w-6 h-6" />, value: "10,000+", label: "Knowledge Articles" },
+    { icon: <Star className="w-6 h-6" />, value: "4.9/5", label: "User Rating" }
+  ];
 
   return (
     <div className="home-page">
       {/* Hero Section */}
-      <section className="hero-section">
-        <div className="hero-content">
-          <h1>Cultivate Your Future with AgriConnect</h1>
-          <p className="hero-subtitle">
-            Your all-in-one platform to connect with experts, share knowledge, and grow a thriving agricultural community.
-          </p>
-          <div className="hero-buttons">
-            <Link to="/register" className="btn btn-primary">
-              Join AgriConnect
-            </Link>
-            <Link to="/blog" className="btn btn-secondary">
-              Explore Blog
-            </Link>
-          </div>
-        </div>
-      </section>
-      
-      {/* Features Section */}
-      <section className="features-section section-container">
-        <h2 className="section-title">Why AgriConnect?</h2>
-        <p className="section-subtitle">
-          Empowering farmers and agricultural enthusiasts with the tools and knowledge they need to succeed.
-        </p>
-        <div className="features-grid">
-          <div className="feature-card">
-            <div className="feature-icon">🌱</div>
-            <h3>Expert Consultations</h3>
-            <p>
-              Connect directly with agricultural experts for personalized advice and solutions.
-            </p>
-          </div>
-          
-          <div className="feature-card">
-            <div className="feature-icon">👨‍🌾</div>
-            <h3>Vibrant Communities</h3>
-            <p>
-              Join or create communities to discuss challenges, share tips, and collaborate with peers.
-            </p>
-          </div>
-          
-          <div className="feature-card">
-            <div className="feature-icon">📊</div>
-            <h3>Knowledge Hub</h3>
-            <p>
-              Access a rich library of articles, guides, and best practices for sustainable farming.
-            </p>
-          </div>
-          
-          <div className="feature-card">
-            <div className="feature-icon">🌍</div>
-            <h3>Marketplace Access</h3>
-            <p>
-              Discover and connect with suppliers for quality seeds, fertilizers, and equipment.
-            </p>
+      <section className="bg-gradient-to-b from-green-50 to-white py-20">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center">
+            <div className="md:w-1/2 mb-10 md:mb-0">
+              <h1 className="text-5xl font-bold text-green-800 mb-6">Growing Together: The Agricultural Super App</h1>
+              <p className="text-xl text-gray-600 mb-8">
+                Connect with experts, join farming communities, access resources, and transform your agricultural practices with our all-in-one platform.
+              </p>
+              <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                <Link to="/register" className="bg-green-600 text-white font-bold py-3 px-6 rounded-full hover:bg-green-700 transition duration-300 text-center">
+                  Get Started
+                </Link>
+                <Link to="/blog" className="bg-white border border-green-600 text-green-600 font-bold py-3 px-6 rounded-full hover:bg-green-50 transition duration-300 text-center">
+                  Explore Resources
+                </Link>
+              </div>
+            </div>
+            <div className="md:w-1/2">
+              <img 
+                src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2070&auto=format&fit=crop" 
+                alt="Farmers in field" 
+                className="rounded-lg shadow-xl"
+              />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="how-it-works-section section-container">
-        <h2 className="section-title">How It Works</h2>
-        <p className="section-subtitle">
-          Getting started with AgriConnect is simple. Follow these easy steps to unlock a world of agricultural knowledge.
-        </p>
-        <div className="how-it-works-grid">
-          <div className="step-card">
-            <div className="step-icon">1️⃣</div>
-            <h3>Register & Create Profile</h3>
-            <p>Sign up in minutes and tell us about your farming interests and needs.</p>
+      {/* Features Section */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-green-800 mb-4">Everything You Need to Succeed</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Our platform brings together all the tools, resources, and connections farmers need to thrive in modern agriculture.
+            </p>
           </div>
-          <div className="step-card">
-            <div className="step-icon">2️⃣</div>
-            <h3>Explore & Connect</h3>
-            <p>Browse experts, join communities, and discover valuable articles and posts.</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map((feature, index) => (
+              <div key={index} className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-100">
+                <div className="text-4xl mb-4">{feature.icon}</div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">{feature.title}</h3>
+                <p className="text-gray-600">{feature.description}</p>
+              </div>
+            ))}
           </div>
-          <div className="step-card">
-            <div className="step-icon">3️⃣</div>
-            <h3>Grow & Succeed</h3>
-            <p>Apply new knowledge, share your experiences, and watch your agricultural endeavors flourish.</p>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-16 bg-green-50">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div>
+              <div className="text-4xl font-bold text-green-800 mb-2">10,000+</div>
+              <p className="text-gray-600">Registered Farmers</p>
+            </div>
+            <div>
+              <div className="text-4xl font-bold text-green-800 mb-2">500+</div>
+              <p className="text-gray-600">Agricultural Experts</p>
+            </div>
+            <div>
+              <div className="text-4xl font-bold text-green-800 mb-2">250+</div>
+              <p className="text-gray-600">Active Communities</p>
+            </div>
+            <div>
+              <div className="text-4xl font-bold text-green-800 mb-2">50+</div>
+              <p className="text-gray-600">Countries Represented</p>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Testimonials Section */}
-      <section className="testimonials-section section-container">
-        <h2 className="section-title">What Our Users Say</h2>
-        <p className="section-subtitle">
-          Hear from farmers and experts who have transformed their practices with AgriConnect.
-        </p>
-        <div className="testimonials-grid">
-          <div className="testimonial-card">
-            <p className="testimonial-quote">
-              "AgriConnect has revolutionized how I approach farming. The expert advice is invaluable!"
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-green-800 mb-4">Success Stories</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Hear from farmers and experts who have transformed their agricultural practices with AgriConnect.
             </p>
-            <p className="testimonial-author">- Jane Doe, Farmer</p>
-            <p className="testimonial-role">Small-scale Farmer, Kenya</p>
           </div>
-          <div className="testimonial-card">
-            <p className="testimonial-quote">
-              "The community forums are a goldmine of information. I've solved so many issues thanks to fellow farmers."
-            </p>
-            <p className="testimonial-author">- John Smith, Farmer</p>
-            <p className="testimonial-role">Organic Farmer, USA</p>
-          </div>
-          <div className="testimonial-card">
-            <p className="testimonial-quote">
-              "As an expert, AgriConnect allows me to reach and help so many more people than I ever could before.&quot;
-            </p>
-            <p className="testimonial-author">- Dr. Emily White, Agronomist</p>
-            <p className="testimonial-role">Agricultural Expert, India</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial) => (
+              <div key={testimonial.id} className="bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                <div className="flex items-center mb-4">
+                  <img 
+                    src={testimonial.imageUrl} 
+                    alt={testimonial.name} 
+                    className="w-12 h-12 rounded-full object-cover mr-4"
+                  />
+                  <div>
+                    <h3 className="font-bold text-gray-800">{testimonial.name}</h3>
+                    <p className="text-gray-600 text-sm">{testimonial.role}</p>
+                  </div>
+                </div>
+                <p className="text-gray-700 italic">"{testimonial.content}"</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Latest Blog Posts Section */}
-      <section className="latest-blog-section section-container">
-        <h2 className="section-title">Latest from Our Blog</h2>
-        <p className="section-subtitle">
-          Stay updated with the newest trends, tips, and insights in the agricultural world.
-        </p>
-        <div className="blog-posts-grid">
-          {isLoading ? (
-            <LoadingSpinner text="Loading latest blog posts..." />
-          ) : isError ? (
-            <ErrorMessage message={message} />
-          ) : posts && posts.length > 0 ? (
-            posts.map((post) => (
-              <div className="blog-post-card" key={post.id || post.post_id}>
-                <Image 
-                  src={post.featured_image_url} 
-                  alt={post.title || 'Blog post'} 
-                  className="blog-post-image"
-                  fallbackType="postSmall"
-                />
-                <div className="blog-post-content">
-                  <h3>{post.title || 'Untitled Post'}</h3>
-                  <p>{post.summary || (post.content ? post.content.substring(0, 150) + '...' : 'No content available')}</p>
-                  <Link to={`/posts/${post.id || post.post_id}`} className="blog-post-link">Read More</Link>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="no-posts-message">
-              <p>No blog posts available at the moment.</p>
-              <Link to="/posts" className="btn btn-primary">View All Posts</Link>
+      {!isAuthenticated && (
+        <section className="py-16 bg-green-600 text-white">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-3xl font-bold mb-6">Ready to Transform Your Agricultural Journey?</h2>
+            <p className="text-xl mb-8 max-w-3xl mx-auto">
+              Join thousands of farmers who are already benefiting from our platform's resources, expert advice, and community support.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+              <Link to="/register" className="bg-white text-green-600 font-bold py-3 px-8 rounded-full hover:bg-gray-100 transition duration-300">
+                Sign Up Now
+              </Link>
+              <Link to="/login" className="bg-transparent border-2 border-white text-white font-bold py-3 px-8 rounded-full hover:bg-white hover:text-green-600 transition duration-300">
+                Login
+              </Link>
             </div>
-          )}
-        </div>
-      </section>
-      
-      {/* CTA Section */}
-      <section className="cta-section">
-        <div className="cta-content">
-          <h2>Ready to Transform Your Farming?</h2>
-          <p>
-            Join thousands of thriving farmers and agricultural experts. Sign up today and cultivate your success!
-          </p>
-          <Link to="/register" className="btn btn-primary btn-large">
-            Get Started Now
-          </Link>
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
     </div>
   );
 };

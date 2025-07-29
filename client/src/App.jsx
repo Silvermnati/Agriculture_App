@@ -51,7 +51,7 @@ const AppRoutes = () => {
     <Layout>
       <Routes>
         {/* Redirect to login if not authenticated, otherwise show home page */}
-        <Route path="/" element={isAuthenticated ? <Home /> : <Navigate to="/login" />} />
+        <Route path="/" element={<Home />} />
         <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <Login />} />
         <Route path="/register" element={isAuthenticated ? <Navigate to="/" /> : <Register />} />
         
