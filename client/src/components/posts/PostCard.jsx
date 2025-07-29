@@ -1,12 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Eye, Calendar } from 'lucide-react';
+import { useSelector } from 'react-redux';
 import PostActions from './PostActions';
 import PostInteraction from './PostInteraction';
 import Image from '../common/Image/Image';
+import FollowButton from '../common/FollowButton/FollowButton';
 import './posts.css';
 
 const PostCard = ({ post, showActions = true }) => {
+  const currentUser = useSelector(state => state.auth.user);
+  
   const formatDate = (dateString) => {
     if (!dateString) return '';
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -17,6 +21,7 @@ const PostCard = ({ post, showActions = true }) => {
   };
 
   const postId = post.id || post.post_id;
+  const isOwnPost = currentUser?.user_id === post.author?.user_id;
 
   return (
     <article className="post-card">
@@ -99,42 +104,67 @@ const PostCard = ({ post, showActions = true }) => {
 
         {/* Footer with author, stats, and date */}
         <div className="post-card-footer">
-          <div className="post-author">
-            <Image 
-              src={post.author?.avatar_url} 
-              alt={post.author?.name || 'Anonymous'}
-              className="author-avatar"
-              fallbackType="avatar"
-              optimize={true}
-            />
-            <div className="author-info">
-              <span className="author-name">{post.author?.name || 'Anonymous'}</span>
-              {post.author?.role && (
-                <span className="author-role">{post.author.role}</span>
+          <div className="post-author-section">
+            <div className="post-author">
+              <Image 
+                src={post.author?.avatar_url} 
+                alt={post.author?.name || 'Anonymous'}
+                className="author-avatar"
+                fallbackType="avatar"
+                optimize={true}
+              />
+              <div className="author-info">
+                <span className="author-name">{post.author?.name || 'Anonymous'}</span>
+                {post.author?.role && (
+                  <span className="author-role">{post.author.role}</span>
+                )}
+              </div>
+            </div>
+            
+            {/* Follow Button for post author - TEMPORARY: Always show for testing */}
+            {post.author?.user_id && (
+              <div className="post-author-follow" style={{ 
+                backgroundColor: '#e3f2fd', 
+                padding: '8px', 
+                borderRadius: '4px',
+                marginTop: '8px',
+                border: '1px solid #2196f3'
+              }}>
+                <div style={{ fontSize: '10px', marginBottom: '4px', color: '#666' }}>
+                  Debug: User={currentUser?.user_id}, Author={post.author.user_id}, Own={isOwnPost ? 'yes' : 'no'}
+                </div>
+                <FollowButton 
+                  userId={post.author.user_id}
+                  initialFollowState={post.author.is_following}
+                  showStats={false}
+                  size="small"
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="post-footer-right">
+            <div className="post-stats">
+              <PostInteraction post={post} />
+              <div className="stat-item">
+                <Eye size={16} />
+                <span>{post.view_count || 0}</span>
+              </div>
+            </div>
+
+            <div className="post-meta">
+              {post.published_at && (
+                <div className="meta-item">
+                  <Calendar size={14} />
+                  <span>{formatDate(post.published_at)}</span>
+                </div>
+              )}
+              {post.read_time && (
+                <div className="meta-item">
+                  <span>{post.read_time} min read</span>
+                </div>
               )}
             </div>
-          </div>
-
-          <div className="post-stats">
-            <PostInteraction post={post} />
-            <div className="stat-item">
-              <Eye size={16} />
-              <span>{post.view_count || 0}</span>
-            </div>
-          </div>
-
-          <div className="post-meta">
-            {post.published_at && (
-              <div className="meta-item">
-                <Calendar size={14} />
-                <span>{formatDate(post.published_at)}</span>
-              </div>
-            )}
-            {post.read_time && (
-              <div className="meta-item">
-                <span>{post.read_time} min read</span>
-              </div>
-            )}
           </div>
         </div>
       </div>
