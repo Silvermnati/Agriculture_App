@@ -1,133 +1,287 @@
-/* === Posts Page: A professional and clean page container === */
+/* Posts Page Styles */
 .posts-page {
-  background-color: #f8f9fa;
+  min-height: 100vh;
+  background-color: #f8fafc;
+}
+
+.posts-page .container {
+  max-width: 1200px;
+  margin: 0 auto;
   padding: 2rem 1rem;
 }
 
-/* === Header & Featured Section (Corrected & Final Design) === */
-.header-and-featured-section {
-  max-width: 1200px;
-  margin: 0 auto 2.5rem auto;
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 3rem;
-  align-items: start;
-  background-color: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 4px;
-  padding: 3rem;
-}
-
-/* Left side text content */
-.hero-text-content {
+/* Page Header */
+.page-header {
   display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.hero-text-content h1 {
-  font-size: 2.5rem;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 1rem;
-}
-
-.hero-text-content p {
-  font-size: 1rem;
-  color: #4b5563;
-  line-height: 1.6;
-  flex-grow: 1;
+  justify-content: space-between;
+  align-items: flex-start;
   margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
 }
 
-.contribute-btn {
+.header-content h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 0.5rem;
+}
+
+.header-content p {
+  font-size: 1.1rem;
+  color: #64748b;
+}
+
+.btn-primary {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  background-color: #28a745;
+  gap: 0.5rem;
+  background-color: #16a34a;
   color: white;
   padding: 0.75rem 1.5rem;
-  border-radius: 4px;
+  border-radius: 0.5rem;
   text-decoration: none;
-  font-weight: 500;
-  font-size: 0.95rem;
-  transition: background-color 0.2s ease;
+  font-weight: 600;
+  transition: all 0.2s;
   border: none;
-  align-self: flex-start;
+  cursor: pointer;
 }
 
-.contribute-btn:hover {
-  background-color: #218838;
+.btn-primary:hover {
+  background-color: #15803d;
+  transform: translateY(-1px);
 }
 
-/* === Right side featured post (IMAGE FIX) === */
-.simplified-featured-card-link {
-  display: block;
-  border-radius: 4px;
-  overflow: hidden; /* This is crucial */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #f8fafc;
+  color: #475569;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+/* Posts Controls */
+.posts-controls {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  align-items: center;
+}
+
+.search-bar {
+  flex: 1;
+}
+
+.search-input-wrapper {
   position: relative;
-  background-color: #f3f4f6; /* The grey background */
-  height: 320px; /* Give the container a fixed height */
+  max-width: 400px;
 }
 
-.simplified-featured-post-image {
-  /* Force the image to fill the container */
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* This scales the image to cover the area */
-  object-position: center; /* Center the image */
-}
-
-.simplified-featured-post-title-overlay {
+.search-icon {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0) 100%);
-  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  background-color: white;
+  transition: all 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+}
+
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background-color: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  color: #475569;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-toggle:hover,
+.filter-toggle.active {
+  background-color: #16a34a;
+  color: white;
+  border-color: #16a34a;
+}
+
+/* Results Summary */
+.results-summary {
+  margin-bottom: 1.5rem;
+}
+
+.results-summary p {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.pagination-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #e2e8f0;
+  background-color: white;
+  color: #475569;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.pagination-btn:hover {
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.pagination-btn.active {
+  background-color: #16a34a;
+  color: white;
+  border-color: #16a34a;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Call to Action */
+.cta-section {
+  margin-top: 4rem;
+  padding: 3rem 2rem;
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  border-radius: 1rem;
+  text-align: center;
   color: white;
 }
 
-.simplified-featured-post-title-overlay h3 {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  line-height: 1.3;
+.cta-content h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
 }
 
-/* === Posts Content Layout: The main grid for content and sidebar === */
-.posts-content-layout {
-  display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 2.5rem;
-  align-items: flex-start;
-  max-width: 1200px;
-  margin: 0 auto;
+.cta-content p {
+  font-size: 1rem;
+  opacity: 0.9;
+  margin-bottom: 1.5rem;
 }
 
-.main-content-area {
-  min-width: 0;
+.cta-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
-.sidebar-area {
-  position: sticky;
-  top: 20px;
+.cta-buttons .btn-primary {
+  background-color: white;
+  color: #16a34a;
 }
 
-/* === Responsive Design === */
-@media (max-width: 992px) {
-  .header-and-featured-section {
-    grid-template-columns: 1fr;
-    padding: 2rem;
-    gap: 2rem;
+.cta-buttons .btn-primary:hover {
+  background-color: #f8fafc;
+}
+
+.cta-buttons .btn-secondary {
+  background-color: transparent;
+  color: white;
+  border-color: white;
+}
+
+.cta-buttons .btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .posts-page .container {
+    padding: 1rem 0.5rem;
   }
 
-  .posts-content-layout {
-    grid-template-columns: 1fr;
+  .page-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
   }
 
-  .sidebar-area {
-    position: static;
-    margin-top: 2.5rem;
+  .header-content h1 {
+    font-size: 2rem;
+  }
+
+  .posts-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-input-wrapper {
+    max-width: none;
+  }
+
+  .cta-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .cta-buttons .btn-primary,
+  .cta-buttons .btn-secondary {
+    width: 100%;
+    max-width: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .posts-page .container {
+    padding: 1rem 0.25rem;
+  }
+
+  .header-content h1 {
+    font-size: 1.75rem;
+  }
+
+  .pagination {
+    flex-wrap: wrap;
+  }
+
+  .pagination-btn {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
   }
 }

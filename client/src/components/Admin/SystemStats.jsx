@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Wheat, MapPin, FileText, MessageSquare, TrendingUp } from 'lucide-react';
-import { authAPI, cropsAPI, locationsAPI, postsAPI, communitiesAPI } from '../../utils/api';
+import { adminAPI } from '../../utils/api';
 
 const SystemStats = () => {
   const [stats, setStats] = useState({
@@ -15,23 +15,19 @@ const SystemStats = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [cropsRes, locationsRes, postsRes, communitiesRes] = await Promise.allSettled([
-          cropsAPI.getCrops(),
-          locationsAPI.getLocations(),
-          postsAPI.getPosts(),
-          communitiesAPI.getCommunities()
-        ]);
+        const response = await adminAPI.getStats();
+        const data = response.data.data;
 
         setStats({
-          users: 'N/A', // Would need a users endpoint
-          crops: cropsRes.status === 'fulfilled' ? (cropsRes.value.data?.crops?.length || 0) : 0,
-          locations: locationsRes.status === 'fulfilled' ? (locationsRes.value.data?.locations?.length || 0) : 0,
-          posts: postsRes.status === 'fulfilled' ? (postsRes.value.data?.posts?.length || 0) : 0,
-          communities: communitiesRes.status === 'fulfilled' ? (communitiesRes.value.data?.communities?.length || 0) : 0,
+          users: data.total_users || 0,
+          crops: 'N/A', // Crops not included in admin stats
+          locations: 'N/A', // Locations not included in admin stats
+          posts: data.total_posts || 0,
+          communities: data.total_communities || 0,
           loading: false
         });
       } catch (error) {
-        console.error('Failed to fetch stats:', error);
+        console.error('Failed to fetch admin stats:', error);
         setStats(prev => ({ ...prev, loading: false }));
       }
     };

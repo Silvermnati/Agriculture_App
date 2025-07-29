@@ -1,7 +1,7 @@
 from flask import Blueprint
 from server.controllers.post_controller import (
     get_posts, create_post, get_post, update_post, 
-    delete_post, add_comment, toggle_like
+    delete_post, add_comment, get_comments, toggle_like
 )
 
 post_bp = Blueprint('post', __name__, url_prefix='/api/posts')
@@ -12,5 +12,6 @@ post_bp.route('', methods=['POST'])(create_post)
 post_bp.route('/<string:post_id>', methods=['GET'])(get_post)
 post_bp.route('/<string:post_id>', methods=['PUT'])(update_post)
 post_bp.route('/<string:post_id>', methods=['DELETE'])(delete_post)
-post_bp.route('/<string:post_id>/comments', methods=['GET', 'POST'])(add_comment)
+post_bp.route('/<string:post_id>/comments', methods=['GET'])(get_comments)
+post_bp.route('/<string:post_id>/comments', methods=['POST'])(add_comment)
 post_bp.route('/<string:post_id>/like', methods=['POST'])(toggle_like)

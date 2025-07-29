@@ -150,13 +150,13 @@ const PostFilters = ({ filters, onFilterChange }) => {
       <div className="filter-group">
         <strong>Season</strong>
         <select name="season" onChange={handleSingleChange} value={filters.season || ''}>
-          <option value="">All Seasons</option>
-          <option value="Spring">Spring</option>
-          <option value="Summer">Summer</option>
-          <option value="Fall">Fall</option>
-          <option value="Winter">Winter</option>
-          <option value="Dry">Dry</option>
-          <option value="Wet">Wet</option>
+          <option key="all-seasons" value="">All Seasons</option>
+          <option key="spring" value="Spring">Spring</option>
+          <option key="summer" value="Summer">Summer</option>
+          <option key="fall" value="Fall">Fall</option>
+          <option key="winter" value="Winter">Winter</option>
+          <option key="dry" value="Dry">Dry</option>
+          <option key="wet" value="Wet">Wet</option>
         </select>
       </div>
 

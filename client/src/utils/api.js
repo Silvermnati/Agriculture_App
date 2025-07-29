@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { API_ENDPOINTS } from './constants';
 
-// Create axios instance. Always use the production API URL since we don't have a local backend
+// Create axios instance - temporarily using production API for development
 const API_URL = 'https://agriculture-app-1-u2a6.onrender.com/api';
 
 const api = axios.create({
