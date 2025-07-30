@@ -1,120 +1,138 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { postsAPI } from '../../utils/api';
 
-// Get all posts with pagination and filters
+// Async thunks for posts-related API calls
 export const getPosts = createAsyncThunk(
   'posts/getPosts',
   async (params, thunkAPI) => {
     try {
       const response = await postsAPI.getPosts(params);
-      return response.data;
+      return response.data.success ? response.data.data : response.data;
     } catch (error) {
-      const message = error.response?.data?.message || error.message || error.toString();
-      return thunkAPI.rejectWithValue(message);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.error?.message || error.response?.data?.message || 'Failed to fetch posts'
+      );
     }
   }
 );
 
-// Get single post
 export const getPost = createAsyncThunk(
   'posts/getPost',
   async (postId, thunkAPI) => {
     try {
       const response = await postsAPI.getPost(postId);
-      return response.data;
+      return response.data.success ? response.data.data : response.data;
     } catch (error) {
-      const message = error.response?.data?.message || error.message || error.toString();
-      return thunkAPI.rejectWithValue(message);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.error?.message || error.response?.data?.message || 'Failed to fetch post'
+      );
     }
   }
 );
 
-// Create new post
 export const createPost = createAsyncThunk(
   'posts/createPost',
   async (postData, thunkAPI) => {
     try {
+      console.log('Redux createPost thunk called with:', postData);
       const response = await postsAPI.createPost(postData);
-      return response.data;
+      console.log('Redux createPost response:', response);
+      return response.data.success ? response.data.data : response.data;
     } catch (error) {
-      const message = error.response?.data?.message || error.message || error.toString();
-      return thunkAPI.rejectWithValue(message);
+      console.error('Redux createPost error:', error);
+      console.error('Error response:', error.response);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.error?.message || error.response?.data?.message || error.message || 'Failed to create post'
+      );
     }
   }
 );
 
-// Update post
 export const updatePost = createAsyncThunk(
   'posts/updatePost',
   async ({ postId, postData }, thunkAPI) => {
     try {
       const response = await postsAPI.updatePost(postId, postData);
-      return response.data;
+      return response.data.success ? response.data.data : response.data;
     } catch (error) {
-      const message = error.response?.data?.message || error.message || error.toString();
-      return thunkAPI.rejectWithValue(message);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.error?.message || error.response?.data?.message || 'Failed to update post'
+      );
     }
   }
 );
 
-// Delete post
 export const deletePost = createAsyncThunk(
   'posts/deletePost',
   async (postId, thunkAPI) => {
     try {
-      const response = await postsAPI.deletePost(postId);
-      return { postId, message: response.data.message };
+      await postsAPI.deletePost(postId);
+      return postId;
     } catch (error) {
-      const message = error.response?.data?.message || error.message || error.toString();
-      return thunkAPI.rejectWithValue(message);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.error?.message || error.response?.data?.message || 'Failed to delete post'
+      );
     }
   }
 );
 
-// Add comment to post
-export const addComment = createAsyncThunk(
-  'posts/addComment',
-  async ({ postId, commentData }, thunkAPI) => {
-    try {
-      const response = await postsAPI.addComment(postId, commentData);
-      return response.data;
-    } catch (error) {
-      const message = error.response?.data?.message || error.message || error.toString();
-      return thunkAPI.rejectWithValue(message);
-    }
-  }
-);
-
-// Toggle like on post
 export const toggleLike = createAsyncThunk(
   'posts/toggleLike',
   async (postId, thunkAPI) => {
     try {
       const response = await postsAPI.toggleLike(postId);
-      return { postId, message: response.data.message };
+      const data = response.data.success ? response.data.data : response.data;
+      return { postId, ...data };
     } catch (error) {
-      const message = error.response?.data?.message || error.message || error.toString();
-      return thunkAPI.rejectWithValue(message);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.error?.message || error.response?.data?.message || 'Failed to like post'
+      );
+    }
+  }
+);
+
+export const addComment = createAsyncThunk(
+  'posts/addComment',
+  async ({ postId, commentData }, thunkAPI) => {
+    try {
+      const response = await postsAPI.addComment(postId, commentData);
+      const data = response.data.success ? response.data.data : response.data;
+      return { postId, comment: data };
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.error?.message || error.response?.data?.message || 'Failed to add comment'
+      );
+    }
+  }
+);
+
+export const getComments = createAsyncThunk(
+  'posts/getComments',
+  async (postId, thunkAPI) => {
+    try {
+      const response = await postsAPI.getComments(postId);
+      const data = response.data.success ? response.data.data : response.data;
+      return { postId, comments: data };
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.error?.message || error.response?.data?.message || 'Failed to fetch comments'
+      );
     }
   }
 );
 
 const initialState = {
   posts: [],
-  post: null,
-  pagination: {
-    page: 1,
-    per_page: 10,
-    total_pages: 0,
-    total_items: 0
-  },
+  currentPost: null,
+  postComments: {},
+  pagination: {},
   isLoading: false,
   isSuccess: false,
   isError: false,
   message: '',
 };
 
-export const postsSlice = createSlice({
+const postsSlice = createSlice({
   name: 'posts',
   initialState,
   reducers: {
@@ -124,8 +142,8 @@ export const postsSlice = createSlice({
       state.isError = false;
       state.message = '';
     },
-    clearPost: (state) => {
-      state.post = null;
+    clearCurrentPost: (state) => {
+      state.currentPost = null;
     },
   },
   extraReducers: (builder) => {
@@ -137,8 +155,14 @@ export const postsSlice = createSlice({
       .addCase(getPosts.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.posts = action.payload.posts;
-        state.pagination = action.payload.pagination;
+        // Handle both array response and object with data property
+        if (Array.isArray(action.payload)) {
+          state.posts = action.payload;
+          state.pagination = {};
+        } else {
+          state.posts = action.payload.data || action.payload.posts || [];
+          state.pagination = action.payload.pagination || {};
+        }
       })
       .addCase(getPosts.rejected, (state, action) => {
         state.isLoading = false;
@@ -152,12 +176,13 @@ export const postsSlice = createSlice({
       .addCase(getPost.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.post = action.payload;
+        state.currentPost = action.payload;
       })
       .addCase(getPost.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
+        state.currentPost = null; // Ensure post is cleared on error
       })
       // Create Post
       .addCase(createPost.pending, (state) => {
@@ -166,7 +191,9 @@ export const postsSlice = createSlice({
       .addCase(createPost.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.posts.unshift(action.payload.post);
+        // Handle the post data from the response
+        const postData = action.payload.post || action.payload;
+        state.posts.unshift(postData);
       })
       .addCase(createPost.rejected, (state, action) => {
         state.isLoading = false;
@@ -180,10 +207,14 @@ export const postsSlice = createSlice({
       .addCase(updatePost.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.post = action.payload.post;
-        state.posts = state.posts.map(post => 
-          post.post_id === action.payload.post.post_id ? action.payload.post : post
-        );
+        const postData = action.payload.post || action.payload;
+        const index = state.posts.findIndex(post => post.id === postData.id || post.post_id === postData.post_id);
+        if (index !== -1) {
+          state.posts[index] = postData;
+        }
+        if (state.currentPost && (state.currentPost.id === postData.id || state.currentPost.post_id === postData.post_id)) {
+          state.currentPost = postData;
+        }
       })
       .addCase(updatePost.rejected, (state, action) => {
         state.isLoading = false;
@@ -197,9 +228,9 @@ export const postsSlice = createSlice({
       .addCase(deletePost.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.posts = state.posts.filter(post => post.post_id !== action.payload.postId);
-        if (state.post && state.post.post_id === action.payload.postId) {
-          state.post = null;
+        state.posts = state.posts.filter(post => post.id !== action.payload && post.post_id !== action.payload);
+        if (state.currentPost && (state.currentPost.id === action.payload || state.currentPost.post_id === action.payload)) {
+          state.currentPost = null;
         }
       })
       .addCase(deletePost.rejected, (state, action) => {
@@ -207,42 +238,61 @@ export const postsSlice = createSlice({
         state.isError = true;
         state.message = action.payload;
       })
-      // Add Comment
-      .addCase(addComment.fulfilled, (state, action) => {
-        if (state.post) {
-          if (!state.post.comments) {
-            state.post.comments = [];
-          }
-          state.post.comments.push(action.payload.comment);
-        }
-      })
       // Toggle Like
       .addCase(toggleLike.fulfilled, (state, action) => {
-        const { postId, message } = action.payload;
+        const { postId, liked, like_count } = action.payload;
         
-        // Update like count in post detail
-        if (state.post && state.post.post_id === postId) {
-          if (message.includes('liked')) {
-            state.post.like_count = (state.post.like_count || 0) + 1;
-          } else {
-            state.post.like_count = Math.max((state.post.like_count || 0) - 1, 0);
-          }
+        const updatePostLikeState = (post) => {
+          post.userHasLiked = liked;
+          // Always trust the like_count from the server to avoid race conditions
+          post.like_count = like_count;
+        };
+
+        const postIndex = state.posts.findIndex(p => p.id === postId || p.post_id === postId);
+        if (postIndex !== -1) {
+          updatePostLikeState(state.posts[postIndex]);
         }
-        
-        // Update like count in posts list
-        state.posts = state.posts.map(post => {
-          if (post.post_id === postId) {
-            if (message.includes('liked')) {
-              post.like_count = (post.like_count || 0) + 1;
-            } else {
-              post.like_count = Math.max((post.like_count || 0) - 1, 0);
-            }
-          }
-          return post;
-        });
+        if (state.currentPost && (state.currentPost.id === postId || state.currentPost.post_id === postId)) {
+          updatePostLikeState(state.currentPost);
+        }
+      })
+      // Add Comment
+      .addCase(addComment.pending, (state) => {
+        state.isLoading = true;
+        state.isError = false;
+        state.message = '';
+      })
+      .addCase(addComment.fulfilled, (state, action) => {
+        const { postId, comment } = action.payload;
+        if (state.postComments[postId]) {
+          // Add new comment to the beginning of the list
+          state.postComments[postId].unshift(comment);
+        } else {
+          state.postComments[postId] = [comment];
+        }
+        // Update comment count in posts
+        const postIndex = state.posts.findIndex(post => post.id === postId || post.post_id === postId);
+        if (postIndex !== -1) {
+          state.posts[postIndex].comment_count = (state.posts[postIndex].comment_count || 0) + 1;
+        }
+        if (state.currentPost && (state.currentPost.id === postId || state.currentPost.post_id === postId)) {
+          state.currentPost.comment_count = (state.currentPost.comment_count || 0) + 1;
+        }
+        state.isLoading = false;
+        state.isSuccess = true;
+      })
+      .addCase(addComment.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+      })
+      // Get Comments
+      .addCase(getComments.fulfilled, (state, action) => {
+        const { postId, comments } = action.payload;
+        state.postComments[postId] = comments;
       });
   },
 });
 
-export const { reset, clearPost } = postsSlice.actions;
+export const { reset, clearCurrentPost } = postsSlice.actions;
 export default postsSlice.reducer;

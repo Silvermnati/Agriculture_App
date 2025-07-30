@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
 import { logout } from '../store/slices/authSlice';
+import NotificationIcon from './Notifications/NotificationIcon';
 import './Navigation.css';
 
 const Navigation = () => {
@@ -14,12 +16,14 @@ const Navigation = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  const navigate = useNavigate();
+  
   const handleAuthClick = () => {
     if (isAuthenticated) {
       dispatch(logout());
     } else {
       // Navigate to login page
-      window.location.href = '/login';
+      navigate('/login');
     }
   };
 
@@ -27,9 +31,9 @@ const Navigation = () => {
     <nav className="navigation">
       <div className="nav-container">
         <div className="nav-logo">
-          <a href="/" className="logo-link">
+          <Link to="/" className="logo-link">
             <h2>🌾 AgriApp</h2>
-          </a>
+          </Link>
         </div>
         
         {/* Mobile hamburger menu */}
@@ -41,26 +45,29 @@ const Navigation = () => {
 
         <ul className={`nav-menu ${isMenuOpen ? 'nav-menu-active' : ''}`}>
           <li className="nav-item">
-            <a href="/" className="nav-link">Home</a>
+            <Link to="/" className="nav-link">Home</Link>
           </li>
           <li className="nav-item">
-            <a href="/posts" className="nav-link">Posts</a>
+            <Link to="/posts" className="nav-link">Posts</Link>
           </li>
           <li className="nav-item">
-            <a href="/experts" className="nav-link">Experts</a>
+            <Link to="/experts" className="nav-link">Experts</Link>
           </li>
           <li className="nav-item">
-            <a href="/communities" className="nav-link">Communities</a>
+            <Link to="/communities" className="nav-link">Communities</Link>
           </li>
           
           {isAuthenticated && (
             <>
               <li className="nav-item">
-                <a href="/profile" className="nav-link">Profile</a>
+                <Link to="/profile" className="nav-link">Profile</Link>
+              </li>
+              <li className="nav-item">
+                <NotificationIcon />
               </li>
               {user?.role === 'admin' && (
                 <li className="nav-item">
-                  <a href="/admin" className="nav-link">Admin</a>
+                  <Link to="/admin" className="nav-link">Admin</Link>
                 </li>
               )}
             </>

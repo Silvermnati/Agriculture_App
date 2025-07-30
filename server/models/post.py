@@ -54,7 +54,7 @@ post_tags = db.Table('post_tags',
     db.Column('post_id', UUID(as_uuid=True), db.ForeignKey('posts.post_id'), primary_key=True),
     db.Column('tag_id', db.Integer, db.ForeignKey('tags.tag_id'), primary_key=True)
 )
-
+########################################################################
 
 class Post(db.Model):
     """Post model with agricultural context."""
@@ -69,15 +69,14 @@ class Post(db.Model):
     featured_image_url = db.Column(db.String(255), nullable=True)
     
     # Agricultural context
-    related_crops = db.Column(ARRAY(db.Integer), nullable=True)  # Array of crop_ids
-    related_livestock = db.Column(ARRAY(db.Integer), nullable=True)  # Array of livestock_ids
-    applicable_locations = db.Column(ARRAY(db.Integer), nullable=True)  # Array of location_ids
-    season_relevance = db.Column(db.String(50), nullable=True)  # spring, summer, fall, winter, year-round
+    season_relevance = db.Column(db.String(50), nullable=True)
+    applicable_locations = db.Column(ARRAY(db.String), nullable=True)
+    related_crops = db.Column(ARRAY(db.String), nullable=True)
     
     # Post metadata
     status = db.Column(db.String(20), default='draft')  # draft, published, archived
     view_count = db.Column(db.Integer, default=0)
-    read_time = db.Column(db.Integer, nullable=True)  # estimated read time in minutes
+    read_time = db.Column(db.Integer, nullable=True)
     is_featured = db.Column(db.Boolean, default=False)
     language = db.Column(db.String(10), default='en')
     
@@ -91,35 +90,47 @@ class Post(db.Model):
     category = db.relationship('Category', backref=db.backref('posts', lazy=True))
     tags = db.relationship('Tag', secondary=post_tags, backref=db.backref('posts', lazy=True))
     
-    def to_dict(self, include_content=True):
-        """Convert post to dictionary."""
+    def to_dict(self, include_content=True, **kwargs):
+        author_info = { 'name': 'Unknown Author', 'avatar_url': None, 'role': None }
+        if self.author:
+            author_info['name'] = f"{self.author.first_name} {self.author.last_name}"
+            # Fix avatar URL to use full path or default
+            if self.author.avatar_url:
+                author_info['avatar_url'] = self.author.avatar_url
+            else:
+                author_info['avatar_url'] = 'https://agriculture-app-1-u2a6.onrender.com/static/default-avatar.png'
+            author_info['role'] = self.author.role
+
+        # Fix featured image URL to use full path
+        featured_image_url = None
+        if self.featured_image_url:
+            if self.featured_image_url.startswith('http'):
+                featured_image_url = self.featured_image_url
+            else:
+                featured_image_url = f"https://agriculture-app-1-u2a6.onrender.com/static/{self.featured_image_url}"
+
         post_dict = {
-            'post_id': str(self.post_id),
+            'id': str(self.post_id), # Keep 'id' for frontend convenience
+            'post_id': str(self.post_id), # Keep 'post_id' for backend consistency
             'title': self.title,
             'excerpt': self.excerpt,
-            'author': {
-                'user_id': str(self.author.user_id),
-                'name': f"{self.author.first_name} {self.author.last_name}",
-                'avatar_url': self.author.avatar_url
-            } if self.author else None,
+            'featured_image_url': featured_image_url,
+            'author': author_info,
             'category': self.category.to_dict() if self.category else None,
-            'featured_image_url': self.featured_image_url,
-            'related_crops': self.related_crops,
-            'related_livestock': self.related_livestock,
+            'related_crops': self.related_crops or [],
+            'applicable_locations': self.applicable_locations or [],
             'season_relevance': self.season_relevance,
-            'status': self.status,
             'view_count': self.view_count,
-            'read_time': self.read_time,
-            'is_featured': self.is_featured,
-            'tags': [tag.to_dict() for tag in self.tags],
+            'comment_count': kwargs.get('comment_count', 0),
+            'like_count': kwargs.get('like_count', 0),
             'published_at': self.published_at.isoformat() if self.published_at else None,
-            'created_at': self.created_at.isoformat(),
-            'updated_at': self.updated_at.isoformat()
+            'tags': [tag.name for tag in self.tags],
+            'read_time': self.read_time
         }
-        
+
         if include_content:
             post_dict['content'] = self.content
-            
+
         return post_dict
 
 
@@ -145,6 +156,7 @@ class Comment(db.Model):
         """Convert comment to dictionary."""
         return {
             'comment_id': str(self.comment_id),
+            'parent_comment_id': str(self.parent_comment_id) if self.parent_comment_id else None,
             'content': self.content,
             'user': {
                 'user_id': str(self.user.user_id),
@@ -157,9 +169,9 @@ class Comment(db.Model):
         }
 
 
-class PostLike(db.Model):
-    """Post like model."""
-    __tablename__ = 'post_likes'
+class ArticlePostLike(db.Model):
+    """Article post like model."""
+    __tablename__ = 'article_post_likes'
     
     post_id = db.Column(UUID(as_uuid=True), db.ForeignKey('posts.post_id'), primary_key=True)
     user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.user_id'), primary_key=True)
@@ -167,4 +179,4 @@ class PostLike(db.Model):
     
     # Relationships
     post = db.relationship('Post', backref=db.backref('likes', lazy=True))
-    user = db.relationship('User', backref=db.backref('post_likes', lazy=True))
+    user = db.relationship('User', backref=db.backref('article_likes', lazy=True))

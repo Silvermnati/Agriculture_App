@@ -1,8 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { authAPI } from '../../utils/api';
+import { transformBackendUserToProfile, ensureCompleteProfile } from '../../utils/userDataAdapter';
 
 // Get user from localStorage
-const user = JSON.parse(localStorage.getItem('user'));
+const userJSON = localStorage.getItem('user');
+const rawUser = userJSON && userJSON !== 'undefined' ? JSON.parse(userJSON) : null;
+const user = rawUser ? ensureCompleteProfile(rawUser) : null;
 const token = localStorage.getItem('token');
 
 // Register user
@@ -12,36 +15,25 @@ export const register = createAsyncThunk(
     try {
       const response = await authAPI.register(userData);
       
-      if (response.data) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        localStorage.setItem('token', response.data.token);
+      if (response.data && response.data.success) {
+        // Transform backend user data to frontend profile structure
+        const transformedUser = transformBackendUserToProfile(response.data.data.user);
+        const completeProfile = ensureCompleteProfile(transformedUser);
+        
+        localStorage.setItem('user', JSON.stringify(completeProfile));
+        localStorage.setItem('token', response.data.data.token);
+        
+        return {
+          user: completeProfile,
+          token: response.data.data.token
+        };
       }
       
       return response.data;
     } catch (error) {
-      // Enhanced error handling with more specific messages
-      if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
-        const serverMessage = error.response.data?.message || 'Server error';
-        
-        // Handle specific error codes
-        if (error.response.status === 409) {
-          return thunkAPI.rejectWithValue('Email already exists. Please use a different email address.');
-        } else if (error.response.status === 400) {
-          return thunkAPI.rejectWithValue(`Validation error: ${serverMessage}`);
-        } else if (error.response.status === 500) {
-          return thunkAPI.rejectWithValue('Server error. Please try again later.');
-        }
-        
-        return thunkAPI.rejectWithValue(serverMessage);
-      } else if (error.request) {
-        // The request was made but no response was received
-        return thunkAPI.rejectWithValue('No response from server. Please check your internet connection.');
-      } else {
-        // Something happened in setting up the request that triggered an Error
-        return thunkAPI.rejectWithValue('Error setting up request. Please try again.');
-      }
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.error?.message || error.response?.data?.message || 'Registration failed'
+      );
     }
   }
 );
@@ -53,31 +45,25 @@ export const login = createAsyncThunk(
     try {
       const response = await authAPI.login(userData);
       
-      if (response.data) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        localStorage.setItem('token', response.data.token);
+      if (response.data && response.data.success) {
+        // Transform backend user data to frontend profile structure
+        const transformedUser = transformBackendUserToProfile(response.data.data.user);
+        const completeProfile = ensureCompleteProfile(transformedUser);
+        
+        localStorage.setItem('user', JSON.stringify(completeProfile));
+        localStorage.setItem('token', response.data.data.token);
+        
+        return {
+          user: completeProfile,
+          token: response.data.data.token
+        };
       }
       
       return response.data;
     } catch (error) {
-      // Enhanced error handling
-      if (error.response) {
-        const serverMessage = error.response.data?.message || 'Server error';
-        
-        if (error.response.status === 404) {
-          return thunkAPI.rejectWithValue('User not found. Please check your email address.');
-        } else if (error.response.status === 401) {
-          return thunkAPI.rejectWithValue('Invalid credentials. Please check your email and password.');
-        } else if (error.response.status === 500) {
-          return thunkAPI.rejectWithValue('Server error. Please try again later.');
-        }
-        
-        return thunkAPI.rejectWithValue(serverMessage);
-      } else if (error.request) {
-        return thunkAPI.rejectWithValue('No response from server. Please check your internet connection.');
-      } else {
-        return thunkAPI.rejectWithValue('Error setting up request. Please try again.');
-      }
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.error?.message || error.response?.data?.message || 'Login failed'
+      );
     }
   }
 );
@@ -88,10 +74,13 @@ export const getProfile = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const response = await authAPI.getProfile();
-      return response.data;
+      const userData = response.data.success ? response.data.data : response.data;
+      const transformedUser = transformBackendUserToProfile(userData);
+      return ensureCompleteProfile(transformedUser);
     } catch (error) {
-      const message = error.response?.data?.message || error.message || error.toString();
-      return thunkAPI.rejectWithValue(message);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.error?.message || error.response?.data?.message || 'Failed to get profile'
+      );
     }
   }
 );
@@ -103,14 +92,18 @@ export const updateProfile = createAsyncThunk(
     try {
       const response = await authAPI.updateProfile(profileData);
       
-      if (response.data) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+      if (response.data && response.data.success) {
+        const transformedUser = transformBackendUserToProfile(response.data.data.user);
+        const completeProfile = ensureCompleteProfile(transformedUser);
+        localStorage.setItem('user', JSON.stringify(completeProfile));
+        return { user: completeProfile };
       }
       
       return response.data;
     } catch (error) {
-      const message = error.response?.data?.message || error.message || error.toString();
-      return thunkAPI.rejectWithValue(message);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.error?.message || error.response?.data?.message || 'Failed to update profile'
+      );
     }
   }
 );

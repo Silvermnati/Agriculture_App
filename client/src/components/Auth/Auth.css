@@ -160,6 +160,7 @@
   margin-top: 2rem;
   padding-top: 1rem;
   border-top: 1px solid #eee;
+  text-align: center;
 }
 
 .auth-demo p {
@@ -167,15 +168,88 @@
   margin-bottom: 0.5rem;
 }
 
-.auth-demo ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.demo-buttons {
+  display: flex;
+  gap: 1rem;
+  margin: 1rem 0;
+  justify-content: center;
 }
 
-.auth-demo li {
-  font-size: 0.9rem;
+.demo-button {
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  flex: 1;
+  max-width: 180px;
+}
+
+.demo-button.farmer {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.demo-button.farmer:hover {
+  background-color: #45a049;
+}
+
+.demo-button.expert {
+  background-color: #2196F3;
+  color: white;
+}
+
+.demo-button.expert:hover {
+  background-color: #1e88e5;
+}
+
+.demo-button.supplier {
+  background-color: #FF9800;
+  color: white;
+}
+
+.demo-button.supplier:hover {
+  background-color: #F57C00;
+}
+
+.demo-button.admin {
+  background-color: #9C27B0;
+  color: white;
+}
+
+.demo-button.admin:hover {
+  background-color: #8E24AA;
+}
+
+.demo-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.demo-note {
+  font-size: 0.8rem;
   color: #666;
+  margin-top: 0.5rem;
+}
+
+.demo-accounts {
+  margin-top: 1rem;
+  border-top: 1px solid #eee;
+  padding-top: 0.5rem;
+}
+
+.demo-account-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+  text-align: left;
+  display: inline-block;
+}
+
+.demo-account-list li {
+  font-size: 0.85rem;
+  color: #555;
   margin-bottom: 0.25rem;
 }
 

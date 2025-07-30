@@ -44,6 +44,8 @@ const LoginForm = () => {
     dispatch(login(formData));
   };
 
+
+
   return (
     <div className="auth-form-container">
       <h2>Login to Agricultural Super App</h2>
@@ -102,13 +104,7 @@ const LoginForm = () => {
         <p><a href="/forgot-password">Forgot password?</a></p>
       </div>
       
-      <div className="auth-demo">
-        <p>Demo accounts:</p>
-        <ul>
-          <li>Farmer: farmer@example.com / farmerpassword</li>
-          <li>Expert: expert@example.com / expertpassword</li>
-        </ul>
-      </div>
+
     </div>
   );
 };

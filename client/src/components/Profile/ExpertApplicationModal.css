@@ -1,0 +1,262 @@
+/* Expert Application Modal Styles */
+.expert-application-modal .modal-content {
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.expert-modal-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.progress-bar {
+  position: relative;
+  margin-bottom: 2rem;
+  padding: 0 1rem;
+}
+
+.progress-steps {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  z-index: 2;
+}
+
+.progress-step {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f3f4f6;
+  border: 2px solid #e5e7eb;
+  color: #6b7280;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.progress-step.active {
+  background: #10b981;
+  border-color: #10b981;
+  color: white;
+}
+
+.progress-step.completed {
+  background: #059669;
+  border-color: #059669;
+  color: white;
+}
+
+.step-number {
+  font-size: 0.875rem;
+}
+
+.progress-fill {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 2px;
+  background: #10b981;
+  transform: translateY(-50%);
+  transition: width 0.3s ease;
+  z-index: 1;
+}
+
+.modal-body {
+  flex: 1;
+  padding: 0 1rem;
+}
+
+.expert-form-step {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.step-icon {
+  color: #10b981;
+  background: #f0fdf4;
+  padding: 0.75rem;
+  border-radius: 12px;
+}
+
+.step-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.step-header p {
+  color: #6b7280;
+  margin: 0.25rem 0 0 0;
+}
+
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.specializations-grid,
+.languages-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.specialization-tag,
+.language-tag {
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.specialization-tag:hover,
+.language-tag:hover {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+.specialization-tag.selected,
+.language-tag.selected {
+  background: #10b981;
+  color: white;
+  border-color: #10b981;
+}
+
+.certification-upload {
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.certification-upload:hover {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+.upload-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6b7280;
+}
+
+.upload-area svg {
+  color: #10b981;
+}
+
+.uploaded-file {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: #f0fdf4;
+  border-radius: 6px;
+  color: #166534;
+}
+
+.creating-expert {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .expert-application-modal .modal-content {
+    max-width: 95vw;
+    margin: 1rem;
+  }
+  
+  .progress-steps {
+    padding: 0 0.5rem;
+  }
+  
+  .progress-step {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .step-number {
+    font-size: 0.75rem;
+  }
+  
+  .step-header {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+  
+  .specializations-grid,
+  .languages-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+  
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+  
+  .modal-actions button {
+    width: 100%;
+  }
+}
+
+/* Accessibility */
+.specialization-tag:focus,
+.language-tag:focus {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .progress-step {
+    border-width: 3px;
+  }
+  
+  .specialization-tag,
+  .language-tag {
+    border-width: 2px;
+  }
+  
+  .specialization-tag.selected,
+  .language-tag.selected {
+    background: black;
+    color: white;
+    border-color: black;
+  }
+}

@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import './LoadingSpinner.css';
 
 /**
@@ -25,6 +26,12 @@ const LoadingSpinner = ({ size = 'medium', color = 'primary', text = '' }) => {
       {text && <p className="spinner-text">{text}</p>}
     </div>
   );
+};
+
+LoadingSpinner.propTypes = {
+    size: PropTypes.string,
+    color: PropTypes.string,
+    text: PropTypes.string,
 };
 
 export default LoadingSpinner;
