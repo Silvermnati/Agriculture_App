@@ -203,14 +203,52 @@ def create_post(current_user):
     if not data:
         return create_error_response('INVALID_REQUEST', 'Request body is required')
     
-    # Parse JSON arrays from form data
+    # Parse arrays from form data (handle both JSON and array format)
     if not request.is_json:
         try:
-            data['related_crops'] = json.loads(data.get('related_crops', '[]'))
-            data['applicable_locations'] = json.loads(data.get('applicable_locations', '[]'))
-            data['tags'] = json.loads(data.get('tags', '[]'))
-        except json.JSONDecodeError:
-            return create_error_response('INVALID_JSON', 'Invalid JSON in array fields')
+            # Handle related_crops array
+            if 'related_crops[]' in request.form:
+                data['related_crops'] = request.form.getlist('related_crops[]')
+            elif 'related_crops' in data and isinstance(data['related_crops'], str):
+                try:
+                    data['related_crops'] = json.loads(data.get('related_crops', '[]'))
+                except json.JSONDecodeError:
+                    # If it's not valid JSON, treat as empty array
+                    data['related_crops'] = []
+            else:
+                data['related_crops'] = data.get('related_crops', [])
+            
+            # Handle applicable_locations array
+            if 'applicable_locations[]' in request.form:
+                data['applicable_locations'] = request.form.getlist('applicable_locations[]')
+            elif 'applicable_locations' in data and isinstance(data['applicable_locations'], str):
+                try:
+                    data['applicable_locations'] = json.loads(data.get('applicable_locations', '[]'))
+                except json.JSONDecodeError:
+                    # If it's not valid JSON, treat as empty array
+                    data['applicable_locations'] = []
+            else:
+                data['applicable_locations'] = data.get('applicable_locations', [])
+            
+            # Handle tags array
+            if 'tags[]' in request.form:
+                data['tags'] = request.form.getlist('tags[]')
+            elif 'tags' in data and isinstance(data['tags'], str):
+                try:
+                    data['tags'] = json.loads(data.get('tags', '[]'))
+                except json.JSONDecodeError:
+                    # If it's not valid JSON, treat as empty array
+                    data['tags'] = []
+            else:
+                data['tags'] = data.get('tags', [])
+            
+            # Debug logging
+            current_app.logger.info(f"Parsed form data: title={data.get('title')}, content_length={len(data.get('content', ''))}, category_id={data.get('category_id')}")
+            current_app.logger.info(f"Arrays: related_crops={data.get('related_crops')}, applicable_locations={data.get('applicable_locations')}")
+                
+        except Exception as e:
+            current_app.logger.error(f"Error parsing form data: {str(e)}")
+            return create_error_response('FORM_PARSING_ERROR', f'Error parsing form data: {str(e)}')
     
     # Validate article data
     validation_result = validate_agricultural_data(data, 'article')
@@ -225,14 +263,15 @@ def create_post(current_user):
     # Handle featured image upload
     featured_image_url = None
     if featured_image:
-        filename = secure_filename(featured_image.filename)
-        if filename != '':
-            allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-            if '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions:
-                unique_filename = str(uuid.uuid4()) + '_' + filename
-                featured_image_url = f"uploads/images/{unique_filename}"
-            else:
+        from server.utils.file_upload import save_file
+        try:
+            # Save the file and get the URL path
+            featured_image_url = save_file(featured_image, 'images')
+            if not featured_image_url:
                 return create_error_response('INVALID_FILE_TYPE', 'Invalid file type. Allowed types are png, jpg, jpeg, gif, webp.')
+        except Exception as e:
+            current_app.logger.error(f"Error uploading featured image: {str(e)}")
+            return create_error_response('UPLOAD_ERROR', 'Failed to upload featured image')
     
     # Sanitize HTML content
     content = data.get('content', '')
@@ -435,14 +474,16 @@ def update_post(current_user, post_id, resource=None):
     
     # Handle featured image update
     if featured_image:
-        filename = secure_filename(featured_image.filename)
-        if filename != '':
-            allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-            if '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions:
-                unique_filename = str(uuid.uuid4()) + '_' + filename
-                post.featured_image_url = f"uploads/images/{unique_filename}"
-            else:
+        from server.utils.file_upload import save_file
+        try:
+            # Save the file and get the URL path
+            new_image_url = save_file(featured_image, 'images')
+            if not new_image_url:
                 return create_error_response('INVALID_FILE_TYPE', 'Invalid file type. Allowed types are png, jpg, jpeg, gif, webp.')
+            post.featured_image_url = new_image_url
+        except Exception as e:
+            current_app.logger.error(f"Error uploading featured image: {str(e)}")
+            return create_error_response('UPLOAD_ERROR', 'Failed to upload featured image')
     
     # Sanitize and update content
     if 'content' in data:
