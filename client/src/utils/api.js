@@ -107,30 +107,50 @@ export const postsAPI = {
   getPost: (postId) => api.get(`${API_ENDPOINTS.POSTS.BASE}/${postId}`),
   createPost: (postData) => {
     console.log('API createPost called with:', postData);
-    const formData = new FormData();
-    Object.keys(postData).forEach(key => {
-      if (key === 'featured_image' && postData[key]) {
-        formData.append(key, postData[key]);
-        console.log(`Added file: ${key}`, postData[key]);
-      } else if (Array.isArray(postData[key])) {
-        postData[key].forEach(item => formData.append(`${key}[]`, item));
-        console.log(`Added array: ${key}[] = ${postData[key].join(', ')}`);
-      } else {
-        formData.append(key, postData[key]);
-        console.log(`Added field: ${key} = ${postData[key]}`);
+    
+    // Check if postData is FormData or regular object
+    if (postData instanceof FormData) {
+      console.log('Received FormData object');
+      console.log('FormData entries:');
+      for (let [key, value] of postData.entries()) {
+        console.log(`${key}: ${value}`);
       }
-    });
-    
-    console.log('Making API request to:', API_ENDPOINTS.POSTS.BASE);
-    console.log('Full API URL:', `${API_URL}${API_ENDPOINTS.POSTS.BASE}`);
-    console.log('Environment check - import.meta.env.PROD:', import.meta.env.PROD);
-    console.log('Current API_URL:', API_URL);
-    
-    return api.post(API_ENDPOINTS.POSTS.BASE, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+      
+      console.log('Making API request to:', API_ENDPOINTS.POSTS.BASE);
+      console.log('Full API URL:', `${API_URL}${API_ENDPOINTS.POSTS.BASE}`);
+      
+      return api.post(API_ENDPOINTS.POSTS.BASE, postData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    } else {
+      // Legacy handling for regular objects
+      const formData = new FormData();
+      Object.keys(postData).forEach(key => {
+        if (key === 'featured_image' && postData[key]) {
+          formData.append(key, postData[key]);
+          console.log(`Added file: ${key}`, postData[key]);
+        } else if (Array.isArray(postData[key])) {
+          postData[key].forEach(item => formData.append(`${key}[]`, item));
+          console.log(`Added array: ${key}[] = ${postData[key].join(', ')}`);
+        } else {
+          formData.append(key, postData[key]);
+          console.log(`Added field: ${key} = ${postData[key]}`);
+        }
+      });
+      
+      console.log('Making API request to:', API_ENDPOINTS.POSTS.BASE);
+      console.log('Full API URL:', `${API_URL}${API_ENDPOINTS.POSTS.BASE}`);
+      console.log('Environment check - import.meta.env.PROD:', import.meta.env.PROD);
+      console.log('Current API_URL:', API_URL);
+      
+      return api.post(API_ENDPOINTS.POSTS.BASE, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    }
   },
   updatePost: (postId, postData) => {
     // Handle both regular data and FormData for file uploads
