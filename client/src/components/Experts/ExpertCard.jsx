@@ -32,7 +32,7 @@ const ExpertCard = ({ expert, onFollow, onMessage, isFollowing }) => {
     <div className="bg-white rounded-lg shadow-md p-6 flex flex-col items-center text-center">
       <Image
         src={avatar_url}
-        alt={name}
+        alt={name || title || 'Expert profile picture'}
         className="w-24 h-24 rounded-full object-cover mb-4"
         fallbackType="expert"
       />

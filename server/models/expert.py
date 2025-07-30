@@ -31,7 +31,14 @@ class ExpertProfile(db.Model):
     def to_dict(self):
         """Convert expert profile to dictionary."""
         return {
+            'id': str(self.profile_id),  # Add id for frontend compatibility
             'profile_id': str(self.profile_id),
+            'user_id': str(self.user.user_id) if self.user else None,
+            'name': f"{self.user.first_name} {self.user.last_name}" if self.user else None,
+            'first_name': self.user.first_name if self.user else None,
+            'last_name': self.user.last_name if self.user else None,
+            'avatar_url': self.user.avatar_url if self.user else None,  # Flatten avatar_url
+            'bio': self.user.bio if self.user else None,
             'user': {
                 'user_id': str(self.user.user_id),
                 'first_name': self.user.first_name,

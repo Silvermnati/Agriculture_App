@@ -162,7 +162,7 @@ const ConsultationBooking = ({ expert, isOpen, onClose }) => {
         <div className="flex items-center mb-6 p-4 bg-gray-50 rounded-lg">
           <Image
             src={expert.avatar_url}
-            alt={expert.name}
+            alt={expert.name || 'Expert'}
             className="w-12 h-12 rounded-full object-cover mr-4"
             fallbackType="expert"
           />
