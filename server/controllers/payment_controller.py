@@ -16,7 +16,16 @@ class PaymentController:
     """Controller for handling payment operations."""
     
     def __init__(self):
-        self.mpesa_service = MpesaService()
+        try:
+            self.mpesa_service = MpesaService()
+        except MpesaError as e:
+            current_app.logger.error(f"M-Pesa service initialization failed: {e.message}")
+            self.mpesa_service = None
+            # In development, we can use a mock service
+            if current_app.config.get('FLASK_ENV') == 'development':
+                self.use_mock_service = True
+            else:
+                self.use_mock_service = False
     
     @jwt_required()
     def initiate_payment(self):
@@ -79,6 +88,38 @@ class PaymentController:
             
             db.session.add(payment)
             db.session.flush()  # Get the payment ID
+            
+            # Check if M-Pesa service is available
+            if not self.mpesa_service:
+                # Use mock service for development/testing
+                if hasattr(self, 'use_mock_service') and self.use_mock_service:
+                    # Mock STK push response
+                    mock_checkout_request_id = f"ws_CO_DMZ_{uuid.uuid4().hex[:10]}"
+                    mock_merchant_request_id = f"29115-34620561-1"
+                    
+                    payment.checkout_request_id = mock_checkout_request_id
+                    payment.merchant_request_id = mock_merchant_request_id
+                    
+                    db.session.commit()
+                    
+                    return jsonify({
+                        'success': True,
+                        'payment_id': str(payment.payment_id),
+                        'checkout_request_id': mock_checkout_request_id,
+                        'customer_message': 'Mock payment initiated. Check your phone for M-Pesa prompt.',
+                        'status': 'pending',
+                        'mock': True
+                    }), 200
+                else:
+                    payment.status = 'failed'
+                    payment.failure_reason = 'M-Pesa service not configured'
+                    db.session.commit()
+                    
+                    return jsonify({
+                        'success': False,
+                        'error': 'M-Pesa service is not properly configured. Please contact support.',
+                        'code': 'MPESA_NOT_CONFIGURED'
+                    }), 503
             
             # Initiate STK push
             try:
@@ -435,8 +476,25 @@ class PaymentController:
     def test_mpesa_config(self):
         """Test M-Pesa configuration and connectivity."""
         try:
+            # Check if M-Pesa service is initialized
+            if not self.mpesa_service:
+                return jsonify({
+                    'success': False,
+                    'error': 'M-Pesa service not initialized',
+                    'config_status': {
+                        'service_initialized': False,
+                        'error': 'Missing M-Pesa credentials. Please check environment variables.',
+                        'required_env_vars': [
+                            'MPESA_CONSUMER_KEY',
+                            'MPESA_CONSUMER_SECRET', 
+                            'MPESA_PASSKEY'
+                        ]
+                    }
+                }), 503
+            
             # Test basic configuration
             config_status = {
+                'service_initialized': True,
                 'environment': self.mpesa_service.environment,
                 'business_short_code': self.mpesa_service.business_short_code,
                 'callback_url': self.mpesa_service.callback_url,
