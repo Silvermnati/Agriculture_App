@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
 import os
 
 from server.config import config
@@ -12,6 +13,9 @@ def create_app(config_name='default'):
     
     # Load configuration
     app.config.from_object(config[config_name])
+
+    # Initialize JWTManager
+    JWTManager(app)
     
     # Enable CORS with specific origins
     cors_origins = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:5173')
