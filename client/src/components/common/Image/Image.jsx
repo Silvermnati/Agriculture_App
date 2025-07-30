@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { getFallbackImage, getOptimizedImageUrl } from '../../../utils/imageHelpers';
+import { getFallbackImage, getOptimizedImageUrl, getFullImageUrl } from '../../../utils/imageHelpers';
 import './Image.css';
 
 const Image = ({ 
   src, 
-  alt, 
+  alt = 'Image', 
   className = '', 
   fallbackSrc = null,
   fallbackType = 'post',
@@ -15,13 +15,17 @@ const Image = ({
   onError = () => {},
   ...props 
 }) => {
-  // Optimize the source URL if requested
-  const optimizedSrc = optimize && src ? getOptimizedImageUrl(src) : src;
+  // Convert relative URLs to full URLs first, then optimize if requested
+  const fullSrc = getFullImageUrl(src);
+  const optimizedSrc = optimize && fullSrc ? getOptimizedImageUrl(fullSrc) : fullSrc;
+  
+  // If there's no source URL, immediately use fallback
+  const initialSrc = optimizedSrc || (fallbackSrc ? getFullImageUrl(fallbackSrc) : getFallbackImage(fallbackType));
   
   const [imageState, setImageState] = useState({
-    loading: true,
+    loading: !!optimizedSrc, // Only show loading if we have a source to load
     error: false,
-    currentSrc: optimizedSrc
+    currentSrc: initialSrc
   });
 
   const handleImageLoad = () => {
@@ -30,7 +34,7 @@ const Image = ({
   };
 
   const handleImageError = () => {
-    const nextFallback = fallbackSrc || getFallbackImage(fallbackType);
+    const nextFallback = fallbackSrc ? getFullImageUrl(fallbackSrc) : getFallbackImage(fallbackType);
     
     if (imageState.currentSrc !== nextFallback) {
       // Try fallback image
@@ -86,7 +90,7 @@ const Image = ({
 
 Image.propTypes = {
   src: PropTypes.string,
-  alt: PropTypes.string.isRequired,
+  alt: PropTypes.string,
   className: PropTypes.string,
   fallbackSrc: PropTypes.string,
   fallbackType: PropTypes.string,
