@@ -62,9 +62,9 @@ const AppRoutes = () => {
         <Route path="/experts" element={isAuthenticated ? <ExpertsPage /> : <Navigate to="/login" />} />
 
         {/* Posts routes */}
-        <Route path="/posts" element={isAuthenticated ? <PostsPage /> : <Navigate to="/login" />} />
+        <Route path="/posts/create" element={isAuthenticated ? <CreatePostPage /> : <Navigate to="/login" />} />
         <Route path="/posts/:postId" element={isAuthenticated ? <PostDetailPage /> : <Navigate to="/login" />} />
-        <Route path="/create-post" element={isAuthenticated ? <CreatePostPage /> : <Navigate to="/login" />} />
+        <Route path="/posts" element={isAuthenticated ? <PostsPage /> : <Navigate to="/login" />} />
         
         {/* Profile and Settings routes */}
         <Route path="/profile" element={isAuthenticated ? <ProfilePage /> : <Navigate to="/login" />} />

@@ -22,4 +22,3 @@ requests==2.31.0
 cloudinary==1.44.1
 bleach==6.2.0
 pytz==2023.4
-asyncio-compat==0.1.2
