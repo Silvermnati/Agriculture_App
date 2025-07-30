@@ -113,10 +113,8 @@ export const postsAPI = {
         formData.append(key, postData[key]);
         console.log(`Added file: ${key}`, postData[key]);
       } else if (Array.isArray(postData[key])) {
-        // Backend expects arrays as JSON strings
-        const jsonValue = JSON.stringify(postData[key]);
-        formData.append(key, jsonValue);
-        console.log(`Added array as JSON: ${key} = ${jsonValue}`);
+        postData[key].forEach(item => formData.append(`${key}[]`, item));
+        console.log(`Added array: ${key}[] = ${postData[key].join(', ')}`);
       } else {
         formData.append(key, postData[key]);
         console.log(`Added field: ${key} = ${postData[key]}`);
@@ -142,7 +140,7 @@ export const postsAPI = {
         if (key === 'featured_image' && postData[key]) {
           formData.append(key, postData[key]);
         } else if (Array.isArray(postData[key])) {
-          formData.append(key, JSON.stringify(postData[key]));
+          postData[key].forEach(item => formData.append(`${key}[]`, item));
         } else {
           formData.append(key, postData[key]);
         }
@@ -197,7 +195,7 @@ export const articlesAPI = {
       if (key === 'featured_image' && articleData[key]) {
         formData.append(key, articleData[key]);
       } else if (Array.isArray(articleData[key])) {
-        formData.append(key, JSON.stringify(articleData[key]));
+        articleData[key].forEach(item => formData.append(`${key}[]`, item));
       } else {
         formData.append(key, articleData[key]);
       }

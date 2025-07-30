@@ -329,6 +329,7 @@ def main():
         seed_states()
         seed_locations()
         seed_crops()
+        seed_categories()  # Add categories before users and posts
         seed_users()
         seed_user_crops()
         seed_posts()
@@ -337,6 +338,63 @@ def main():
 
 ##################################################################
 
+def seed_categories():
+    """Seed categories table with default agricultural categories."""
+    print("Seeding categories...")
+    
+    default_categories = [
+        {
+            'category_id': 1,
+            'name': 'Crop Management',
+            'description': 'Best practices for growing and managing crops',
+            'is_agricultural_specific': True
+        },
+        {
+            'category_id': 2,
+            'name': 'Pest and Disease Control',
+            'description': 'Methods and strategies for controlling pests and diseases',
+            'is_agricultural_specific': True
+        },
+        {
+            'category_id': 3,
+            'name': 'Soil Health',
+            'description': 'Soil management, fertilization, and health improvement',
+            'is_agricultural_specific': True
+        },
+        {
+            'category_id': 4,
+            'name': 'Harvesting and Post-Harvesting',
+            'description': 'Harvesting techniques and post-harvest handling',
+            'is_agricultural_specific': True
+        },
+        {
+            'category_id': 5,
+            'name': 'Agricultural Technology',
+            'description': 'Modern farming technologies and innovations',
+            'is_agricultural_specific': True
+        }
+    ]
+    
+    with db.session.no_autoflush:
+        added_count = 0
+        for cat_data in default_categories:
+            existing = Category.query.filter_by(category_id=cat_data['category_id']).first()
+            if not existing:
+                try:
+                    category = Category(**cat_data)
+                    db.session.add(category)
+                    added_count += 1
+                except Exception as e:
+                    print(f"Error adding category {cat_data['name']}: {e}")
+                    db.session.rollback()
+    
+    try:
+        db.session.commit()
+        print(f"Added {added_count} categories")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error committing categories: {e}")
+
 def seed_posts():
     # Fetch an existing user to assign as author
     user = User.query.first()
@@ -344,11 +402,11 @@ def seed_posts():
         print("No user found to assign posts.")
         return
 
-    # Create a default category if none exist
-    category = Category.query.filter_by(name='General').first()
+    # Get the first category (should exist after seed_categories)
+    category = Category.query.first()
     if not category:
-        category = Category(name='General', description='General agricultural topics.')
-        db.session.add(category)
+        print("No category found for posts.")
+        return
 
     # Create a default tag if none exist
     tag = Tag.query.filter_by(name='farming').first()
