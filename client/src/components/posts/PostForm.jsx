@@ -4,8 +4,8 @@ import PropTypes from 'prop-types';
 import './posts.css';
 import 'react-quill/dist/quill.snow.css';
 
-const PostForm = ({ onSubmit, isLoading = false, initialData = null, isEdit = false }) => {
-    const [formData, setFormData] = useState(initialData || {
+const PostForm = ({ onSubmit, isLoading = false, initialData = null, isEdit = false, onSuccess = null }) => {
+    const initialFormState = {
         title: '',
         content: '',
         excerpt: '',
@@ -15,9 +15,12 @@ const PostForm = ({ onSubmit, isLoading = false, initialData = null, isEdit = fa
         season_relevance: '',
         featured_image: null,
         status: 'draft'
-    });
+    };
+    
+    const [formData, setFormData] = useState(initialData || initialFormState);
     const [showPreview, setShowPreview] = useState(false);
     const [errors, setErrors] = useState({});
+    const [resetTrigger, setResetTrigger] = useState(0);
     const quillRef = useRef(null);
 
     const [categories, setCategories] = useState([
@@ -125,7 +128,27 @@ const PostForm = ({ onSubmit, isLoading = false, initialData = null, isEdit = fa
         }));
     };
 
-    const handleSubmit = e => {
+    const resetForm = () => {
+        setFormData(initialFormState);
+        setErrors({});
+        setShowPreview(false);
+        
+        // Reset file input
+        const fileInput = document.getElementById('featured_image');
+        if (fileInput) {
+            fileInput.value = '';
+        }
+        
+        // Reset ReactQuill editor
+        if (quillRef.current) {
+            quillRef.current.getEditor().setText('');
+        }
+        
+        // Trigger FileUpload component reset
+        setResetTrigger(prev => prev + 1);
+    };
+
+    const handleSubmit = async e => {
         e.preventDefault();
         
         if (!validateForm()) {
@@ -162,7 +185,18 @@ const PostForm = ({ onSubmit, isLoading = false, initialData = null, isEdit = fa
             console.log(`${key}: ${value}`);
         }
         
-        onSubmit(finalSubmissionData);
+        try {
+            await onSubmit(finalSubmissionData);
+            
+            // Reset form only if not in edit mode and onSuccess callback is provided
+            if (!isEdit && onSuccess) {
+                resetForm();
+                onSuccess();
+            }
+        } catch (error) {
+            // Don't reset form on error so user can fix issues
+            console.error('Form submission error:', error);
+        }
     };
     
     const PostPreview = useMemo(() => (
@@ -314,6 +348,7 @@ const PostForm = ({ onSubmit, isLoading = false, initialData = null, isEdit = fa
                         <label htmlFor="featured_image" className="block text-sm font-medium text-gray-700 mb-1">Featured Image</label>
                         <input 
                             id="featured_image" 
+                            key={resetTrigger} // Force re-render when form is reset
                             type="file" 
                             accept="image/jpeg,image/jpg,image/png,image/gif"
                             onChange={handleFileChange}
@@ -322,6 +357,11 @@ const PostForm = ({ onSubmit, isLoading = false, initialData = null, isEdit = fa
                         />
                         {errors.featured_image && <span className="text-red-500 text-sm mt-1">{errors.featured_image}</span>}
                         <small className="text-gray-500 text-sm mt-1">Max file size: 5MB. Supported formats: JPEG, PNG, GIF</small>
+                        {formData.featured_image && (
+                            <div className="mt-2 text-sm text-green-600">
+                                Selected: {formData.featured_image.name}
+                            </div>
+                        )}
                     </div>
 
                     <div className="mb-4">
@@ -339,13 +379,23 @@ const PostForm = ({ onSubmit, isLoading = false, initialData = null, isEdit = fa
                         </select>
                     </div>
 
-                    <button 
-                        type="submit" 
-                        className="w-full py-3 px-4 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors duration-200"
-                        disabled={isLoading}
-                    >
-                        {isLoading ? 'Saving...' : 'Save Post'}
-                    </button>
+                    <div className="flex space-x-3">
+                        <button 
+                            type="button"
+                            onClick={resetForm}
+                            className="flex-1 py-3 px-4 bg-gray-500 text-white font-semibold rounded-md hover:bg-gray-600 transition-colors duration-200"
+                            disabled={isLoading}
+                        >
+                            Reset Form
+                        </button>
+                        <button 
+                            type="submit" 
+                            className="flex-1 py-3 px-4 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors duration-200"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? 'Saving...' : 'Save Post'}
+                        </button>
+                    </div>
                 </form>
             )}
         </div>

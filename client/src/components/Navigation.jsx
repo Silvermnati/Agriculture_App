@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { NavLink, useNavigate, Link } from 'react-router-dom';
 import { logout } from '../store/slices/authSlice';
 import NotificationBell from './Notifications/NotificationBell';
+import Image from './common/Image/Image';
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -15,6 +16,20 @@ const Navigation = () => {
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const toggleProfileMenu = () => setIsProfileMenuOpen(!isProfileMenuOpen);
+
+  // Close profile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isProfileMenuOpen && !event.target.closest('.profile-menu-container')) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isProfileMenuOpen]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -52,24 +67,31 @@ const Navigation = () => {
           {isAuthenticated ? (
             <div className="flex items-center space-x-4">
               <NotificationBell />
-              <div className="relative">
+              <div className="relative profile-menu-container">
                 <button onClick={toggleProfileMenu} className="flex items-center space-x-2 focus:outline-none">
-                  <img 
-                    src={user?.avatar_url || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1974&auto=format&fit=crop'} 
-                    alt="Profile" 
-                    className="w-8 h-8 rounded-full object-cover"
+                  <Image 
+                    src={user?.avatar_url} 
+                    alt={`${user?.first_name || user?.email || 'User'} profile`} 
+                    className="w-8 h-8 rounded-full object-cover border-2 border-gray-200 hover:border-green-500 transition-colors duration-200"
+                    fallbackType="avatar"
                   />
                   <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
                   </svg>
                 </button>
                 {isProfileMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-50">
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-50 border border-gray-200">
                     <div className="py-2">
-                      <NavLink to="/profile" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">My Profile</NavLink>
+                      <NavLink 
+                        to="/profile" 
+                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                        onClick={() => setIsProfileMenuOpen(false)}
+                      >
+                        My Profile
+                      </NavLink>
                       <button 
                         onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                        className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200"
                       >
                         Sign Out
                       </button>

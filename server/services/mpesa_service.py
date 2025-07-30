@@ -25,8 +25,11 @@ class MpesaService:
         self.consumer_secret = os.environ.get('MPESA_CONSUMER_SECRET', '')
         self.business_short_code = os.environ.get('MPESA_BUSINESS_SHORT_CODE', '174379')
         self.passkey = os.environ.get('MPESA_PASSKEY', '')
-        self.callback_url = os.environ.get('MPESA_CALLBACK_URL', 'https://your-app.com/api/payments/callback')
+        self.callback_url = os.environ.get('MPESA_CALLBACK_URL', 'https://agriculture-app-1-u2a6.onrender.com/api/payments/callback')
         self.environment = os.environ.get('MPESA_ENVIRONMENT', 'sandbox')  # sandbox or production
+        
+        # Validate required credentials
+        self._validate_credentials()
         
         # Set base URLs based on environment
         if self.environment == 'production':
@@ -36,6 +39,24 @@ class MpesaService:
         
         self.access_token = None
         self.token_expires_at = None
+    
+    def _validate_credentials(self):
+        """Validate that required M-Pesa credentials are set."""
+        missing_credentials = []
+        
+        if not self.consumer_key:
+            missing_credentials.append('MPESA_CONSUMER_KEY')
+        if not self.consumer_secret:
+            missing_credentials.append('MPESA_CONSUMER_SECRET')
+        if not self.passkey:
+            missing_credentials.append('MPESA_PASSKEY')
+        
+        if missing_credentials:
+            raise MpesaError(
+                'MISSING_CREDENTIALS',
+                f'Missing required M-Pesa credentials: {", ".join(missing_credentials)}. Please check your environment variables.',
+                {'missing_credentials': missing_credentials}
+            )
     
     def get_access_token(self) -> str:
         """Get M-Pesa access token."""

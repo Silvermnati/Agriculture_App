@@ -2,6 +2,31 @@
  * Image utility functions for handling image URLs and fallbacks
  */
 
+// API base URL for constructing full image URLs
+const API_BASE_URL = 'https://agriculture-app-1-u2a6.onrender.com';
+
+/**
+ * Convert relative image URLs to full URLs
+ * @param {string} url - Image URL (relative or absolute)
+ * @returns {string} - Full image URL
+ */
+export const getFullImageUrl = (url) => {
+  if (!url) return null;
+  
+  // If it's already a full URL, return as is
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  
+  // If it's a relative path, convert to full URL
+  if (url.startsWith('/')) {
+    return `${API_BASE_URL}${url}`;
+  }
+  
+  // If it doesn't start with /, assume it's a relative path and add /
+  return `${API_BASE_URL}/${url}`;
+};
+
 // Default fallback images from Unsplash (agricultural themed)
 export const DEFAULT_IMAGES = {
   post: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=400&h=300&fit=crop&crop=center',
@@ -57,7 +82,7 @@ export const isImageAccessible = (url) => {
 
 /**
  * Get optimized image URL with proper dimensions
- * @param {string} url - Original image URL
+ * @param {string} url - Original image URL (should already be a full URL)
  * @param {Object} options - Optimization options
  * @returns {string} - Optimized image URL
  */

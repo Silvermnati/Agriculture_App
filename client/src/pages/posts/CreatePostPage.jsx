@@ -41,9 +41,15 @@ const CreatePostPage = () => {
       }
       
       toast.error(`Failed to create post: ${errorMessage}`);
+      throw error; // Re-throw to let PostForm handle the error
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleFormSuccess = () => {
+    // This callback is called when the form is successfully submitted and reset
+    console.log('Post form reset successfully');
   };
 
   return (
@@ -55,6 +61,7 @@ const CreatePostPage = () => {
       <PostForm 
         onSubmit={handleFormSubmit} 
         isLoading={isSubmitting || isLoading}
+        onSuccess={handleFormSuccess}
       />
     </div>
   );

@@ -119,10 +119,15 @@ const MpesaPaymentModal = ({
         payment_type: consultationId ? 'consultation' : 'general'
       };
 
+      console.log('Initiating M-Pesa payment with data:', paymentData);
+
       // Use consultation payment endpoint if consultationId is provided
       const response = consultationId 
         ? await paymentsAPI.initiateConsultationPayment(paymentData)
         : await paymentsAPI.initiatePayment(paymentData);
+      
+      console.log('M-Pesa payment response:', response.data);
+      
       const { payment_id, checkout_request_id } = response.data;
 
       setPaymentId(payment_id);
@@ -130,11 +135,32 @@ const MpesaPaymentModal = ({
       setPaymentStatus('processing');
     } catch (err) {
       console.error('Payment initiation error:', err);
+      console.error('Error response:', err.response?.data);
+      
       setPaymentStatus('failed');
-      setError(
-        err.response?.data?.message || 
-        'Failed to initiate payment. Please try again.'
-      );
+      
+      // Provide more detailed error messages
+      let errorMessage = 'Failed to initiate payment. Please try again.';
+      
+      if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      // Handle specific error cases
+      if (errorMessage.includes('MISSING_CREDENTIALS')) {
+        errorMessage = 'M-Pesa service is not properly configured. Please contact support.';
+      } else if (errorMessage.includes('Invalid phone number')) {
+        errorMessage = 'Please enter a valid Kenyan phone number (e.g., 0712345678)';
+      } else if (errorMessage.includes('TOKEN_ERROR')) {
+        errorMessage = 'M-Pesa service is temporarily unavailable. Please try again later.';
+      }
+      
+      setError(errorMessage);
+      
       if (onPaymentError) {
         onPaymentError(err);
       }
