@@ -263,3 +263,27 @@ def create_success_response(data=None, message: str = None, pagination=None, sta
         response['pagination'] = pagination
     
     return jsonify(response), status_code
+
+def handle_error(error, status_code=500):
+    """Generic error handler for use in controllers."""
+    if isinstance(error, HTTPException):
+        return jsonify({
+            'success': False,
+            'error': {
+                'code': error.name.upper().replace(' ', '_'),
+                'message': error.description,
+                'details': str(error)
+            }
+        }), error.code
+    
+    # Log the error
+    current_app.logger.error(f'Error: {str(error)}', exc_info=True)
+    
+    return jsonify({
+        'success': False,
+        'error': {
+            'code': 'INTERNAL_ERROR',
+            'message': 'An internal error occurred',
+            'details': str(error) if current_app.debug else 'Please try again later'
+        }
+    }), status_code

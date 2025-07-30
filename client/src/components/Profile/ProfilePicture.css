@@ -10,7 +10,7 @@
   overflow: hidden;
   background: #f3f4f6;
   border: 3px solid white;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Softer shadow */
   transition: all 0.2s ease;
 }
 
@@ -19,12 +19,12 @@
 }
 
 .profile-picture-editable:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1);
+  transform: scale(1.02); /* More subtle scale */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Slightly more pronounced shadow on hover */
 }
 
 .profile-picture-editable:hover .profile-picture-overlay {
-  opacity: 1;
+  opacity: 1; /* Always visible when editable */
 }
 
 /* Size Variants */
@@ -61,8 +61,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
+  background-color: #e0e0e0; /* Solid neutral background */
+  color: #666;
 }
 
 .profile-picture-initials {
@@ -99,11 +99,11 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.4); /* Slightly lighter overlay */
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
+  opacity: 1; /* Always visible */
   transition: opacity 0.2s ease;
   color: white;
 }

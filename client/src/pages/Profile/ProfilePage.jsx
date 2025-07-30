@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useParams } from 'react-router-dom';
 import { 
   getExtendedProfile, 
   getProfileSettings, 
@@ -8,6 +9,7 @@ import {
   setActiveTab,
   clearErrors
 } from '../../store/slices/profileSlice';
+import FollowButton from '../../components/common/FollowButton/FollowButton';
 import useToast from '../../hooks/useToast';
 import ProfileHeader from '../../components/Profile/ProfileHeader';
 import ProfileTabs from '../../components/Profile/ProfileTabs';
@@ -26,6 +28,7 @@ import './Profile.css';
 const ProfilePage = () => {
   const dispatch = useDispatch();
   const toast = useToast();
+  const { userId } = useParams(); // Get userId from URL params
   
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const {
@@ -37,7 +40,6 @@ const ProfilePage = () => {
     isError,
     message,
     showExpertModal,
-
     showPasswordModal,
     settings,
     activityStats,
@@ -45,6 +47,8 @@ const ProfilePage = () => {
     isLoadingStats,
     isLoadingActivity
   } = useSelector((state) => state.profile);
+
+  const isOwnProfile = !userId || userId === user?.user_id;
 
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -165,6 +169,17 @@ const ProfilePage = () => {
     <div className="profile-page">
       <div className="profile-container">
         <ProfileHeader user={currentProfile} />
+        
+        {/* Follow Button for other users' profiles */}
+        {!isOwnProfile && (
+          <div className="profile-follow-section">
+            <FollowButton 
+              userId={currentProfile?.user_id} 
+              initialFollowState={currentProfile?.is_following}
+              showStats={true}
+            />
+          </div>
+        )}
         
         <ProfileTabs 
           activeTab={activeTab}

@@ -1,95 +1,102 @@
 #!/usr/bin/env python3
 """
-Render deployment database initialization script.
-This script ensures the database is properly set up on Render deployment.
+Database initialization script for Render deployment.
+This script sets up the database with required tables and initial data.
 """
 
 import os
 import sys
 
+# Add the server directory to sys.path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'server'))
+
 def main():
     """Main function to initialize the database for Render deployment."""
-    
-    print("🚀 Render Database Initialization Script")
-    print("=" * 60)
-    
     try:
-        # Set up the environment for Render
-        render_paths = [
-            '/opt/render/project/src',
-            '/opt/render/project/src/server',
-            '.',
-            './server'
-        ]
-        
-        for path in render_paths:
-            if path not in sys.path:
-                sys.path.insert(0, path)
-        
-        print("📦 Setting up environment...")
-        
-        # Import Flask app and database
         from server import create_app
         from server.database import db
+        from server.models.post import Category
         
-        print("📱 Creating Flask app for production...")
-        app = create_app('production')
+        # Get configuration from environment
+        config_name = os.environ.get('FLASK_CONFIG', 'production')
+        app = create_app(config_name)
         
         with app.app_context():
-            print("🔍 Testing database connection...")
-            
-            # Test database connection
-            from sqlalchemy import text
-            with db.engine.connect() as connection:
-                connection.execute(text("SELECT 1"))
-            print("✅ Database connection successful")
-            
-            # The database initialization is now handled automatically
-            # by the init_db function in database.py, so we just need to
-            # trigger it by accessing the database
-            
-            print("🏗️  Initializing database schema...")
-            
-            # Import all models to ensure they're registered
-            import server.models
+            print("🚀 Starting database initialization for Render deployment...")
             
             # Create all tables
+            print("📋 Creating database tables...")
             db.create_all()
-            print("✅ Database schema created/updated")
+            print("✅ Database tables created successfully!")
             
-            # Check if we have initial data
-            from server.models.user import User
-            user_count = User.query.count()
-            print(f"👥 Found {user_count} users in database")
+            # Initialize default categories
+            print("📂 Initializing default categories...")
+            default_categories = [
+                {
+                    'category_id': 1,
+                    'name': 'Crop Management',
+                    'description': 'Best practices for growing and managing crops',
+                    'is_agricultural_specific': True
+                },
+                {
+                    'category_id': 2,
+                    'name': 'Pest and Disease Control',
+                    'description': 'Methods and strategies for controlling pests and diseases',
+                    'is_agricultural_specific': True
+                },
+                {
+                    'category_id': 3,
+                    'name': 'Soil Health',
+                    'description': 'Soil management, fertilization, and health improvement',
+                    'is_agricultural_specific': True
+                },
+                {
+                    'category_id': 4,
+                    'name': 'Harvesting and Post-Harvesting',
+                    'description': 'Harvesting techniques and post-harvest handling',
+                    'is_agricultural_specific': True
+                },
+                {
+                    'category_id': 5,
+                    'name': 'Agricultural Technology',
+                    'description': 'Modern farming technologies and innovations',
+                    'is_agricultural_specific': True
+                }
+            ]
             
-            if user_count == 0:
-                print("🆕 Creating initial data...")
-                from server.database import create_initial_data
-                create_initial_data()
-                print("✅ Initial data created")
+            created_count = 0
+            for cat_data in default_categories:
+                # Check if category exists
+                existing_category = Category.query.filter_by(category_id=cat_data['category_id']).first()
+                
+                if not existing_category:
+                    # Create new category
+                    new_category = Category(**cat_data)
+                    db.session.add(new_category)
+                    created_count += 1
+                    print(f"  ➕ Created category: {cat_data['name']}")
+                else:
+                    print(f"  ✅ Category already exists: {cat_data['name']}")
+            
+            # Commit all changes
+            db.session.commit()
+            print(f"✅ Categories initialized successfully! Created {created_count} new categories.")
+            
+            # Create upload directories
+            print("📁 Creating upload directories...")
+            upload_folder = app.config.get('UPLOAD_FOLDER')
+            if upload_folder:
+                os.makedirs(upload_folder, exist_ok=True)
+                os.makedirs(os.path.join(upload_folder, 'images'), exist_ok=True)
+                print("✅ Upload directories created successfully!")
             
             print("🎉 Database initialization completed successfully!")
-            return True
-                
+            
     except Exception as e:
-        print(f"❌ Error during database initialization: {str(e)}")
-        print(f"Error type: {type(e).__name__}")
-        
-        # Print more detailed error information
+        print(f"❌ Error during database initialization: {e}")
         import traceback
-        print("📋 Full error traceback:")
         traceback.print_exc()
-        
-        return False
+        sys.exit(1)
 
 if __name__ == "__main__":
-    success = main()
-    print("=" * 60)
-    if success:
-        print("✅ Database initialization completed successfully!")
-        sys.exit(0)
-    else:
-        print("❌ Database initialization failed!")
-        # Don't exit with error code to prevent deployment failure
-        # The app should still start even if initial data creation fails
-        sys.exit(0)
+    main()

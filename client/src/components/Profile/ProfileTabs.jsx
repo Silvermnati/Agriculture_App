@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { User, Edit, Settings, Shield, Award, AlertCircle } from 'lucide-react';
 import './ProfileTabs.css';
 
@@ -9,6 +9,10 @@ const ProfileTabs = ({
   isExpert, 
   hasUnsavedChanges = false 
 }) => {
+  const tabRefs = useRef({});
+  const indicatorRef = useRef(null);
+  const [indicatorStyle, setIndicatorStyle] = useState({});
+
   const tabs = [
     {
       id: 'overview',
@@ -48,6 +52,17 @@ const ProfileTabs = ({
     });
   }
 
+  useEffect(() => {
+    const activeTabElement = tabRefs.current[activeTab];
+    if (activeTabElement && indicatorRef.current) {
+      const { offsetLeft, clientWidth } = activeTabElement;
+      setIndicatorStyle({
+        left: `${offsetLeft}px`,
+        width: `${clientWidth}px`,
+      });
+    }
+  }, [activeTab, tabs]);
+
   const handleTabClick = (tabId) => {
     if (tabId === activeTab) return;
     onTabChange(tabId);
@@ -67,6 +82,7 @@ const ProfileTabs = ({
           {tabs.map((tab) => (
             <button
               key={tab.id}
+              ref={(el) => (tabRefs.current[tab.id] = el)}
               role="tab"
               aria-selected={activeTab === tab.id}
               aria-controls={`${tab.id}-panel`}
@@ -95,21 +111,12 @@ const ProfileTabs = ({
                 )}
               </div>
               
-              {/* Mobile description */}
-              <div className="profile-tab-description">
-                {tab.description}
-              </div>
+              {/* Mobile description removed as per new design */}
             </button>
           ))}
         </div>
         
-        {/* Tab indicator */}
-        <div 
-          className="profile-tabs-indicator"
-          style={{
-            transform: `translateX(${tabs.findIndex(tab => tab.id === activeTab) * 100}%)`
-          }}
-        />
+        
       </div>
       
       {/* Mobile tab selector */}

@@ -4,8 +4,8 @@ import PropTypes from 'prop-types';
 import './posts.css';
 import 'react-quill/dist/quill.snow.css';
 
-const PostForm = ({ onSubmit, isLoading = false, initialData = null, isEdit = false }) => {
-    const [formData, setFormData] = useState(initialData || {
+const PostForm = ({ onSubmit, isLoading = false, initialData = null, isEdit = false, onSuccess = null }) => {
+    const initialFormState = {
         title: '',
         content: '',
         excerpt: '',
@@ -15,18 +15,21 @@ const PostForm = ({ onSubmit, isLoading = false, initialData = null, isEdit = fa
         season_relevance: '',
         featured_image: null,
         status: 'draft'
-    });
+    };
+    
+    const [formData, setFormData] = useState(initialData || initialFormState);
     const [showPreview, setShowPreview] = useState(false);
     const [errors, setErrors] = useState({});
+    const [resetTrigger, setResetTrigger] = useState(0);
     const quillRef = useRef(null);
 
-    const categories = [
+    const [categories, setCategories] = useState([
         { id: 1, name: 'Crop Management' },
         { id: 2, name: 'Pest and Disease Control' },
         { id: 3, name: 'Soil Health' },
         { id: 4, name: 'Harvesting and Post-Harvesting' },
         { id: 5, name: 'Agricultural Technology' },
-    ];
+    ]);
 
     const validateForm = () => {
         const newErrors = {};
@@ -125,7 +128,27 @@ const PostForm = ({ onSubmit, isLoading = false, initialData = null, isEdit = fa
         }));
     };
 
-    const handleSubmit = e => {
+    const resetForm = () => {
+        setFormData(initialFormState);
+        setErrors({});
+        setShowPreview(false);
+        
+        // Reset file input
+        const fileInput = document.getElementById('featured_image');
+        if (fileInput) {
+            fileInput.value = '';
+        }
+        
+        // Reset ReactQuill editor
+        if (quillRef.current) {
+            quillRef.current.getEditor().setText('');
+        }
+        
+        // Trigger FileUpload component reset
+        setResetTrigger(prev => prev + 1);
+    };
+
+    const handleSubmit = async e => {
         e.preventDefault();
         
         if (!validateForm()) {
@@ -139,7 +162,41 @@ const PostForm = ({ onSubmit, isLoading = false, initialData = null, isEdit = fa
             applicable_locations: Array.isArray(formData.applicable_locations) ? formData.applicable_locations : []
         };
         
-        onSubmit(submissionData);
+        console.log('Form submission data:', submissionData);
+        
+        const finalSubmissionData = new FormData();
+
+        for (const key in submissionData) {
+            if (submissionData[key] !== null && submissionData[key] !== undefined) {
+                if (Array.isArray(submissionData[key])) {
+                    // Send arrays as JSON strings to avoid backend parsing issues
+                    finalSubmissionData.append(key, JSON.stringify(submissionData[key]));
+                    console.log(`Added array as JSON: ${key} = ${JSON.stringify(submissionData[key])}`);
+                } else {
+                    finalSubmissionData.append(key, submissionData[key]);
+                    console.log(`Added field: ${key} = ${submissionData[key]}`);
+                }
+            }
+        }
+        
+        // Log FormData contents for debugging
+        console.log('FormData contents:');
+        for (let [key, value] of finalSubmissionData.entries()) {
+            console.log(`${key}: ${value}`);
+        }
+        
+        try {
+            await onSubmit(finalSubmissionData);
+            
+            // Reset form only if not in edit mode and onSuccess callback is provided
+            if (!isEdit && onSuccess) {
+                resetForm();
+                onSuccess();
+            }
+        } catch (error) {
+            // Don't reset form on error so user can fix issues
+            console.error('Form submission error:', error);
+        }
     };
     
     const PostPreview = useMemo(() => (
@@ -162,32 +219,30 @@ const PostForm = ({ onSubmit, isLoading = false, initialData = null, isEdit = fa
     ), [formData.title, formData.excerpt, formData.content, formData.related_crops, formData.applicable_locations]);
 
     return (
-        <div className="post-form-container">
-            <div className="form-preview-toggle">
-                <button 
-                    type="button" 
-                    onClick={() => setShowPreview(false)} 
-                    disabled={!showPreview}
-                    className={!showPreview ? 'active' : ''}
-                >
-                    Edit Form
-                </button>
-                <button 
-                    type="button" 
-                    onClick={() => setShowPreview(true)} 
-                    disabled={showPreview}
-                    className={showPreview ? 'active' : ''}
-                >
-                    Show Preview
-                </button>
-            </div>
+        <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
+      <div className="flex justify-center mb-6">
+        <button 
+          type="button" 
+          onClick={() => setShowPreview(false)} 
+          className={`px-6 py-2 rounded-l-lg text-lg font-semibold transition-colors duration-200 ${!showPreview ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+        >
+          Edit Form
+        </button>
+        <button 
+          type="button" 
+          onClick={() => setShowPreview(true)} 
+          className={`px-6 py-2 rounded-r-lg text-lg font-semibold transition-colors duration-200 ${showPreview ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+        >
+          Show Preview
+        </button>
+      </div>
 
             {showPreview ? (
                 PostPreview
             ) : (
-                <form className="post-form" onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label htmlFor="title">Post Title *</label>
+                <form className="space-y-6" onSubmit={handleSubmit}>
+                    <div className="mb-4">
+                        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">Post Title <span className="text-red-500">*</span></label>
                         <input 
                             id="title" 
                             type="text" 
@@ -195,14 +250,14 @@ const PostForm = ({ onSubmit, isLoading = false, initialData = null, isEdit = fa
                             placeholder="A catchy and descriptive title" 
                             value={formData.title} 
                             onChange={handleChange} 
-                            className={errors.title ? 'error' : ''}
+                            className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${errors.title ? 'border-red-500' : ''}`}
                             disabled={isLoading}
                         />
-                        {errors.title && <span className="error-message">{errors.title}</span>}
+                        {errors.title && <span className="text-red-500 text-sm mt-1">{errors.title}</span>}
                     </div>
 
-                    <div className="form-group">
-                        <label htmlFor="content">Full Content *</label>
+                    <div className="mb-4">
+                        <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-1">Full Content <span className="text-red-500">*</span></label>
                         <ReactQuill 
                             ref={quillRef} 
                             id="content" 
@@ -210,32 +265,33 @@ const PostForm = ({ onSubmit, isLoading = false, initialData = null, isEdit = fa
                             value={formData.content} 
                             onChange={handleContentChange}
                             readOnly={isLoading}
+                            className={`${errors.content ? 'border border-red-500 rounded-md' : ''}`}
                         />
-                        {errors.content && <span className="error-message">{errors.content}</span>}
+                        {errors.content && <span className="text-red-500 text-sm mt-1">{errors.content}</span>}
                     </div>
 
-                    <div className="form-group">
-                        <label htmlFor="excerpt">Excerpt *</label>
+                    <div className="mb-4">
+                        <label htmlFor="excerpt" className="block text-sm font-medium text-gray-700 mb-1">Excerpt <span className="text-red-500">*</span></label>
                         <textarea 
                             id="excerpt" 
                             name="excerpt" 
                             placeholder="A short summary to appear in post previews" 
                             value={formData.excerpt} 
                             onChange={handleChange} 
-                            className={errors.excerpt ? 'error' : ''}
+                            className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${errors.excerpt ? 'border-red-500' : ''}`}
                             disabled={isLoading}
                         />
-                        {errors.excerpt && <span className="error-message">{errors.excerpt}</span>}
+                        {errors.excerpt && <span className="text-red-500 text-sm mt-1">{errors.excerpt}</span>}
                     </div>
 
-                    <div className="form-group">
-                        <label htmlFor="category_id">Category *</label>
+                    <div className="mb-4">
+                        <label htmlFor="category_id" className="block text-sm font-medium text-gray-700 mb-1">Category <span className="text-red-500">*</span></label>
                         <select 
                             id="category_id" 
                             name="category_id" 
                             value={formData.category_id} 
                             onChange={handleChange}
-                            className={errors.category_id ? 'error' : ''}
+                            className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${errors.category_id ? 'border-red-500' : ''}`}
                             disabled={isLoading}
                         >
                             <option value="">Select category</option>
@@ -243,37 +299,39 @@ const PostForm = ({ onSubmit, isLoading = false, initialData = null, isEdit = fa
                                 <option key={category.id} value={category.id}>{category.name}</option>
                             ))}
                         </select>
-                        {errors.category_id && <span className="error-message">{errors.category_id}</span>}
+                        {errors.category_id && <span className="text-red-500 text-sm mt-1">{errors.category_id}</span>}
                     </div>
 
-                    <div className="form-group">
-                        <label htmlFor="related_crops">Related Crops</label>
+                    <div className="mb-4">
+                        <label htmlFor="related_crops" className="block text-sm font-medium text-gray-700 mb-1">Related Crops</label>
                         <input 
                             id="related_crops" 
                             type="text" 
                             placeholder="e.g., Corn, Wheat, Soybeans" 
                             value={Array.isArray(formData.related_crops) ? formData.related_crops.join(', ') : ''} 
                             onChange={e => handleArrayChange('related_crops', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                             disabled={isLoading}
                         />
-                        <small>Separate multiple crops with commas</small>
+                        <small className="text-gray-500 text-sm mt-1">Separate multiple crops with commas</small>
                     </div>
 
-                    <div className="form-group">
-                        <label htmlFor="applicable_locations">Applicable Locations</label>
+                    <div className="mb-4">
+                        <label htmlFor="applicable_locations" className="block text-sm font-medium text-gray-700 mb-1">Applicable Locations</label>
                         <input 
                             id="applicable_locations" 
                             type="text" 
                             placeholder="e.g., Nairobi, Rift Valley" 
                             value={Array.isArray(formData.applicable_locations) ? formData.applicable_locations.join(', ') : ''} 
                             onChange={e => handleArrayChange('applicable_locations', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                             disabled={isLoading}
                         />
-                        <small>Separate multiple locations with commas</small>
+                        <small className="text-gray-500 text-sm mt-1">Separate multiple locations with commas</small>
                     </div>
 
-                    <div className="form-group">
-                        <label htmlFor="season_relevance">Season Relevance</label>
+                    <div className="mb-4">
+                        <label htmlFor="season_relevance" className="block text-sm font-medium text-gray-700 mb-1">Season Relevance</label>
                         <input 
                             id="season_relevance" 
                             type="text" 
@@ -281,30 +339,39 @@ const PostForm = ({ onSubmit, isLoading = false, initialData = null, isEdit = fa
                             placeholder="e.g., Spring, Dry Season" 
                             value={formData.season_relevance} 
                             onChange={handleChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                             disabled={isLoading}
                         />
                     </div>
 
-                    <div className="form-group">
-                        <label htmlFor="featured_image">Featured Image</label>
+                    <div className="mb-4">
+                        <label htmlFor="featured_image" className="block text-sm font-medium text-gray-700 mb-1">Featured Image</label>
                         <input 
                             id="featured_image" 
+                            key={resetTrigger} // Force re-render when form is reset
                             type="file" 
                             accept="image/jpeg,image/jpg,image/png,image/gif"
                             onChange={handleFileChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
                             disabled={isLoading}
                         />
-                        {errors.featured_image && <span className="error-message">{errors.featured_image}</span>}
-                        <small>Max file size: 5MB. Supported formats: JPEG, PNG, GIF</small>
+                        {errors.featured_image && <span className="text-red-500 text-sm mt-1">{errors.featured_image}</span>}
+                        <small className="text-gray-500 text-sm mt-1">Max file size: 5MB. Supported formats: JPEG, PNG, GIF</small>
+                        {formData.featured_image && (
+                            <div className="mt-2 text-sm text-green-600">
+                                Selected: {formData.featured_image.name}
+                            </div>
+                        )}
                     </div>
 
-                    <div className="form-group">
-                        <label htmlFor="status">Status</label>
+                    <div className="mb-4">
+                        <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Status</label>
                         <select 
                             id="status" 
                             name="status" 
                             value={formData.status} 
                             onChange={handleChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                             disabled={isLoading}
                         >
                             <option value="draft">Save as Draft</option>
@@ -312,13 +379,23 @@ const PostForm = ({ onSubmit, isLoading = false, initialData = null, isEdit = fa
                         </select>
                     </div>
 
-                    <button 
-                        type="submit" 
-                        className="submit-button"
-                        disabled={isLoading}
-                    >
-                        {isLoading ? 'Saving...' : 'Save Post'}
-                    </button>
+                    <div className="flex space-x-3">
+                        <button 
+                            type="button"
+                            onClick={resetForm}
+                            className="flex-1 py-3 px-4 bg-gray-500 text-white font-semibold rounded-md hover:bg-gray-600 transition-colors duration-200"
+                            disabled={isLoading}
+                        >
+                            Reset Form
+                        </button>
+                        <button 
+                            type="submit" 
+                            className="flex-1 py-3 px-4 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors duration-200"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? 'Saving...' : 'Save Post'}
+                        </button>
+                    </div>
                 </form>
             )}
         </div>

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Star, MapPin, MessageSquare, UserPlus } from "lucide-react";
 import ConsultationBooking from "./ConsultationBooking";
+import Image from '../common/Image/Image';
 
 const ExpertCard = ({ expert, onFollow, onMessage, isFollowing }) => {
   const [showBookingModal, setShowBookingModal] = useState(false);
@@ -29,10 +30,11 @@ const ExpertCard = ({ expert, onFollow, onMessage, isFollowing }) => {
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 flex flex-col items-center text-center">
-      <img
+      <Image
         src={avatar_url}
-        alt={name}
+        alt={name || title || 'Expert profile picture'}
         className="w-24 h-24 rounded-full object-cover mb-4"
+        fallbackType="expert"
       />
       <h3 className="text-xl font-bold text-gray-900">{name}</h3>
       <p className="text-green-700 font-medium mb-2">{title}</p>

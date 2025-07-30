@@ -16,7 +16,7 @@ from server.utils.validators import validate_agricultural_data, sanitize_html_co
 from server.utils.error_handlers import create_error_response, create_success_response
 from server.utils.rate_limiter import rate_limit_moderate, rate_limit_lenient
 
-def get_posts():
+def get_posts(current_user=None):
     """
     Get paginated posts with agricultural filters.
     
@@ -149,6 +149,17 @@ def get_posts():
             comment_count=counts.get('comment_count', 0),
             like_count=counts.get('like_count', 0)
         )
+        
+        # Add is_following status for the post author
+        if current_user and post.author:
+            from server.services.follow_service import follow_service
+            is_following = follow_service.is_following(
+                follower_id=str(current_user.user_id),
+                following_id=str(post.author.user_id)
+            )
+            if post_dict['author']:
+                post_dict['author']['is_following'] = is_following
+        
         posts.append(post_dict)
     
     return create_success_response(
@@ -192,14 +203,52 @@ def create_post(current_user):
     if not data:
         return create_error_response('INVALID_REQUEST', 'Request body is required')
     
-    # Parse JSON arrays from form data
+    # Parse arrays from form data (handle both JSON and array format)
     if not request.is_json:
         try:
-            data['related_crops'] = json.loads(data.get('related_crops', '[]'))
-            data['applicable_locations'] = json.loads(data.get('applicable_locations', '[]'))
-            data['tags'] = json.loads(data.get('tags', '[]'))
-        except json.JSONDecodeError:
-            return create_error_response('INVALID_JSON', 'Invalid JSON in array fields')
+            # Handle related_crops array
+            if 'related_crops[]' in request.form:
+                data['related_crops'] = request.form.getlist('related_crops[]')
+            elif 'related_crops' in data and isinstance(data['related_crops'], str):
+                try:
+                    data['related_crops'] = json.loads(data.get('related_crops', '[]'))
+                except json.JSONDecodeError:
+                    # If it's not valid JSON, treat as empty array
+                    data['related_crops'] = []
+            else:
+                data['related_crops'] = data.get('related_crops', [])
+            
+            # Handle applicable_locations array
+            if 'applicable_locations[]' in request.form:
+                data['applicable_locations'] = request.form.getlist('applicable_locations[]')
+            elif 'applicable_locations' in data and isinstance(data['applicable_locations'], str):
+                try:
+                    data['applicable_locations'] = json.loads(data.get('applicable_locations', '[]'))
+                except json.JSONDecodeError:
+                    # If it's not valid JSON, treat as empty array
+                    data['applicable_locations'] = []
+            else:
+                data['applicable_locations'] = data.get('applicable_locations', [])
+            
+            # Handle tags array
+            if 'tags[]' in request.form:
+                data['tags'] = request.form.getlist('tags[]')
+            elif 'tags' in data and isinstance(data['tags'], str):
+                try:
+                    data['tags'] = json.loads(data.get('tags', '[]'))
+                except json.JSONDecodeError:
+                    # If it's not valid JSON, treat as empty array
+                    data['tags'] = []
+            else:
+                data['tags'] = data.get('tags', [])
+            
+            # Debug logging
+            current_app.logger.info(f"Parsed form data: title={data.get('title')}, content_length={len(data.get('content', ''))}, category_id={data.get('category_id')}")
+            current_app.logger.info(f"Arrays: related_crops={data.get('related_crops')}, applicable_locations={data.get('applicable_locations')}")
+                
+        except Exception as e:
+            current_app.logger.error(f"Error parsing form data: {str(e)}")
+            return create_error_response('FORM_PARSING_ERROR', f'Error parsing form data: {str(e)}')
     
     # Validate article data
     validation_result = validate_agricultural_data(data, 'article')
@@ -214,14 +263,15 @@ def create_post(current_user):
     # Handle featured image upload
     featured_image_url = None
     if featured_image:
-        filename = secure_filename(featured_image.filename)
-        if filename != '':
-            allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-            if '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions:
-                unique_filename = str(uuid.uuid4()) + '_' + filename
-                featured_image_url = f"uploads/images/{unique_filename}"
-            else:
+        from server.utils.file_upload import save_file
+        try:
+            # Save the file and get the URL path
+            featured_image_url = save_file(featured_image, 'images')
+            if not featured_image_url:
                 return create_error_response('INVALID_FILE_TYPE', 'Invalid file type. Allowed types are png, jpg, jpeg, gif, webp.')
+        except Exception as e:
+            current_app.logger.error(f"Error uploading featured image: {str(e)}")
+            return create_error_response('UPLOAD_ERROR', 'Failed to upload featured image')
     
     # Sanitize HTML content
     content = data.get('content', '')
@@ -273,6 +323,23 @@ def create_post(current_user):
     
     db.session.commit()
     
+    # Notify followers if post is published
+    if post.status == 'published':
+        try:
+            from server.services.follow_service import follow_service
+            follow_service.notify_followers(
+                user_id=str(current_user.user_id),
+                event_type='new_post',
+                event_data={
+                    'post_id': str(post.post_id),
+                    'title': post.title,
+                    'excerpt': post.excerpt
+                }
+            )
+        except Exception as e:
+            current_app.logger.error(f"Error notifying followers: {str(e)}")
+            # Don't fail the post creation if notification fails
+    
     return create_success_response(
         data={'post': post.to_dict()},
         message='Post created successfully',
@@ -280,55 +347,79 @@ def create_post(current_user):
     )
 
 
-def get_post(post_id):
+def get_post(post_id, current_user=None):
     """
     Get a single post with full details, optimized to prevent N+1 queries.
     """
-    # --- Performance Fix: Eager load related data in a single query ---
-    post = Post.query.options(
-        joinedload(Post.author),
-        joinedload(Post.category),
-        joinedload(Post.tags)
-    ).filter_by(post_id=post_id).first()
-
-    if not post:
-        return create_error_response('POST_NOT_FOUND', 'Post not found', status_code=404)
-
-    # Only increment view count for published posts
-    if post.status == 'published':
-        post.view_count += 1
-        db.session.commit()
-
-    # --- Performance Fix: Fetch all comments and build tree in memory ---
-    all_comments = Comment.query.options(
-        joinedload(Comment.user)
-    ).filter_by(post_id=post_id).order_by(Comment.created_at.asc()).all()
-
-    comment_map = {comment.comment_id: comment.to_dict(include_replies=False) for comment in all_comments}
+    try:
+        # Convert string post_id to UUID
+        if isinstance(post_id, str):
+            post_id = uuid.UUID(post_id)
+    except ValueError:
+        return create_error_response('INVALID_POST_ID', 'Invalid post ID format', status_code=400)
     
-    # Initialize replies list for each comment
-    for comment_data in comment_map.values():
-        comment_data['replies'] = []
+    try:
+        # --- Performance Fix: Eager load related data in a single query ---
+        post = Post.query.options(
+            joinedload(Post.author),
+            joinedload(Post.category),
+            joinedload(Post.tags)
+        ).filter_by(post_id=post_id).first()
 
-    top_level_comments = []
-    for comment in all_comments:
-        comment_data = comment_map[comment.comment_id]
-        if comment.parent_comment_id:
-            parent = comment_map.get(comment.parent_comment_id)
-            if parent:
-                parent['replies'].append(comment_data)
-        else:
-            top_level_comments.append(comment_data)
+        if not post:
+            return create_error_response('POST_NOT_FOUND', 'Post not found', status_code=404)
 
-    # Get like count
-    like_count = PostLike.query.filter_by(post_id=post_id).count()
+        # Only increment view count for published posts
+        if post.status == 'published':
+            post.view_count += 1
+            db.session.commit()
 
-    # Combine all data
-    post_data = post.to_dict(include_content=True)
-    post_data['comments'] = top_level_comments
-    post_data['like_count'] = like_count
+        # --- Performance Fix: Fetch all comments and build tree in memory ---
+        all_comments = Comment.query.options(
+            joinedload(Comment.user)
+        ).filter_by(post_id=post_id).order_by(Comment.created_at.asc()).all()
 
-    return create_success_response(data=post_data)
+        comment_map = {comment.comment_id: comment.to_dict(include_replies=False) for comment in all_comments}
+        
+        # Initialize replies list for each comment
+        for comment_data in comment_map.values():
+            comment_data['replies'] = []
+
+        top_level_comments = []
+        for comment in all_comments:
+            comment_data = comment_map[comment.comment_id]
+            if comment.parent_comment_id:
+                parent = comment_map.get(comment.parent_comment_id)
+                if parent:
+                    parent['replies'].append(comment_data)
+            else:
+                top_level_comments.append(comment_data)
+
+        # Get like count
+        like_count = PostLike.query.filter_by(post_id=post_id).count()
+
+        # Combine all data
+        post_data = post.to_dict(include_content=True)
+        post_data['comments'] = top_level_comments
+        post_data['like_count'] = like_count
+        
+        # Add is_following status for the post author
+        if current_user and post.author:
+            from server.services.follow_service import follow_service
+            is_following = follow_service.is_following(
+                follower_id=str(current_user.user_id),
+                following_id=str(post.author.user_id)
+            )
+            if post_data['author']:
+                post_data['author']['is_following'] = is_following
+
+        return create_success_response(data=post_data)
+        
+    except Exception as e:
+        import traceback
+        current_app.logger.error(f"Error fetching post {post_id}: {str(e)}")
+        current_app.logger.error(f"Traceback: {traceback.format_exc()}")
+        return create_error_response('SERVER_ERROR', f'An error occurred while fetching the post: {str(e)}', status_code=500)
 
 
 @token_required
@@ -344,6 +435,12 @@ def update_post(current_user, post_id, resource=None):
         ...other fields to update...
     }
     """
+    try:
+        # Convert string post_id to UUID
+        if isinstance(post_id, str):
+            post_id = uuid.UUID(post_id)
+    except ValueError:
+        return create_error_response('INVALID_POST_ID', 'Invalid post ID format', status_code=400)
     post = resource  # Provided by resource_owner_required decorator
     
     # Handle both JSON and form data
@@ -377,14 +474,16 @@ def update_post(current_user, post_id, resource=None):
     
     # Handle featured image update
     if featured_image:
-        filename = secure_filename(featured_image.filename)
-        if filename != '':
-            allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-            if '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions:
-                unique_filename = str(uuid.uuid4()) + '_' + filename
-                post.featured_image_url = f"uploads/images/{unique_filename}"
-            else:
+        from server.utils.file_upload import save_file
+        try:
+            # Save the file and get the URL path
+            new_image_url = save_file(featured_image, 'images')
+            if not new_image_url:
                 return create_error_response('INVALID_FILE_TYPE', 'Invalid file type. Allowed types are png, jpg, jpeg, gif, webp.')
+            post.featured_image_url = new_image_url
+        except Exception as e:
+            current_app.logger.error(f"Error uploading featured image: {str(e)}")
+            return create_error_response('UPLOAD_ERROR', 'Failed to upload featured image')
     
     # Sanitize and update content
     if 'content' in data:
@@ -451,6 +550,13 @@ def delete_post(current_user, post_id, resource=None):
     """
     Delete (archive) a post.
     """
+    try:
+        # Convert string post_id to UUID
+        if isinstance(post_id, str):
+            post_id = uuid.UUID(post_id)
+    except ValueError:
+        return create_error_response('INVALID_POST_ID', 'Invalid post ID format', status_code=400)
+    
     post = resource  # Provided by resource_owner_required decorator
     
     # Soft delete (archive) the post
@@ -461,87 +567,137 @@ def delete_post(current_user, post_id, resource=None):
     return create_success_response(message='Post archived successfully')
 
 
-def add_comment(post_id, current_user=None):
+def get_comments(post_id):
     """
-    Handle both GET and POST requests for comments.
-    GET: Retrieve comments for a post
-    POST: Add a new comment to a post
+    Get comments for a post (no authentication required).
     """
+    try:
+        # Convert string post_id to UUID
+        if isinstance(post_id, str):
+            post_id = uuid.UUID(post_id)
+    except ValueError:
+        return create_error_response('INVALID_POST_ID', 'Invalid post ID format', status_code=400)
+    
     post = Post.query.get(post_id)
     
     if not post:
         return create_error_response('POST_NOT_FOUND', 'Post not found', status_code=404)
     
-    if request.method == 'GET':
-        # Get comments for the post
-        all_comments = Comment.query.options(
-            joinedload(Comment.user)
-        ).filter_by(post_id=post_id).order_by(Comment.created_at.asc()).all()
+    # Get comments for the post
+    all_comments = Comment.query.options(
+        joinedload(Comment.user)
+    ).filter_by(post_id=post_id).order_by(Comment.created_at.asc()).all()
 
-        comment_map = {comment.comment_id: comment.to_dict(include_replies=False) for comment in all_comments}
-        
-        # Initialize replies list for each comment
-        for comment_data in comment_map.values():
-            comment_data['replies'] = []
-
-        top_level_comments = []
-        for comment in all_comments:
-            comment_data = comment_map[comment.comment_id]
-            if comment.parent_comment_id:
-                parent = comment_map.get(comment.parent_comment_id)
-                if parent:
-                    parent['replies'].append(comment_data)
-            else:
-                top_level_comments.append(comment_data)
-
-        return create_success_response(data=top_level_comments)
+    comment_map = {comment.comment_id: comment.to_dict(include_replies=False) for comment in all_comments}
     
-    elif request.method == 'POST':
-        # Add a new comment (requires authentication)
-        if not current_user:
-            return create_error_response('AUTHENTICATION_REQUIRED', 'Authentication required', status_code=401)
+    # Initialize replies list for each comment
+    for comment_data in comment_map.values():
+        comment_data['replies'] = []
+
+    top_level_comments = []
+    for comment in all_comments:
+        comment_data = comment_map[comment.comment_id]
+        if comment.parent_comment_id:
+            parent = comment_map.get(comment.parent_comment_id)
+            if parent:
+                parent['replies'].append(comment_data)
+        else:
+            top_level_comments.append(comment_data)
+
+    return create_success_response(data=top_level_comments)
+
+
+@token_required
+def add_comment(current_user, post_id):
+    """
+    Add a new comment to a post (requires authentication).
+    """
+    try:
+        # Convert string post_id to UUID
+        if isinstance(post_id, str):
+            post_id = uuid.UUID(post_id)
+    except ValueError:
+        return create_error_response('INVALID_POST_ID', 'Invalid post ID format', status_code=400)
+    
+    post = Post.query.get(post_id)
+    
+    if not post:
+        return create_error_response('POST_NOT_FOUND', 'Post not found', status_code=404)
+    
+    data = request.get_json()
+    
+    if not data or not data.get('content'):
+        return create_error_response('MISSING_CONTENT', 'Comment content is required')
+    
+    # Validate comment content length
+    content = data.get('content', '').strip()
+    if len(content) < 1:
+        return create_error_response('INVALID_CONTENT', 'Comment content cannot be empty')
+    if len(content) > 1000:
+        return create_error_response('CONTENT_TOO_LONG', 'Comment content cannot exceed 1000 characters')
+    
+    # Sanitize comment content
+    sanitized_content = sanitize_html_content(content)
+    
+    # Validate parent comment if provided
+    parent_comment_id = data.get('parent_comment_id')
+    if parent_comment_id:
+        parent_comment = Comment.query.filter_by(
+            comment_id=parent_comment_id, 
+            post_id=post_id
+        ).first()
+        if not parent_comment:
+            return create_error_response('INVALID_PARENT', 'Parent comment not found')
+    
+    # Create comment
+    comment = Comment(
+        post_id=post_id,
+        user_id=current_user.user_id,
+        content=sanitized_content,
+        parent_comment_id=parent_comment_id
+    )
+    
+    db.session.add(comment)
+    db.session.commit()
+    
+    # Send notification to post author (if not commenting on own post)
+    if str(post.author_id) != str(current_user.user_id):
+        try:
+            from server.models.notifications import Notification
+            from server.services.notification_service import notification_service
             
-        data = request.get_json()
-        
-        if not data or not data.get('content'):
-            return create_error_response('MISSING_CONTENT', 'Comment content is required')
-        
-        # Validate comment content length
-        content = data.get('content', '').strip()
-        if len(content) < 1:
-            return create_error_response('INVALID_CONTENT', 'Comment content cannot be empty')
-        if len(content) > 1000:
-            return create_error_response('CONTENT_TOO_LONG', 'Comment content cannot exceed 1000 characters')
-        
-        # Sanitize comment content
-        sanitized_content = sanitize_html_content(content)
-        
-        # Validate parent comment if provided
-        parent_comment_id = data.get('parent_comment_id')
-        if parent_comment_id:
-            parent_comment = Comment.query.filter_by(
-                comment_id=parent_comment_id, 
-                post_id=post_id
-            ).first()
-            if not parent_comment:
-                return create_error_response('INVALID_PARENT', 'Parent comment not found')
-        
-        # Create comment
-        comment = Comment(
-            post_id=post_id,
-            user_id=current_user.user_id,
-            content=sanitized_content,
-            parent_comment_id=parent_comment_id
-        )
-        
-        db.session.add(comment)
-        db.session.commit()
-        
-        return create_success_response(
-            data={'comment': comment.to_dict()},
-            message='Comment added successfully',
-            status_code=201
-        )
+            notification = Notification(
+                user_id=post.author_id,
+                type='new_comment',
+                title='New Comment',
+                message=f'{current_user.first_name} {current_user.last_name} commented on your post: {post.title}',
+                data={
+                    'comment_id': str(comment.comment_id),
+                    'post_id': str(post.post_id),
+                    'post_title': post.title,
+                    'commenter_id': str(current_user.user_id),
+                    'commenter_name': f'{current_user.first_name} {current_user.last_name}',
+                    'comment_content': content[:100] + '...' if len(content) > 100 else content
+                },
+                channels=['push', 'in_app']
+            )
+            
+            db.session.add(notification)
+            db.session.commit()
+            
+            # Send notification asynchronously
+            import asyncio
+            asyncio.run(notification_service.send_notification(notification))
+            
+        except Exception as e:
+            current_app.logger.error(f"Error sending comment notification: {str(e)}")
+            # Don't fail the comment creation if notification fails
+    
+    return create_success_response(
+        data={'comment': comment.to_dict()},
+        message='Comment added successfully',
+        status_code=201
+    )
 
 
 @token_required
@@ -550,6 +706,13 @@ def toggle_like(current_user, post_id):
     """
     Toggle like on a post.
     """
+    try:
+        # Convert string post_id to UUID
+        if isinstance(post_id, str):
+            post_id = uuid.UUID(post_id)
+    except ValueError:
+        return create_error_response('INVALID_POST_ID', 'Invalid post ID format', status_code=400)
+    
     post = Post.query.get(post_id)
     
     if not post:

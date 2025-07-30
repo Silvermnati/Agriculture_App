@@ -35,9 +35,17 @@ const EditProfileTab = ({ user }) => {
     farm_size_unit: user?.farm_size_unit || 'hectares',
     farming_experience: user?.farming_experience || '',
     farming_type: user?.farming_type || '',
-    primary_language: user?.primary_language || 'en'
+    crops_grown: user?.crops_grown || [], // Initialize crops_grown
+    primary_language: user?.primary_language || 'en',
+    social_links: user?.social_links || { // Initialize social_links
+      website: '',
+      linkedin: '',
+      twitter: '',
+      facebook: '',
+    },
   });
 
+  const [newCrop, setNewCrop] = useState(''); // Declare newCrop state
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
@@ -56,7 +64,14 @@ const EditProfileTab = ({ user }) => {
         farm_size_unit: user.farm_size_unit || 'hectares',
         farming_experience: user.farming_experience || '',
         farming_type: user.farming_type || '',
-        primary_language: user.primary_language || 'en'
+        crops_grown: user.crops_grown || [],
+        primary_language: user.primary_language || 'en',
+        social_links: user.social_links || {
+          website: '',
+          linkedin: '',
+          twitter: '',
+          facebook: '',
+        },
       };
       setFormData(initialData);
     }
