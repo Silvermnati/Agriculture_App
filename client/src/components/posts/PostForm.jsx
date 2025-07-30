@@ -139,16 +139,27 @@ const PostForm = ({ onSubmit, isLoading = false, initialData = null, isEdit = fa
             applicable_locations: Array.isArray(formData.applicable_locations) ? formData.applicable_locations : []
         };
         
+        console.log('Form submission data:', submissionData);
+        
         const finalSubmissionData = new FormData();
 
         for (const key in submissionData) {
             if (submissionData[key] !== null && submissionData[key] !== undefined) {
                 if (Array.isArray(submissionData[key])) {
-                    submissionData[key].forEach(item => finalSubmissionData.append(`${key}[]`, item));
+                    // Send arrays as JSON strings to avoid backend parsing issues
+                    finalSubmissionData.append(key, JSON.stringify(submissionData[key]));
+                    console.log(`Added array as JSON: ${key} = ${JSON.stringify(submissionData[key])}`);
                 } else {
                     finalSubmissionData.append(key, submissionData[key]);
+                    console.log(`Added field: ${key} = ${submissionData[key]}`);
                 }
             }
+        }
+        
+        // Log FormData contents for debugging
+        console.log('FormData contents:');
+        for (let [key, value] of finalSubmissionData.entries()) {
+            console.log(`${key}: ${value}`);
         }
         
         onSubmit(finalSubmissionData);

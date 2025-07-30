@@ -210,7 +210,11 @@ def create_post(current_user):
             if 'related_crops[]' in request.form:
                 data['related_crops'] = request.form.getlist('related_crops[]')
             elif 'related_crops' in data and isinstance(data['related_crops'], str):
-                data['related_crops'] = json.loads(data.get('related_crops', '[]'))
+                try:
+                    data['related_crops'] = json.loads(data.get('related_crops', '[]'))
+                except json.JSONDecodeError:
+                    # If it's not valid JSON, treat as empty array
+                    data['related_crops'] = []
             else:
                 data['related_crops'] = data.get('related_crops', [])
             
@@ -218,7 +222,11 @@ def create_post(current_user):
             if 'applicable_locations[]' in request.form:
                 data['applicable_locations'] = request.form.getlist('applicable_locations[]')
             elif 'applicable_locations' in data and isinstance(data['applicable_locations'], str):
-                data['applicable_locations'] = json.loads(data.get('applicable_locations', '[]'))
+                try:
+                    data['applicable_locations'] = json.loads(data.get('applicable_locations', '[]'))
+                except json.JSONDecodeError:
+                    # If it's not valid JSON, treat as empty array
+                    data['applicable_locations'] = []
             else:
                 data['applicable_locations'] = data.get('applicable_locations', [])
             
@@ -226,12 +234,21 @@ def create_post(current_user):
             if 'tags[]' in request.form:
                 data['tags'] = request.form.getlist('tags[]')
             elif 'tags' in data and isinstance(data['tags'], str):
-                data['tags'] = json.loads(data.get('tags', '[]'))
+                try:
+                    data['tags'] = json.loads(data.get('tags', '[]'))
+                except json.JSONDecodeError:
+                    # If it's not valid JSON, treat as empty array
+                    data['tags'] = []
             else:
                 data['tags'] = data.get('tags', [])
+            
+            # Debug logging
+            current_app.logger.info(f"Parsed form data: title={data.get('title')}, content_length={len(data.get('content', ''))}, category_id={data.get('category_id')}")
+            current_app.logger.info(f"Arrays: related_crops={data.get('related_crops')}, applicable_locations={data.get('applicable_locations')}")
                 
-        except json.JSONDecodeError:
-            return create_error_response('INVALID_JSON', 'Invalid JSON in array fields')
+        except Exception as e:
+            current_app.logger.error(f"Error parsing form data: {str(e)}")
+            return create_error_response('FORM_PARSING_ERROR', f'Error parsing form data: {str(e)}')
     
     # Validate article data
     validation_result = validate_agricultural_data(data, 'article')
