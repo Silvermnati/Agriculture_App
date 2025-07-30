@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import CommunityDetail from '../../components/communities/CommunityDetail';
 import CommunityPost from '../../components/communities/CommunityPost';
 import LoadingSpinner from '../../components/common/LoadingSpinner/LoadingSpinner';
-import { getCommunity, getCommunityPosts, likeCommunityPost, commentOnCommunityPost, reset } from '../../store/slices/communitiesSlice';
+import { getCommunity, getCommunityPosts, likeCommunityPost, commentOnCommunityPost, deleteCommunityPost, reset } from '../../store/slices/communitiesSlice';
 
 const CommunityDetailPage = () => {
   const { communityId } = useParams();
@@ -77,10 +77,16 @@ const CommunityDetailPage = () => {
     alert(`Editing post ${postId}`);
   };
 
-  const handleDeletePost = (postId) => {
-    // TODO: Implement delete functionality
-    console.log(`Delete post ${postId}`);
-    alert(`Deleting post ${postId}`);
+  const handleDeletePost = async (postId) => {
+    if (window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+      try {
+        await dispatch(deleteCommunityPost({ communityId, postId })).unwrap();
+        // You can add a toast notification here for success
+      } catch (error) {
+        console.error('Failed to delete post:', error);
+        // You can add a toast notification here for the error
+      }
+    }
   };
 
   const posts = communityPosts[communityId] || [];

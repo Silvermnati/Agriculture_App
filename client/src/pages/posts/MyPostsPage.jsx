@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Plus, Filter } from 'lucide-react';
-import { getPosts } from '../../store/slices/postsSlice';
+import { getPosts, deletePost, reset } from '../../store/slices/postsSlice';
 import PostList from '../../components/posts/PostList';
 import ErrorMessage from '../../components/common/ErrorMessage/ErrorMessage';
 import './Posts.css';
@@ -18,6 +18,10 @@ const MyPostsPage = () => {
     if (isAuthenticated && user?.id) {
       dispatch(getPosts({ authorId: user.id }));
     }
+
+    return () => {
+      dispatch(reset());
+    };
   }, [dispatch, isAuthenticated, user?.id]);
 
   const { myPosts, filterCounts } = useMemo(() => {
@@ -37,6 +41,17 @@ const MyPostsPage = () => {
     return { myPosts: filteredPosts, filterCounts: counts };
   }, [posts, filter]);
 
+  const handleDeletePost = async (postId) => {
+    if (window.confirm('Are you sure you want to permanently delete this post?')) {
+      try {
+        await dispatch(deletePost(postId)).unwrap();
+        // You could show a success toast notification here
+      } catch (error) {
+        console.error('Failed to delete post:', error);
+        // You could show an error toast notification here
+      }
+    }
+  };
   if (!isAuthenticated) {
     return (
       <div className="my-posts-page">
@@ -104,6 +119,7 @@ const MyPostsPage = () => {
           posts={myPosts}
           isLoading={isLoading}
           showActions={true}
+          onDelete={handleDeletePost}
           emptyMessage={
             filter === 'all' 
               ? "You haven't created any posts yet" 

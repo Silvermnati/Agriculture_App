@@ -114,6 +114,20 @@ export const commentOnCommunityPost = createAsyncThunk(
   }
 );
 
+export const deleteCommunityPost = createAsyncThunk(
+  'communities/deleteCommunityPost',
+  async ({ communityId, postId }, thunkAPI) => {
+    try {
+      await communitiesAPI.deleteCommunityPost(communityId, postId);
+      return { communityId, postId };
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || 'Failed to delete post'
+      );
+    }
+  }
+);
+
 const initialState = {
   communities: [],
   currentCommunity: null,
@@ -247,24 +261,36 @@ export const communitiesSlice = createSlice({
       })
       // Like Community Post
       .addCase(likeCommunityPost.fulfilled, (state, action) => {
-        const { communityId, postId } = action.payload;
+        const { communityId, postId, liked, like_count } = action.payload;
         if (state.communityPosts[communityId]) {
-          const postIndex = state.communityPosts[communityId].findIndex(p => p.id === postId);
+          const postIndex = state.communityPosts[communityId].findIndex(p => (p.id || p.post_id) === postId);
           if (postIndex !== -1) {
             const post = state.communityPosts[communityId][postIndex];
-            post.userHasLiked = !post.userHasLiked;
-            post.likes += post.userHasLiked ? 1 : -1;
+            // Use the direct response from the server to ensure UI consistency
+            post.user_has_liked = liked;
+            post.like_count = like_count;
           }
         }
       })
       // Comment on Community Post
       .addCase(commentOnCommunityPost.fulfilled, (state, action) => {
-        const { communityId, postId, comment } = action.payload;
+        const { communityId, postId } = action.payload;
         if (state.communityPosts[communityId]) {
-          const postIndex = state.communityPosts[communityId].findIndex(p => p.id === postId);
+          const postIndex = state.communityPosts[communityId].findIndex(p => (p.id || p.post_id) === postId);
           if (postIndex !== -1) {
-            state.communityPosts[communityId][postIndex].comments += 1;
+            // Simply increment the comment count
+            const post = state.communityPosts[communityId][postIndex];
+            post.comment_count = (post.comment_count || 0) + 1;
           }
+        }
+      })
+      // Delete Community Post
+      .addCase(deleteCommunityPost.fulfilled, (state, action) => {
+        const { communityId, postId } = action.payload;
+        if (state.communityPosts[communityId]) {
+          state.communityPosts[communityId] = state.communityPosts[communityId].filter(
+            p => (p.id || p.post_id) !== postId
+          );
         }
       });
   },
