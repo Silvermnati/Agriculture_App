@@ -1,99 +1,166 @@
 import React from 'react';
-import { useNavigate } from 'react-router';
-import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
+import { Eye, Calendar } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import PostActions from './PostActions';
+import PostInteraction from './PostInteraction';
+import Image from '../common/Image/Image';
+import FollowButton from '../common/FollowButton/FollowButton';
 import './posts.css';
 
-const PostCard = ({ post }) => {
-    const navigate = useNavigate();
+const PostCard = ({ post, showActions = true }) => {
+  const currentUser = useSelector(state => state.auth.user);
+  
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
 
-    const {
-        id,
-        title,
-        excerpt,
-        featured_image_url,
-        author,
-        category,
-        related_crops,
-        season_relevance,
-        view_count,
-        like_count,
-        comment_count,
-        published_at,
-        read_time
-    } = post;
+  const postId = post.id || post.post_id;
+  const isOwnPost = currentUser?.user_id === post.author?.user_id;
 
-    
-    const handleCardClick = () => {
-        navigate(`/posts/${id}`);
-    };
+  return (
+    <article className="post-card">
+      {/* Featured Image */}
+      <div className="post-card-image">
+        <Link to={`/posts/${postId}`}>
+          <Image 
+            src={post.featured_image_url} 
+            alt={post.title}
+            className="post-card-image-content"
+            fallbackType="post"
+            optimize={true}
+          />
+        </Link>
+      </div>
 
-    return (
-        <div className='post-card' onClick={handleCardClick}>
-            <img
-            src={featured_image_url || '/fallback.jpg'}
-            alt={title}
-            className='post-image'
-            />
-            <div className='post-content'>
-                <h3>{title}</h3>
-                <p>{excerpt}</p>
-                <div className='post-meta'>
-                    <div className='author-info'>
-                        <img src={author?.avatar_url || '/default-avatar.png'} alt={author?.name} className='avatar'/>
-
-                        <div>
-                            <span>{author?.name || 'Anonymous'}</span>
-                            <small>{author?.role}</small>
-                        </div>
-                    </div>
-                </div>
-                <div className='badges'>
-                    {related_crops && Array.isArray(related_crops) && related_crops.map(crop => (
-                        <span className='badge crop' key={crop}>{crop}</span>
-                    ))}
-                    {season_relevance && <span className='badge season'>{season_relevance}</span>}
-                    {post.applicable_locations && Array.isArray(post.applicable_locations) && post.applicable_locations.map(loc => (
-                        <span className='badge location' key={loc}>{loc}</span>
-                    ))}
-                </div>
-                <div className='post-stats'>
-                    <span title="Views">👁️ {view_count}</span>
-                    <span title="Likes">❤️ {like_count}</span>
-                    <span title="Comments">💬 {comment_count}</span>
-                    <span title="Read time">🕒 {read_time} min read</span>
-                </div>
-                <div className='post-footer'>
-                    <span className='category'>{category?.name}</span>
-                    <span className='date'>{new Date(published_at).toLocaleDateString()}</span>
-                </div>
-            </div>
+      <div className="post-card-content">
+        {/* Header with title and actions */}
+        <div className="post-card-header">
+          <div className="post-card-category">
+            {post.category?.name && (
+              <span className="category-badge">
+                {post.category.name}
+              </span>
+            )}
+          </div>
+          {showActions && <PostActions post={post} />}
         </div>
-    );
-};
 
-PostCard.propTypes = {
-    post: PropTypes.shape({
-        id: PropTypes.number.isRequired,
-        title: PropTypes.string.isRequired,
-        excerpt: PropTypes.string.isRequired,
-        featured_image_url: PropTypes.string,
-        author: PropTypes.shape({
-            name: PropTypes.string,
-            avatar_url: PropTypes.string,
-            role: PropTypes.string,
-        }),
-        category: PropTypes.shape({
-            name: PropTypes.string,
-        }),
-        related_crops: PropTypes.arrayOf(PropTypes.string),
-        season_relevance: PropTypes.string,
-        applicable_locations: PropTypes.arrayOf(PropTypes.string),
-        view_count: PropTypes.number,
-        like_count: PropTypes.number,
-        comment_count: PropTypes.number,
-        published_at: PropTypes.string.isRequired,
-        read_time: PropTypes.number,
-    }).isRequired,
+        {/* Title */}
+        <h2 className="post-card-title">
+          <Link to={`/posts/${postId}`}>
+            {post.title}
+          </Link>
+        </h2>
+
+        {/* Excerpt */}
+        {post.excerpt && (
+          <p className="post-card-excerpt">
+            {post.excerpt}
+          </p>
+        )}
+
+        {/* Agricultural Context */}
+        <div className="post-card-context">
+          {post.related_crops && post.related_crops.length > 0 && (
+            <div className="context-item">
+              <strong>Crops:</strong> {post.related_crops.slice(0, 3).join(', ')}
+              {post.related_crops.length > 3 && ` +${post.related_crops.length - 3} more`}
+            </div>
+          )}
+          
+          {post.applicable_locations && post.applicable_locations.length > 0 && (
+            <div className="context-item">
+              <strong>Locations:</strong> {post.applicable_locations.slice(0, 2).join(', ')}
+              {post.applicable_locations.length > 2 && ` +${post.applicable_locations.length - 2} more`}
+            </div>
+          )}
+          
+          {post.season_relevance && (
+            <div className="context-item">
+              <strong>Season:</strong> {post.season_relevance}
+            </div>
+          )}
+        </div>
+
+        {/* Tags */}
+        {post.tags && post.tags.length > 0 && (
+          <div className="post-card-tags">
+            {post.tags.slice(0, 4).map((tag, index) => (
+              <span key={index} className="tag">
+                {tag}
+              </span>
+            ))}
+            {post.tags.length > 4 && (
+              <span className="tag-more">+{post.tags.length - 4}</span>
+            )}
+          </div>
+        )}
+
+        {/* Footer with author, stats, and date */}
+        <div className="post-card-footer">
+          <div className="post-author-section">
+            <div className="post-author">
+              <Image 
+                src={post.author?.avatar_url} 
+                alt={post.author?.name || 'Anonymous'}
+                className="author-avatar"
+                fallbackType="avatar"
+                optimize={true}
+              />
+              <div className="author-info">
+                <span className="author-name">{post.author?.name || 'Anonymous'}</span>
+                {post.author?.role && (
+                  <span className="author-role">{post.author.role}</span>
+                )}
+              </div>
+            </div>
+            
+            {/* Follow Button for post author */}
+            {currentUser && !isOwnPost && post.author?.user_id && (
+              <div className="post-author-follow">
+                <FollowButton 
+                  userId={post.author.user_id}
+                  initialFollowState={post.author.is_following || false}
+                  showStats={false}
+                  size="small"
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="post-footer-right">
+            <div className="post-stats">
+              <PostInteraction post={post} />
+              <div className="stat-item">
+                <Eye size={16} />
+                <span>{post.view_count || 0}</span>
+              </div>
+            </div>
+
+            <div className="post-meta">
+              {post.published_at && (
+                <div className="meta-item">
+                  <Calendar size={14} />
+                  <span>{formatDate(post.published_at)}</span>
+                </div>
+              )}
+              {post.read_time && (
+                <div className="meta-item">
+                  <span>{post.read_time} min read</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
 };
 
 export default PostCard;

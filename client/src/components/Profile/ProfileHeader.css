@@ -1,0 +1,206 @@
+/* Profile Header Styles */
+.profile-header {
+  background: white;
+  padding: 2rem;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.profile-header-background {
+  /* Removed as per new design - no background image/gradient */
+  display: none;
+}
+
+.profile-header-content {
+  width: 100%;
+}
+
+.profile-header-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.profile-picture-section {
+  position: relative;
+  width: 120px; /* Fixed size for profile picture container */
+  height: 120px;
+}
+
+.profile-picture-edit-btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: #4CAF50; /* Green for edit button */
+  color: white;
+  border: 2px solid white;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.profile-picture-edit-btn:hover {
+  background: #2e7d32;
+}
+
+.profile-picture-edit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.profile-header-info {
+  color: #333;
+}
+
+.profile-name-section {
+  margin-bottom: 0.5rem;
+}
+
+.profile-name {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin: 0;
+  color: #212529;
+}
+
+.profile-role {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.role-badge {
+  background: #e9ecef;
+  color: #495057;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.role-badge.role-expert {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.role-badge.role-farmer {
+  background: #d4edda;
+  color: #155724;
+}
+
+.verified-badge {
+  background: #4CAF50;
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.profile-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  color: #6c757d;
+  font-size: 0.95rem;
+}
+
+.profile-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.profile-meta-item svg {
+  color: #4CAF50;
+}
+
+.profile-bio {
+  margin-top: 1.5rem;
+  color: #495057;
+  line-height: 1.6;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.profile-header-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+/* Stats Bars */
+.expert-stats-bar,
+.farmer-stats-bar {
+  display: flex;
+  justify-content: space-around;
+  padding: 1.5rem 0;
+  border-top: 1px solid #eee;
+  margin-top: 2rem;
+}
+
+.expert-stat,
+.farmer-stat {
+  text-align: center;
+  color: #495057;
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #212529;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .profile-header {
+    padding: 1.5rem;
+  }
+  .profile-name {
+    font-size: 1.8rem;
+  }
+  .profile-meta {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  .profile-header-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .profile-header-actions button {
+    width: 100%;
+  }
+  .expert-stats-bar,
+  .farmer-stats-bar {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .expert-stat,
+  .farmer-stat {
+    flex: 1 1 45%; /* Allow two columns on smaller screens */
+  }
+}

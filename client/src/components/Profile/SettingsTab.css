@@ -1,0 +1,196 @@
+/* Settings Tab Styles */
+.settings-tab {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.settings-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.settings-section {
+  background: white;
+  border: 1px solid #e2e8f0; /* Lighter border */
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); /* Softer shadow */
+}
+
+.settings-section-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: #f8fafc; /* Light background */
+  border-bottom: 1px solid #e2e8f0; /* Lighter border */
+}
+
+.settings-icon {
+  color: #4CAF50; /* Green icon color */
+  flex-shrink: 0;
+}
+
+.settings-section-header h3 {
+  font-size: 1.25rem; /* Slightly larger title */
+  font-weight: 600;
+  color: #334155; /* Darker grey for title */
+  margin: 0;
+}
+
+.settings-section-header p {
+  color: #64748b; /* Softer grey for description */
+  margin: 0.25rem 0 0 0;
+  font-size: 0.9rem; /* Slightly larger description */
+}
+
+.settings-options {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.setting-item.danger-zone {
+  border-top: 1px solid #fecaca; /* Red border for danger zone */
+  padding-top: 1.5rem;
+  margin-top: 1rem;
+}
+
+.setting-info {
+  flex: 1;
+}
+
+.setting-label {
+  font-weight: 500;
+  color: #334155; /* Darker grey for label */
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.setting-description {
+  color: #64748b; /* Softer grey for description */
+  font-size: 0.875rem;
+}
+
+.setting-select {
+  padding: 0.6rem 1rem; /* Adjusted padding */
+  border: 1px solid #ced4da; /* Lighter border */
+  border-radius: 8px; /* More rounded corners */
+  background: white;
+  min-width: 150px;
+  font-size: 0.95rem;
+  color: #495057;
+}
+
+.setting-select:focus {
+  outline: none;
+  border-color: #4CAF50; /* Green on focus */
+  box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25); /* Softer shadow */
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ced4da; /* Light grey for off state */
+  transition: 0.2s;
+  border-radius: 24px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.2s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: #4CAF50; /* Green for on state */
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(24px);
+}
+
+input:focus + .toggle-slider {
+  box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25); /* Green shadow on focus */
+}
+
+.settings-actions {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  padding: 1rem 2rem;
+  border-top: 1px solid #e2e8f0; /* Lighter border */
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin: 2rem -2rem -2rem -2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .settings-tab {
+    padding: 1rem;
+  }
+  
+  .settings-section-header {
+    padding: 1rem;
+  }
+  
+  .settings-options {
+    padding: 1rem;
+  }
+  
+  .setting-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .setting-select {
+    width: 100%;
+  }
+  
+  .settings-actions {
+    flex-direction: column-reverse;
+    padding: 1rem;
+    margin: 2rem -1rem -1rem -1rem;
+  }
+  
+  .settings-actions button {
+    width: 100%;
+  }
+}

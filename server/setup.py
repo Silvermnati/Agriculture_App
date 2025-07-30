@@ -1,29 +1,23 @@
-from setuptools import setup, find_packages
+from flask import Flask
+from flask_migrate import Migrate
+from server import create_app
+from server.database import db
 
-setup(
-    name="agricultural-super-app",
-    version="0.1",
-    packages=find_packages(),
-    include_package_data=True,
-    install_requires=[
-        "Flask",
-        "Flask-SQLAlchemy",
-        "Flask-Migrate",
-        "Flask-CORS",
-        "psycopg2-binary",
-        "python-dotenv",
-        "PyJWT",
-        "Werkzeug",
-        "SQLAlchemy",
-        "alembic",
-        "gunicorn",
-        "Pillow",
-        "email-validator",
-        "marshmallow",
-        "Flask-Bcrypt",
-        "python-slugify",
-        "requests",
-        "cloudinary",
-        "bleach",
-    ],
-)
+# Import all models to ensure they're included in migrations
+from server.models.user import User, UserExpertise, UserFollow
+from server.models.location import Country, StateProvince, Location
+from server.models.crop import Crop, Livestock, UserCrop
+from server.models.post import Category, Tag, Post, Comment, ArticlePostLike
+from server.models.community import Community, CommunityMember, CommunityPost, PostLike, PostComment
+from server.models.expert import ExpertProfile, Consultation, ExpertReview
+from server.models.article import Article
+
+# Create the Flask application
+app = create_app('production')
+
+# Initialize Flask-Migrate
+migrate = Migrate(app, db)
+
+if __name__ == '__main__':
+    # This script can be run to initialize the migrations directory
+    print("Flask-Migrate initialized. You can now run 'flask db init' to create the migrations directory.")

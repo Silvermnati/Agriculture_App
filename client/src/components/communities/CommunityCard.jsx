@@ -4,12 +4,23 @@ import { Users, MapPin, Lock, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const CommunityCard = ({ community, onJoin }) => {
+  // Safety check for community object and ID (backend uses community_id)
+  const communityId = community?.id || community?.community_id;
+  if (!community || !communityId) {
+    console.error('CommunityCard: Invalid community object or missing ID', community);
+    return (
+      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+        <p className="text-sm">Invalid community data</p>
+      </div>
+    );
+  }
+
   // Format member count to be more readable
   const formatMemberCount = (count) => {
     if (count >= 1000) {
       return `${(count / 1000).toFixed(1)}k`;
     }
-    return count;
+    return count || 0;
   };
 
   // Format date to be more readable
@@ -36,16 +47,16 @@ const CommunityCard = ({ community, onJoin }) => {
   const handleJoin = (e) => {
     e.preventDefault();
     if (onJoin) {
-      onJoin(community.id);
+      onJoin(communityId);
     } else {
-      console.log(`Join community ${community.id}`);
+      console.log(`Join community ${communityId}`);
       alert(`Joined community: ${community.name}`);
     }
   };
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-      <Link to={`/communities/${community.id}`} className="block">
+      <Link to={`/communities/${communityId}`} className="block">
         <div className="relative h-40">
           <img
             src={community.image_url || "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200"}

@@ -10,9 +10,18 @@ const CommunityList = ({
   selectedCrop = "",
 }) => {
   const filteredCommunities = communities.filter((community) => {
+    // Ensure community object exists and has required properties
+    if (!community || typeof community !== 'object') {
+      return false;
+    }
+
+    const communityName = community.name || '';
+    const communityDescription = community.description || '';
+    const searchTermLower = searchTerm.toLowerCase();
+
     const matchesSearch =
-      community.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      community.description.toLowerCase().includes(searchTerm.toLowerCase());
+      communityName.toLowerCase().includes(searchTermLower) ||
+      communityDescription.toLowerCase().includes(searchTermLower);
     
     const matchesType =
       !selectedType || community.community_type === selectedType;
@@ -20,7 +29,9 @@ const CommunityList = ({
     const matchesCrop =
       !selectedCrop ||
       (community.focus_crops && 
+       Array.isArray(community.focus_crops) &&
        community.focus_crops.some((crop) =>
+         crop && typeof crop === 'string' && 
          crop.toLowerCase().includes(selectedCrop.toLowerCase())
        ));
 
@@ -32,7 +43,7 @@ const CommunityList = ({
       <div className="bg-white rounded-lg shadow-md p-8 text-center">
         <h3 className="text-xl font-semibold text-gray-800 mb-2">No communities found</h3>
         <p className="text-gray-600 mb-6">
-          Try adjusting your search or filters to find what you're looking for.
+          Try adjusting your search or filters to find what you&apos;re looking for.
         </p>
         <button 
           className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"

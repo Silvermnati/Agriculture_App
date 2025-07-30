@@ -1,86 +1,213 @@
-// pages/Posts/PostsPage.jsx
 import React, { useEffect, useState } from 'react';
-import { mockCommunityPosts } from '../../utils/mockData';
-import PostList from 'components/posts/PostList';
-import PostFilters from 'components/posts/PostFilters';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
+import { Plus, Search, Filter } from 'lucide-react';
+import { getPosts, reset } from '../../store/slices/postsSlice';
+import PostList from '../../components/posts/PostList';
+import PostFilters from '../../components/posts/PostFilters';
+import LoadingSpinner from '../../components/common/LoadingSpinner/LoadingSpinner';
+import ErrorMessage from '../../components/common/ErrorMessage/ErrorMessage';
 import './Posts.css';
 
 const PostsPage = () => {
+  const dispatch = useDispatch();
+  const { user, isAuthenticated } = useSelector(state => state.auth);
+  const { posts, isLoading, isError, message, pagination } = useSelector(state => state.posts);
+  
   const [filters, setFilters] = useState({
-    page: 1,
-    per_page: 10,
+    search: '',
     category: '',
     crop: '',
     location: '',
     season: '',
-    search: '',
+    sort_by: 'date'
   });
-
-  const [filteredPosts, setFilteredPosts] = useState([]);
+  const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    // Simulate filtering and pagination with mock data
-    let tempPosts = [...mockCommunityPosts];
+    // Fetch posts with current filters and pagination
+    const params = {
+      page: currentPage,
+      per_page: 12,
+      ...filters
+    };
+    
+    // Remove empty filters
+    Object.keys(params).forEach(key => {
+      if (!params[key]) delete params[key];
+    });
+    
+    dispatch(getPosts(params));
+    
+    return () => {
+      dispatch(reset());
+    };
+  }, [dispatch, filters, currentPage]);
 
-    // Apply filters
-    if (filters.category) {
-      tempPosts = tempPosts.filter(post => post.category?.name === filters.category);
-    }
-    if (filters.crop) {
-      tempPosts = tempPosts.filter(post => post.crops?.includes(filters.crop));
-    }
-    if (filters.location) {
-      tempPosts = tempPosts.filter(post => post.location?.includes(filters.location));
-    }
-    if (filters.season) {
-      tempPosts = tempPosts.filter(post => post.season === filters.season);
-    }
-    if (filters.search) {
-      const searchTerm = filters.search.toLowerCase();
-      tempPosts = tempPosts.filter(post => 
-        post.title.toLowerCase().includes(searchTerm) ||
-        post.content.toLowerCase().includes(searchTerm)
+  const handleFilterChange = (newFilters) => {
+    setFilters(prev => ({ ...prev, ...newFilters }));
+    setCurrentPage(1); // Reset to first page when filters change
+  };
+
+  const handleSearchChange = (e) => {
+    const search = e.target.value;
+    setFilters(prev => ({ ...prev, search }));
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const renderPagination = () => {
+    if (!pagination || !pagination.pages || pagination.pages <= 1) return null;
+
+    const pages = [];
+    const currentPageNum = pagination.page || 1;
+    const totalPages = pagination.pages;
+
+    // Previous button
+    if (currentPageNum > 1) {
+      pages.push(
+        <button
+          key="prev"
+          onClick={() => handlePageChange(currentPageNum - 1)}
+          className="pagination-btn"
+        >
+          Previous
+        </button>
       );
     }
 
-    // Apply pagination
-    const startIndex = (filters.page - 1) * filters.per_page;
-    const endIndex = startIndex + filters.per_page;
-    const paginatedPosts = tempPosts.slice(startIndex, endIndex);
+    // Page numbers
+    for (let i = Math.max(1, currentPageNum - 2); i <= Math.min(totalPages, currentPageNum + 2); i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => handlePageChange(i)}
+          className={`pagination-btn ${i === currentPageNum ? 'active' : ''}`}
+        >
+          {i}
+        </button>
+      );
+    }
 
-    setFilteredPosts(paginatedPosts);
-  }, [filters]);
+    // Next button
+    if (currentPageNum < totalPages) {
+      pages.push(
+        <button
+          key="next"
+          onClick={() => handlePageChange(currentPageNum + 1)}
+          className="pagination-btn"
+        >
+          Next
+        </button>
+      );
+    }
 
-  const pagination = {
-    page: filters.page,
-    per_page: filters.per_page,
-    total_items: mockCommunityPosts.length,
-    total_pages: Math.ceil(mockCommunityPosts.length / filters.per_page),
-  };
-
-  const handleFilterChange = (newFilters) => {
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      ...newFilters,
-      page: 1, // Reset to first page on filter change
-    }));
-  };
-
-  const handlePageChange = (newPage) => {
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      page: newPage,
-    }));
+    return (
+      <div className="pagination">
+        {pages}
+      </div>
+    );
   };
 
   return (
     <div className="posts-page">
-      <h1>Agricultural Posts & Blogs</h1>
-      <PostFilters filters={filters} onFilterChange={handleFilterChange} />
+      <div className="container">
+        {/* Header */}
+        <div className="page-header">
+          <div className="header-content">
+            <h1>Agricultural Blog</h1>
+            <p>Discover insights, tips, and knowledge from the farming community</p>
+          </div>
+          {isAuthenticated && (
+            <Link to="/posts/create" className="btn-primary">
+              <Plus size={20} />
+              Create Post
+            </Link>
+          )}
+        </div>
 
-      
-      
-      <PostList posts={filteredPosts} pagination={pagination} onPageChange={handlePageChange} />
+        {/* Search and Filters */}
+        <div className="posts-controls">
+          <div className="search-bar">
+            <div className="search-input-wrapper">
+              <Search className="search-icon" size={20} />
+              <input
+                type="text"
+                placeholder="Search posts..."
+                value={filters.search}
+                onChange={handleSearchChange}
+                className="search-input"
+              />
+            </div>
+          </div>
+          
+          <button 
+            className={`filter-toggle ${showFilters ? 'active' : ''}`}
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <Filter size={20} />
+            Filters
+          </button>
+        </div>
+
+        {/* Filters Panel */}
+        {showFilters && (
+          <PostFilters
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            onClose={() => setShowFilters(false)}
+          />
+        )}
+
+        {/* Results Summary */}
+        {!isLoading && posts && (
+          <div className="results-summary">
+            <p>
+              {pagination?.total || posts.length} posts found
+              {filters.search && ` for "${filters.search}"`}
+            </p>
+          </div>
+        )}
+
+        {/* Error Message */}
+        {isError && (
+          <ErrorMessage 
+            message={message || "Failed to load posts"} 
+            onRetry={() => dispatch(getPosts({ page: currentPage, per_page: 12, ...filters }))}
+          />
+        )}
+
+        {/* Posts List */}
+        <PostList 
+          posts={posts}
+          isLoading={isLoading}
+          showActions={false}
+          emptyMessage="No posts found"
+          emptySubMessage="Try adjusting your search or filters, or be the first to share your knowledge!"
+        />
+
+        {/* Pagination */}
+        {renderPagination()}
+
+        {/* Call to Action for Non-Authenticated Users */}
+        {!isAuthenticated && posts && posts.length > 0 && (
+          <div className="cta-section">
+            <div className="cta-content">
+              <h3>Join the Community</h3>
+              <p>Create an account to share your own agricultural insights and connect with fellow farmers.</p>
+              <div className="cta-buttons">
+                <Link to="/register" className="btn-primary">Sign Up</Link>
+                <Link to="/login" className="btn-secondary">Log In</Link>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

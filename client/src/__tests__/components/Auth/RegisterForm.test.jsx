@@ -8,6 +8,7 @@ import { BrowserRouter } from 'react-router-dom';
 
 // Mock the constants module
 vi.mock('../../../utils/constants', () => ({
+  COUNTRIES: ['Kenya', 'Uganda', 'Tanzania'],
   FARMING_TYPES: [
     { value: 'organic', label: 'Organic' },
     { value: 'conventional', label: 'Conventional' },

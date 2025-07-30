@@ -1,0 +1,144 @@
+/* Profile Tabs Styles */
+.profile-tabs {
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 2rem; /* Space below tabs */
+}
+
+.profile-tabs-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.profile-tabs-list {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.profile-tabs-list::-webkit-scrollbar {
+  display: none;
+}
+
+.profile-tab {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 1rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  color: #6c757d;
+  font-weight: 500;
+  border-bottom: 3px solid transparent;
+}
+
+.profile-tab:hover {
+  color: #4CAF50;
+  background: rgba(76, 175, 80, 0.05);
+}
+
+.profile-tab-active {
+  color: #4CAF50;
+  border-bottom-color: #4CAF50;
+}
+
+.profile-tab-highlight {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border-radius: 8px 8px 0 0;
+}
+
+.profile-tab-highlight:hover {
+  background: #d4edda;
+}
+
+.profile-tab-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+  z-index: 2; /* Ensure content is above indicator */
+}
+
+.profile-tab-icon {
+  display: flex;
+  align-items: center;
+}
+
+.profile-tab-label {
+  white-space: nowrap;
+}
+
+.profile-tab-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+.profile-tab-badge-unsaved {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.profile-tab-badge-text {
+  font-size: 0.625rem;
+}
+
+
+
+/* Mobile Tab Selector */
+.profile-tabs-mobile {
+  display: none;
+  padding: 1rem;
+}
+
+.profile-tabs-select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  background: white;
+  font-size: 1rem;
+  color: #495057;
+}
+
+.profile-tabs-select:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .profile-tabs-list {
+    display: none;
+  }
+  
+  .profile-tabs-mobile {
+    display: block;
+  }
+  
+  .profile-tabs-container {
+    padding: 0 1rem;
+  }
+}
+
+/* Accessibility */
+.profile-tab:focus {
+  outline: 2px solid #4CAF50;
+  outline-offset: -2px;
+}
+
+.profile-tab[aria-selected="true"] {
+  color: #4CAF50;
+  border-bottom-color: #4CAF50;
+}

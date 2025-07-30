@@ -1,47 +1,24 @@
 import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import ExpertList from '../../components/Experts/ExpertList';
 import ExpertFilters from '../../components/Experts/ExpertFilters';
 import LoadingSpinner from '../../components/common/LoadingSpinner/LoadingSpinner';
-import { mockExperts } from '../../utils/mockData';
+import { getExperts, reset } from '../../store/slices/expertsSlice';
 
 const ExpertsPage = () => {
-  const [experts, setExperts] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isError, setIsError] = useState(false);
-  const [message, setMessage] = useState('');
+  const dispatch = useDispatch();
+  const { experts, isLoading, isError, message } = useSelector((state) => state.experts);
+  
   const [filters, setFilters] = useState({});
 
   useEffect(() => {
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      try {
-        // Apply filters to mock data
-        const filteredExperts = mockExperts.filter(expert => {
-          const { specialization, location, rating, availability } = filters;
-          if (specialization && !expert.specializations.some(s => s.toLowerCase().includes(specialization.toLowerCase()))) {
-            return false;
-          }
-          if (location && !expert.service_areas.some(a => a.toLowerCase().includes(location.toLowerCase()))) {
-            return false;
-          }
-          if (rating && expert.rating < parseFloat(rating)) {
-            return false;
-          }
-          if (availability && expert.availability_status.toLowerCase() !== availability.toLowerCase()) {
-            return false;
-          }
-          return true;
-        });
-        setExperts(filteredExperts);
-        setIsLoading(false);
-      } catch (error) {
-        setIsError(true);
-        setMessage('Failed to load experts data.');
-        setIsLoading(false);
-      }
-    }, 500);
-  }, [filters]);
+    dispatch(getExperts(filters));
+    
+    // Cleanup function
+    return () => {
+      dispatch(reset());
+    };
+  }, [dispatch, filters]);
 
   const handleFilterChange = (name, value) => {
     setFilters((prev) => ({ ...prev, [name]: value }));
@@ -56,7 +33,20 @@ const ExpertsPage = () => {
         {isLoading ? (
           <LoadingSpinner text="Loading Experts..." />
         ) : isError ? (
-          <div className="text-center text-red-500">{message}</div>
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <p>{message}</p>
+            <button 
+              onClick={() => dispatch(getExperts(filters))}
+              className="mt-2 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : experts.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-gray-500 text-lg mb-4">No experts found</div>
+            <p className="text-gray-400">Try adjusting your filters or check back later.</p>
+          </div>
         ) : (
           <ExpertList experts={experts} />
         )}

@@ -1,10 +1,35 @@
+/* Profile Page Styles */
 .profile-page {
-  max-width: 900px;
-  margin: 2rem auto;
-  padding: 1rem;
+  min-height: 100vh;
+  background-color: #f8f9fa; /* A very light, clean background */
+  padding: 2rem 0;
 }
 
-.error-message {
-  color: red;
-  text-align: center;
+.profile-container {
+  max-width: 1000px; /* Slightly narrower for a focused look */
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); /* Soft, subtle shadow */
+  overflow: hidden;
+}
+
+.profile-content {
+  padding: 2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .profile-page {
+    padding: 1rem 0;
+  }
+  .profile-container {
+    margin: 0 1rem; /* Smaller margin on mobile */
+    padding: 0;
+    border-radius: 8px;
+  }
+  .profile-content {
+    padding: 1.5rem;
+  }
 }
