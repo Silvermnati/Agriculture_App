@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import PropTypes from 'prop-types';
 import { Lock, Plus, MessageSquare, Users } from "lucide-react";
+import Image from '../common/Image/Image';
 
 const CommunityDetail = ({ community, posts, onCreatePost }) => {
   const [activeTab, setActiveTab] = useState("posts");
@@ -51,10 +52,11 @@ const CommunityDetail = ({ community, posts, onCreatePost }) => {
       {/* Header */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
         <div className="relative h-64">
-          <img
-            src={community.image_url || "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200"}
+          <Image
+            src={community.image_url}
             alt={community.name}
             className="w-full h-full object-cover"
+            fallbackType="community"
           />
           <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end">
             <div className="p-6 text-white">
@@ -167,9 +169,9 @@ const CommunityDetail = ({ community, posts, onCreatePost }) => {
                 posts.map((post) => {
                   // Handle different post data structures
                   const postId = post.id || post.post_id;
-                  const author = post.author || { name: 'Unknown User', avatar: '/default-avatar.png' };
+                  const author = post.author || { name: 'Unknown User', avatar: null };
                   const authorName = author.name || author.first_name + ' ' + author.last_name || 'Unknown User';
-                  const authorAvatar = author.avatar || author.avatar_url || '/default-avatar.png';
+                  const authorAvatar = author.avatar || author.avatar_url;
                   const postDate = post.timestamp || post.created_at || post.published_at;
                   const postTitle = post.title || 'Untitled Post';
                   const postContent = post.content || post.body || 'No content available';
@@ -182,13 +184,11 @@ const CommunityDetail = ({ community, posts, onCreatePost }) => {
                       className="border-b border-gray-200 pb-4 last:border-b-0"
                     >
                       <div className="flex items-start space-x-3">
-                        <img
+                        <Image
                           src={authorAvatar}
                           alt={authorName}
                           className="w-10 h-10 rounded-full object-cover"
-                          onError={(e) => {
-                            e.target.src = 'https://via.placeholder.com/40x40?text=U';
-                          }}
+                          fallbackType="avatar"
                         />
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-1">

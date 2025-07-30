@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Upload, X, Image, File, AlertCircle } from 'lucide-react';
 import { uploadAPI } from '../../../utils/api';
 
@@ -9,13 +9,34 @@ const FileUpload = ({
   maxSize = 5 * 1024 * 1024, // 5MB default
   multiple = false,
   className = '',
-  children 
+  children,
+  resetTrigger = null // Add a prop to trigger reset from parent
 }) => {
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
+  const prevResetTrigger = useRef(resetTrigger);
+
+  // Reset function to clear all state
+  const resetFileUpload = () => {
+    setUploadedFiles([]);
+    setError('');
+    setUploading(false);
+    setDragActive(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // Effect to handle reset trigger from parent
+  useEffect(() => {
+    if (resetTrigger !== null && resetTrigger !== prevResetTrigger.current) {
+      resetFileUpload();
+      prevResetTrigger.current = resetTrigger;
+    }
+  }, [resetTrigger]);
 
   const validateFile = (file) => {
     // Check file size
@@ -43,6 +64,11 @@ const FileUpload = ({
     try {
       setUploading(true);
       setError('');
+
+      // Clear previous uploads if not in multiple mode
+      if (!multiple) {
+        setUploadedFiles([]);
+      }
 
       const validationError = validateFile(file);
       if (validationError) {
