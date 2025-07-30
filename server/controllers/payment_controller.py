@@ -431,6 +431,40 @@ class PaymentController:
                 'success': False,
                 'error': 'Internal server error'
             }), 500
+    
+    def test_mpesa_config(self):
+        """Test M-Pesa configuration and connectivity."""
+        try:
+            # Test basic configuration
+            config_status = {
+                'environment': self.mpesa_service.environment,
+                'business_short_code': self.mpesa_service.business_short_code,
+                'callback_url': self.mpesa_service.callback_url,
+                'has_consumer_key': bool(self.mpesa_service.consumer_key),
+                'has_consumer_secret': bool(self.mpesa_service.consumer_secret),
+                'has_passkey': bool(self.mpesa_service.passkey)
+            }
+            
+            # Test access token generation
+            try:
+                access_token = self.mpesa_service.get_access_token()
+                config_status['access_token_test'] = 'SUCCESS'
+                config_status['has_access_token'] = bool(access_token)
+            except MpesaError as e:
+                config_status['access_token_test'] = 'FAILED'
+                config_status['access_token_error'] = e.message
+            
+            return jsonify({
+                'success': True,
+                'config_status': config_status
+            }), 200
+            
+        except Exception as e:
+            current_app.logger.error(f"M-Pesa config test error: {str(e)}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
 
 
 # Create controller instance

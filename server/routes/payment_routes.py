@@ -12,3 +12,4 @@ payment_bp.route('/<payment_id>/status', methods=['GET'])(payment_controller.get
 payment_bp.route('/history', methods=['GET'])(payment_controller.get_payment_history)
 payment_bp.route('/<payment_id>/refund', methods=['POST'])(payment_controller.request_refund)
 payment_bp.route('/<payment_id>/logs', methods=['GET'])(payment_controller.get_transaction_logs)
+payment_bp.route('/test-config', methods=['GET'])(payment_controller.test_mpesa_config)

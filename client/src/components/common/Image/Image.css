@@ -6,6 +6,7 @@
   position: relative;
   background-color: #f3f4f6; /* The grey background for loading/error */
   overflow: hidden;
+  border-radius: inherit; /* Inherit border-radius from parent for circular images */
 }
 
 /* === The actual <img> element === */
@@ -15,6 +16,43 @@
   object-fit: cover;
   object-position: center;
   display: block;
+  border-radius: inherit; /* Inherit border-radius from parent for circular images */
+}
+
+/* === Special handling for small circular images (like navbar avatars) === */
+.image-container.w-8.h-8,
+.image-container.w-10.h-10,
+.image-container.w-12.h-12 {
+  flex-shrink: 0; /* Prevent shrinking in flex containers */
+  min-width: inherit; /* Maintain minimum width */
+  min-height: inherit; /* Maintain minimum height */
+}
+
+/* === Navbar specific styling === */
+.image-container.w-8.h-8.rounded-full {
+  width: 2rem !important; /* 32px - ensure consistent size */
+  height: 2rem !important; /* 32px - ensure consistent size */
+  border: 2px solid #e5e7eb; /* Light gray border */
+  transition: border-color 0.2s ease;
+}
+
+.image-container.w-8.h-8.rounded-full:hover {
+  border-color: #10b981; /* Green border on hover */
+}
+
+/* === Loading state for small images === */
+.image-container.w-8.h-8 .image-loading,
+.image-container.w-10.h-10 .image-loading,
+.image-container.w-12.h-12 .image-loading {
+  background-color: rgba(243, 244, 246, 0.9); /* Slightly more opaque for small images */
+}
+
+.image-container.w-8.h-8 .image-loading-spinner,
+.image-container.w-10.h-10 .image-loading-spinner,
+.image-container.w-12.h-12 .image-loading-spinner {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
 }
 
 /* === Error and Loading States (FIXED) === */

@@ -17,6 +17,20 @@ const Navigation = () => {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const toggleProfileMenu = () => setIsProfileMenuOpen(!isProfileMenuOpen);
 
+  // Close profile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isProfileMenuOpen && !event.target.closest('.profile-menu-container')) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isProfileMenuOpen]);
+
   const handleLogout = () => {
     dispatch(logout());
     setIsProfileMenuOpen(false);
@@ -53,12 +67,12 @@ const Navigation = () => {
           {isAuthenticated ? (
             <div className="flex items-center space-x-4">
               <NotificationBell />
-              <div className="relative">
+              <div className="relative profile-menu-container">
                 <button onClick={toggleProfileMenu} className="flex items-center space-x-2 focus:outline-none">
                   <Image 
                     src={user?.avatar_url} 
-                    alt="Profile" 
-                    className="w-8 h-8 rounded-full object-cover"
+                    alt={`${user?.first_name || user?.email || 'User'} profile`} 
+                    className="w-8 h-8 rounded-full object-cover border-2 border-gray-200 hover:border-green-500 transition-colors duration-200"
                     fallbackType="avatar"
                   />
                   <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -66,12 +80,18 @@ const Navigation = () => {
                   </svg>
                 </button>
                 {isProfileMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-50">
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-50 border border-gray-200">
                     <div className="py-2">
-                      <NavLink to="/profile" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">My Profile</NavLink>
+                      <NavLink 
+                        to="/profile" 
+                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                        onClick={() => setIsProfileMenuOpen(false)}
+                      >
+                        My Profile
+                      </NavLink>
                       <button 
                         onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                        className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200"
                       >
                         Sign Out
                       </button>

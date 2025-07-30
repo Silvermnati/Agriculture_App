@@ -5,7 +5,7 @@ import './Image.css';
 
 const Image = ({ 
   src, 
-  alt, 
+  alt = 'Image', 
   className = '', 
   fallbackSrc = null,
   fallbackType = 'post',
@@ -19,10 +19,13 @@ const Image = ({
   const fullSrc = getFullImageUrl(src);
   const optimizedSrc = optimize && fullSrc ? getOptimizedImageUrl(fullSrc) : fullSrc;
   
+  // If there's no source URL, immediately use fallback
+  const initialSrc = optimizedSrc || (fallbackSrc ? getFullImageUrl(fallbackSrc) : getFallbackImage(fallbackType));
+  
   const [imageState, setImageState] = useState({
-    loading: true,
+    loading: !!optimizedSrc, // Only show loading if we have a source to load
     error: false,
-    currentSrc: optimizedSrc
+    currentSrc: initialSrc
   });
 
   const handleImageLoad = () => {
@@ -87,7 +90,7 @@ const Image = ({
 
 Image.propTypes = {
   src: PropTypes.string,
-  alt: PropTypes.string.isRequired,
+  alt: PropTypes.string,
   className: PropTypes.string,
   fallbackSrc: PropTypes.string,
   fallbackType: PropTypes.string,

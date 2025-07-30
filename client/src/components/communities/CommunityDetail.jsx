@@ -186,7 +186,7 @@ const CommunityDetail = ({ community, posts, onCreatePost }) => {
                       <div className="flex items-start space-x-3">
                         <Image
                           src={authorAvatar}
-                          alt={authorName}
+                          alt={authorName || 'User'}
                           className="w-10 h-10 rounded-full object-cover"
                           fallbackType="avatar"
                         />
