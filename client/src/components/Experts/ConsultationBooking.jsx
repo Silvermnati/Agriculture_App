@@ -6,6 +6,7 @@ import Modal from '../common/Modal/Modal';
 import Button from '../common/Button/Button';
 import Input from '../common/Input/Input';
 import MpesaPaymentModal from '../common/MpesaPaymentModal/MpesaPaymentModal';
+import Image from '../common/Image/Image';
 
 const ConsultationBooking = ({ expert, isOpen, onClose }) => {
   const dispatch = useDispatch();
@@ -159,10 +160,11 @@ const ConsultationBooking = ({ expert, isOpen, onClose }) => {
       <div className="max-w-md mx-auto">
         {/* Expert Info */}
         <div className="flex items-center mb-6 p-4 bg-gray-50 rounded-lg">
-          <img
+          <Image
             src={expert.avatar_url}
             alt={expert.name}
             className="w-12 h-12 rounded-full object-cover mr-4"
+            fallbackType="expert"
           />
           <div>
             <h3 className="font-semibold text-gray-900">{expert.name}</h3>

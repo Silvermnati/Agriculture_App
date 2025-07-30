@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { NavLink, useNavigate, Link } from 'react-router-dom';
 import { logout } from '../store/slices/authSlice';
 import NotificationBell from './Notifications/NotificationBell';
+import Image from './common/Image/Image';
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -54,10 +55,11 @@ const Navigation = () => {
               <NotificationBell />
               <div className="relative">
                 <button onClick={toggleProfileMenu} className="flex items-center space-x-2 focus:outline-none">
-                  <img 
-                    src={user?.avatar_url || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1974&auto=format&fit=crop'} 
+                  <Image 
+                    src={user?.avatar_url} 
                     alt="Profile" 
                     className="w-8 h-8 rounded-full object-cover"
+                    fallbackType="avatar"
                   />
                   <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>

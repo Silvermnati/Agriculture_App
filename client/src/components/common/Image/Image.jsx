@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { getFallbackImage, getOptimizedImageUrl } from '../../../utils/imageHelpers';
+import { getFallbackImage, getOptimizedImageUrl, getFullImageUrl } from '../../../utils/imageHelpers';
 import './Image.css';
 
 const Image = ({ 
@@ -15,8 +15,9 @@ const Image = ({
   onError = () => {},
   ...props 
 }) => {
-  // Optimize the source URL if requested
-  const optimizedSrc = optimize && src ? getOptimizedImageUrl(src) : src;
+  // Convert relative URLs to full URLs first, then optimize if requested
+  const fullSrc = getFullImageUrl(src);
+  const optimizedSrc = optimize && fullSrc ? getOptimizedImageUrl(fullSrc) : fullSrc;
   
   const [imageState, setImageState] = useState({
     loading: true,
@@ -30,7 +31,7 @@ const Image = ({
   };
 
   const handleImageError = () => {
-    const nextFallback = fallbackSrc || getFallbackImage(fallbackType);
+    const nextFallback = fallbackSrc ? getFullImageUrl(fallbackSrc) : getFallbackImage(fallbackType);
     
     if (imageState.currentSrc !== nextFallback) {
       // Try fallback image

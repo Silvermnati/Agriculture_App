@@ -94,11 +94,11 @@ class Post(db.Model):
         author_info = { 'name': 'Unknown Author', 'avatar_url': None, 'role': None }
         if self.author:
             author_info['name'] = f"{self.author.first_name} {self.author.last_name}"
-            # Fix avatar URL to use full path or default
+            # Use relative path for avatar, let the frontend handle the base URL
             if self.author.avatar_url:
                 author_info['avatar_url'] = self.author.avatar_url
             else:
-                author_info['avatar_url'] = 'https://agriculture-app-1-u2a6.onrender.com/static/default-avatar.png'
+                author_info['avatar_url'] = None  # Let frontend use fallback
             author_info['role'] = self.author.role
 
         # Fix featured image URL to use full path
@@ -107,7 +107,8 @@ class Post(db.Model):
             if self.featured_image_url.startswith('http'):
                 featured_image_url = self.featured_image_url
             else:
-                featured_image_url = f"https://agriculture-app-1-u2a6.onrender.com/static/{self.featured_image_url}"
+                # Use relative path for uploads, let the frontend handle the base URL
+                featured_image_url = self.featured_image_url
 
         post_dict = {
             'id': str(self.post_id), # Keep 'id' for frontend convenience
