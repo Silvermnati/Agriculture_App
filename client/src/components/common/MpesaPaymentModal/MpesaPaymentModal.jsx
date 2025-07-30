@@ -143,19 +143,31 @@ const MpesaPaymentModal = ({
       let errorMessage = 'Failed to initiate payment. Please try again.';
       
       if (err.response?.data?.error) {
-        errorMessage = err.response.data.error;
+        // Handle both string and object error formats
+        if (typeof err.response.data.error === 'string') {
+          errorMessage = err.response.data.error;
+        } else if (err.response.data.error.message) {
+          errorMessage = err.response.data.error.message;
+        } else {
+          errorMessage = JSON.stringify(err.response.data.error);
+        }
       } else if (err.response?.data?.message) {
         errorMessage = err.response.data.message;
       } else if (err.message) {
         errorMessage = err.message;
       }
       
+      // Ensure errorMessage is a string before using string methods
+      const errorString = String(errorMessage);
+      
       // Handle specific error cases
-      if (errorMessage.includes('MISSING_CREDENTIALS')) {
+      if (errorString.includes('MISSING_CREDENTIALS')) {
         errorMessage = 'M-Pesa service is not properly configured. Please contact support.';
-      } else if (errorMessage.includes('Invalid phone number')) {
+      } else if (errorString.includes('Invalid phone number')) {
         errorMessage = 'Please enter a valid Kenyan phone number (e.g., 0712345678)';
-      } else if (errorMessage.includes('TOKEN_ERROR')) {
+      } else if (errorString.includes('TOKEN_ERROR')) {
+        errorMessage = 'M-Pesa service is temporarily unavailable. Please try again later.';
+      } else if (errorString.includes('500')) {
         errorMessage = 'M-Pesa service is temporarily unavailable. Please try again later.';
       }
       
