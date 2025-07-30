@@ -64,7 +64,32 @@ def auto_migrate():
                         return False
             
             print("✅ Comment tracking fields migration completed")
-            return True
+
+        # --- Add notification_enabled to user_follows if missing ---
+        print("🔄 Auto-migration: Checking user_follows.notification_enabled column...")
+        result = conn.execute(db.text("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'user_follows' 
+            AND column_name = 'notification_enabled'
+        """))
+        exists = result.fetchone()
+        if not exists:
+            try:
+                conn.execute(db.text("ALTER TABLE user_follows ADD COLUMN notification_enabled BOOLEAN DEFAULT TRUE NOT NULL"))
+                conn.commit()
+                print("✅ Added column: notification_enabled to user_follows")
+            except Exception as e:
+                if "already exists" in str(e):
+                    print("ℹ️  Column notification_enabled already exists")
+                else:
+                    print(f"❌ Failed to add notification_enabled: {e}")
+                    return False
+        else:
+            print("✅ user_follows.notification_enabled already exists")
+
+        print("✅ All auto-migrations completed")
+        return True
                 
     except Exception as e:
         print(f"❌ Auto-migration failed: {e}")
