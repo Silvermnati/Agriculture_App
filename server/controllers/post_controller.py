@@ -728,8 +728,9 @@ def toggle_like(current_user, post_id):
         # Unlike
         db.session.delete(like)
         db.session.commit()
+        like_count = PostLike.query.filter_by(post_id=post_id).count()
         return create_success_response(
-            data={'liked': False},
+            data={'liked': False, 'like_count': like_count},
             message='Post unliked successfully'
         )
     else:
@@ -737,8 +738,9 @@ def toggle_like(current_user, post_id):
         like = PostLike(post_id=post_id, user_id=current_user.user_id)
         db.session.add(like)
         db.session.commit()
+        like_count = PostLike.query.filter_by(post_id=post_id).count()
         return create_success_response(
-            data={'liked': True},
+            data={'liked': True, 'like_count': like_count},
             message='Post liked successfully',
             status_code=201
         )
