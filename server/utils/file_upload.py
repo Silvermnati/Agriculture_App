@@ -35,7 +35,11 @@ def save_file(file, subfolder=''):
         file.save(file_path)
         
         # Return the URL path (not the full filesystem path)
-        return os.path.join('/uploads', subfolder, unique_filename)
+        # Use forward slashes for URL paths regardless of OS
+        if subfolder:
+            return f"/uploads/{subfolder}/{unique_filename}"
+        else:
+            return f"/uploads/{unique_filename}"
     
     return None
 

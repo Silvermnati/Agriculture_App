@@ -18,7 +18,10 @@ const PostDetailPage = () => {
   const currentUser = useSelector(state => state.auth.user);
 
   useEffect(() => {
-    if (postId) {
+    // Basic validation for postId to prevent API calls with 'create'
+    const isValidPostId = postId && postId !== 'create' && postId.length > 5; // A simple check, assuming UUIDs are longer than 'create'
+
+    if (isValidPostId) {
       dispatch(getPost(postId));
       dispatch(getComments(postId));
     }
