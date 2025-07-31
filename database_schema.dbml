@@ -1,0 +1,682 @@
+// Agricultural Super App Database Schema
+// Use this code at dbdiagram.io to visualize the database structure
+
+Project agricultural_super_app {
+  database_type: 'PostgreSQL'
+  Note: '''
+    # Agricultural Super App Database Schema
+    
+    This database supports a comprehensive agricultural platform with:
+    - User management with agricultural context
+    - Content management (posts/articles)
+    - Community features
+    - Expert consultation system
+    - Payment processing (M-Pesa)
+    - Real-time notifications
+    - Location and crop management
+  '''
+}
+
+// ================================
+// CORE USER MANAGEMENT
+// ================================
+
+Table users {
+  user_id uuid [primary key, default: `uuid_generate_v4()`]
+  email varchar(255) [unique, not null]
+  password_hash varchar(255) [not null]
+  first_name varchar(100) [not null]
+  last_name varchar(100) [not null]
+  role varchar(50) [not null, note: 'farmer, expert, supplier, researcher, student, admin']
+  bio text
+  
+  // Agricultural fields
+  location_id integer [ref: > locations.location_id]
+  farm_size decimal(10,2) [note: 'in hectares']
+  farm_size_unit varchar(10) [default: 'hectares']
+  farming_experience integer [note: 'years of experience']
+  farming_type varchar(50) [note: 'organic, conventional, mixed']
+  primary_language varchar(10) [default: 'en']
+  
+  // Media fields
+  avatar_url varchar(255)
+  cover_image_url varchar(255)
+  
+  // Contact fields
+  phone_number varchar(20)
+  whatsapp_number varchar(20)
+  is_phone_verified boolean [default: false]
+  
+  // Simple location fields (alternative to complex hierarchy)
+  country varchar(100)
+  city varchar(100)
+  
+  // Status fields
+  is_verified boolean [default: false]
+  is_active boolean [default: true]
+  join_date timestamp [default: `now()`]
+  last_login timestamp
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  indexes {
+    email [unique]
+    role
+    country
+    city
+    is_active
+  }
+}
+
+Table user_expertise {
+  expertise_id integer [primary key, increment]
+  user_id uuid [ref: > users.user_id, not null]
+  expertise varchar(100) [not null]
+  years_experience integer
+  certification varchar(255)
+  institution varchar(255)
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    user_id
+    expertise
+  }
+}
+
+Table user_follows {
+  follow_id integer [primary key, increment]
+  follower_id uuid [ref: > users.user_id, not null]
+  following_id uuid [ref: > users.user_id, not null]
+  notification_enabled boolean [default: true, not null]
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    (follower_id, following_id) [unique]
+    follower_id
+    following_id
+  }
+}
+
+// ================================
+// LOCATION MANAGEMENT
+// ================================
+
+Table countries {
+  country_id integer [primary key, increment]
+  name varchar(100) [not null, unique]
+  code varchar(3) [not null, unique]
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    code [unique]
+    name
+  }
+}
+
+Table state_provinces {
+  state_id integer [primary key, increment]
+  country_id integer [ref: > countries.country_id, not null]
+  name varchar(100) [not null]
+  code varchar(10)
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    country_id
+    name
+  }
+}
+
+Table locations {
+  location_id integer [primary key, increment]
+  state_id integer [ref: > state_provinces.state_id, not null]
+  name varchar(100) [not null]
+  latitude decimal(10,8)
+  longitude decimal(11,8)
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    state_id
+    name
+    (latitude, longitude)
+  }
+}
+
+// ================================
+// AGRICULTURAL DATA
+// ================================
+
+Table crops {
+  crop_id integer [primary key, increment]
+  name varchar(100) [not null, unique]
+  scientific_name varchar(150)
+  category varchar(50) [note: 'cereal, vegetable, fruit, legume, etc.']
+  growing_season varchar(50)
+  climate_requirements text
+  soil_requirements text
+  water_requirements varchar(50)
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    name [unique]
+    category
+    growing_season
+  }
+}
+
+Table livestock {
+  livestock_id integer [primary key, increment]
+  name varchar(100) [not null, unique]
+  category varchar(50) [note: 'cattle, poultry, goat, sheep, etc.']
+  care_requirements text
+  feed_requirements text
+  housing_requirements text
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    name [unique]
+    category
+  }
+}
+
+Table user_crops {
+  user_crop_id integer [primary key, increment]
+  user_id uuid [ref: > users.user_id, not null]
+  crop_id integer [ref: > crops.crop_id, not null]
+  area_planted decimal(10,2) [note: 'in hectares']
+  planting_date date
+  expected_harvest_date date
+  status varchar(20) [default: 'active', note: 'active, harvested, failed']
+  notes text
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  indexes {
+    user_id
+    crop_id
+    status
+    planting_date
+  }
+}
+
+// ================================
+// CONTENT MANAGEMENT
+// ================================
+
+Table categories {
+  category_id integer [primary key, increment]
+  name varchar(100) [not null, unique]
+  description text
+  icon_url varchar(255)
+  parent_category_id integer [ref: > categories.category_id]
+  is_agricultural_specific boolean [default: true]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  indexes {
+    name [unique]
+    parent_category_id
+    is_agricultural_specific
+  }
+}
+
+Table tags {
+  tag_id integer [primary key, increment]
+  name varchar(50) [not null, unique]
+  category varchar(50) [note: 'crop, technique, season, problem, solution']
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    name [unique]
+    category
+  }
+}
+
+Table posts {
+  post_id uuid [primary key, default: `uuid_generate_v4()`]
+  title varchar(255) [not null]
+  content text [not null]
+  excerpt text
+  author_id uuid [ref: > users.user_id, not null]
+  category_id integer [ref: > categories.category_id]
+  featured_image_url varchar(255)
+  
+  // Agricultural context
+  season_relevance varchar(50)
+  applicable_locations text[] [note: 'Array of location names']
+  related_crops text[] [note: 'Array of crop names']
+  
+  // Post metadata
+  status varchar(20) [default: 'draft', note: 'draft, published, archived']
+  view_count integer [default: 0]
+  read_time integer [note: 'estimated read time in minutes']
+  is_featured boolean [default: false]
+  language varchar(10) [default: 'en']
+  
+  // Timestamps
+  published_at timestamp
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  indexes {
+    author_id
+    category_id
+    status
+    published_at
+    is_featured
+    view_count
+  }
+}
+
+Table post_tags {
+  post_id uuid [ref: > posts.post_id]
+  tag_id integer [ref: > tags.tag_id]
+  
+  indexes {
+    (post_id, tag_id) [pk]
+  }
+}
+
+Table comments {
+  comment_id uuid [primary key, default: `uuid_generate_v4()`]
+  post_id uuid [ref: > posts.post_id, not null]
+  user_id uuid [ref: > users.user_id, not null]
+  parent_comment_id uuid [ref: > comments.comment_id]
+  content text [not null]
+  is_approved boolean [default: true]
+  
+  // Edit tracking
+  is_edited boolean [default: false, not null]
+  edit_count integer [default: 0, not null]
+  last_edited_at timestamp
+  
+  // Soft deletion
+  is_deleted boolean [default: false, not null]
+  deleted_at timestamp
+  
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  indexes {
+    post_id
+    user_id
+    parent_comment_id
+    is_approved
+    is_deleted
+    created_at
+  }
+}
+
+Table comment_edits {
+  edit_id uuid [primary key, default: `uuid_generate_v4()`]
+  comment_id uuid [ref: > comments.comment_id, not null]
+  original_content text [not null]
+  new_content text [not null]
+  edited_by uuid [ref: > users.user_id, not null]
+  edit_reason varchar(255)
+  edited_at timestamp [default: `now()`, not null]
+  
+  indexes {
+    comment_id
+    edited_by
+    edited_at
+  }
+}
+
+Table article_post_likes {
+  post_id uuid [ref: > posts.post_id]
+  user_id uuid [ref: > users.user_id]
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    (post_id, user_id) [pk]
+    post_id
+    user_id
+  }
+}
+
+// ================================
+// COMMUNITY FEATURES
+// ================================
+
+Table communities {
+  community_id uuid [primary key, default: `uuid_generate_v4()`]
+  name varchar(100) [not null]
+  description text
+  community_type varchar(50) [not null, note: 'Regional, Crop-Specific, Urban, Professional']
+  focus_crops text[] [note: 'Array of crop names']
+  location_city varchar(100)
+  location_country varchar(100) [not null]
+  is_private boolean [default: false]
+  created_by uuid [ref: > users.user_id, not null]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  indexes {
+    created_by
+    community_type
+    location_country
+    location_city
+    is_private
+  }
+}
+
+Table community_members {
+  community_id uuid [ref: > communities.community_id]
+  user_id uuid [ref: > users.user_id]
+  role varchar(20) [default: 'member', note: 'admin, moderator, member']
+  status varchar(20) [default: 'active', note: 'active, pending, banned']
+  joined_at timestamp [default: `now()`]
+  
+  indexes {
+    (community_id, user_id) [pk]
+    community_id
+    user_id
+    role
+    status
+  }
+}
+
+Table community_posts {
+  post_id uuid [primary key, default: `uuid_generate_v4()`]
+  community_id uuid [ref: > communities.community_id, not null]
+  user_id uuid [ref: > users.user_id, not null]
+  content text [not null]
+  image_url varchar(255)
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  indexes {
+    community_id
+    user_id
+    created_at
+  }
+}
+
+Table post_likes {
+  post_id uuid [ref: > community_posts.post_id]
+  user_id uuid [ref: > users.user_id]
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    (post_id, user_id) [pk]
+    post_id
+    user_id
+  }
+}
+
+Table post_comments {
+  comment_id uuid [primary key, default: `uuid_generate_v4()`]
+  post_id uuid [ref: > community_posts.post_id, not null]
+  user_id uuid [ref: > users.user_id, not null]
+  content text [not null]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  indexes {
+    post_id
+    user_id
+    created_at
+  }
+}
+
+// ================================
+// EXPERT CONSULTATION SYSTEM
+// ================================
+
+Table expert_profiles {
+  expert_id uuid [primary key, default: `uuid_generate_v4()`]
+  user_id uuid [ref: - users.user_id, not null, unique]
+  specialization text[] [note: 'Array of specializations']
+  years_experience integer [not null]
+  education text
+  certifications text[] [note: 'Array of certifications']
+  languages text[] [note: 'Array of supported languages']
+  consultation_rate decimal(10,2) [note: 'Rate per hour/session']
+  currency varchar(3) [default: 'KES']
+  availability_schedule jsonb [note: 'JSON schedule data']
+  is_verified boolean [default: false]
+  is_available boolean [default: true]
+  rating decimal(3,2) [default: 0.00]
+  total_consultations integer [default: 0]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  indexes {
+    user_id [unique]
+    is_verified
+    is_available
+    rating
+    specialization [type: gin]
+  }
+}
+
+Table consultations {
+  consultation_id uuid [primary key, default: `uuid_generate_v4()`]
+  expert_id uuid [ref: > expert_profiles.expert_id, not null]
+  client_id uuid [ref: > users.user_id, not null]
+  title varchar(255) [not null]
+  description text [not null]
+  consultation_type varchar(50) [note: 'video, phone, chat, in-person']
+  scheduled_at timestamp [not null]
+  duration_minutes integer [default: 60]
+  status varchar(20) [default: 'pending', note: 'pending, confirmed, completed, cancelled']
+  meeting_link varchar(255)
+  notes text
+  cost decimal(10,2)
+  currency varchar(3) [default: 'KES']
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  indexes {
+    expert_id
+    client_id
+    status
+    scheduled_at
+    created_at
+  }
+}
+
+Table expert_reviews {
+  review_id uuid [primary key, default: `uuid_generate_v4()`]
+  expert_id uuid [ref: > expert_profiles.expert_id, not null]
+  client_id uuid [ref: > users.user_id, not null]
+  consultation_id uuid [ref: > consultations.consultation_id]
+  rating integer [not null, note: '1-5 stars']
+  review_text text
+  is_anonymous boolean [default: false]
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    expert_id
+    client_id
+    consultation_id
+    rating
+    created_at
+  }
+}
+
+// ================================
+// PAYMENT SYSTEM (M-PESA)
+// ================================
+
+Table payments {
+  payment_id uuid [primary key, default: `uuid_generate_v4()`]
+  user_id uuid [ref: > users.user_id, not null]
+  consultation_id uuid [ref: > consultations.consultation_id]
+  amount decimal(10,2) [not null]
+  currency varchar(3) [default: 'KES']
+  payment_method varchar(20) [default: 'mpesa']
+  
+  // M-Pesa specific fields
+  mpesa_checkout_request_id varchar(255)
+  mpesa_transaction_id varchar(255)
+  phone_number varchar(20) [not null]
+  
+  // Payment status
+  status varchar(20) [default: 'pending', note: 'pending, completed, failed, cancelled']
+  payment_date timestamp
+  
+  // Metadata
+  description text
+  reference_number varchar(100)
+  
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  indexes {
+    user_id
+    consultation_id
+    status
+    payment_method
+    mpesa_transaction_id
+    payment_date
+  }
+}
+
+// ================================
+// NOTIFICATION SYSTEM
+// ================================
+
+Table notifications {
+  notification_id uuid [primary key, default: `uuid_generate_v4()`]
+  user_id uuid [ref: > users.user_id, not null]
+  title varchar(255) [not null]
+  message text [not null]
+  notification_type varchar(50) [not null, note: 'follow, like, comment, consultation, payment, system']
+  
+  // Related entity references
+  related_user_id uuid [ref: > users.user_id]
+  related_post_id uuid [ref: > posts.post_id]
+  related_consultation_id uuid [ref: > consultations.consultation_id]
+  related_payment_id uuid [ref: > payments.payment_id]
+  
+  // Notification status
+  is_read boolean [default: false]
+  read_at timestamp
+  
+  // Delivery channels
+  sent_via_email boolean [default: false]
+  sent_via_sms boolean [default: false]
+  sent_via_push boolean [default: false]
+  
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    user_id
+    notification_type
+    is_read
+    created_at
+    related_user_id
+    related_post_id
+  }
+}
+
+Table notification_preferences {
+  user_id uuid [ref: - users.user_id, primary key]
+  email_notifications boolean [default: true]
+  sms_notifications boolean [default: false]
+  push_notifications boolean [default: true]
+  
+  // Notification type preferences
+  follow_notifications boolean [default: true]
+  like_notifications boolean [default: true]
+  comment_notifications boolean [default: true]
+  consultation_notifications boolean [default: true]
+  payment_notifications boolean [default: true]
+  system_notifications boolean [default: true]
+  
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+// ================================
+// ARTICLES SYSTEM
+// ================================
+
+Table articles {
+  article_id uuid [primary key, default: `uuid_generate_v4()`]
+  title varchar(255) [not null]
+  content text [not null]
+  excerpt text
+  author_id uuid [ref: > users.user_id, not null]
+  category_id integer [ref: > categories.category_id]
+  featured_image_url varchar(255)
+  
+  // Article metadata
+  status varchar(20) [default: 'draft', note: 'draft, published, archived']
+  view_count integer [default: 0]
+  read_time integer [note: 'estimated read time in minutes']
+  is_featured boolean [default: false]
+  language varchar(10) [default: 'en']
+  
+  // SEO fields
+  meta_title varchar(255)
+  meta_description text
+  slug varchar(255) [unique]
+  
+  // Timestamps
+  published_at timestamp
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  indexes {
+    author_id
+    category_id
+    status
+    published_at
+    is_featured
+    slug [unique]
+  }
+}
+
+// ================================
+// CHAT SYSTEM (Future Enhancement)
+// ================================
+
+Table chat_conversations {
+  conversation_id uuid [primary key, default: `uuid_generate_v4()`]
+  conversation_type varchar(20) [note: 'direct, group, consultation']
+  title varchar(255)
+  created_by uuid [ref: > users.user_id, not null]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  indexes {
+    created_by
+    conversation_type
+    created_at
+  }
+}
+
+Table chat_participants {
+  conversation_id uuid [ref: > chat_conversations.conversation_id]
+  user_id uuid [ref: > users.user_id]
+  role varchar(20) [default: 'member', note: 'admin, member']
+  joined_at timestamp [default: `now()`]
+  last_read_at timestamp
+  
+  indexes {
+    (conversation_id, user_id) [pk]
+    conversation_id
+    user_id
+  }
+}
+
+Table chat_messages {
+  message_id uuid [primary key, default: `uuid_generate_v4()`]
+  conversation_id uuid [ref: > chat_conversations.conversation_id, not null]
+  sender_id uuid [ref: > users.user_id, not null]
+  message_type varchar(20) [default: 'text', note: 'text, image, file, system']
+  content text [not null]
+  file_url varchar(255)
+  is_edited boolean [default: false]
+  edited_at timestamp
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    conversation_id
+    sender_id
+    created_at
+    message_type
+  }
+}

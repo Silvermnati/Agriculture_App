@@ -89,7 +89,10 @@ const CommunityDetailPage = () => {
     }
   };
 
-  const posts = communityPosts[communityId] || [];
+  const postsObj = communityPosts[communityId];
+  const posts = Array.isArray(postsObj)
+    ? postsObj
+    : (postsObj?.posts || []);
 
   if (isLoading) {
     return <LoadingSpinner text="Loading community..." />;

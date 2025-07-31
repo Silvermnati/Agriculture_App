@@ -15,6 +15,7 @@ class Community(db.Model):
     focus_crops = db.Column(ARRAY(db.String), nullable=True)
     location_city = db.Column(db.String(100), nullable=True)
     location_country = db.Column(db.String(100), nullable=False)
+    image_url = db.Column(db.String(255), nullable=True)
     is_private = db.Column(db.Boolean, default=False)
     created_by = db.Column(UUID(as_uuid=True), db.ForeignKey('users.user_id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -35,6 +36,7 @@ class Community(db.Model):
                 'city': self.location_city,
                 'country': self.location_country
             },
+            'image_url': self.image_url,
             'is_private': self.is_private,
             'created_by': str(self.created_by),
             'created_at': self.created_at.isoformat(),

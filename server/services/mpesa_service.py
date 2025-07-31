@@ -62,7 +62,7 @@ class MpesaService:
         """Get M-Pesa access token."""
         try:
             # Check if we have a valid token
-            if self.access_token and self.token_expires_at and datetime.now() < self.token_expires_at:
+            if self.access_token and self.token_expires_at and datetime.now().timestamp() < self.token_expires_at:
                 return self.access_token
             
             # Generate new token

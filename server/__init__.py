@@ -20,6 +20,7 @@ def create_app(config_name='default'):
     # Enable CORS with specific origins
     cors_origins = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:5173')
     origins = cors_origins.split(',')
+    print(f"[CORS DEBUG] Allowed origins: {origins}")
     CORS(app, resources={r"/api/*": {"origins": origins}})
     
     # Initialize database
