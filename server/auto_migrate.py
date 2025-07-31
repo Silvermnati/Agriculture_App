@@ -38,7 +38,7 @@ def auto_migrate():
             
             if not missing_columns:
                 print("✅ Comment tracking fields already exist")
-                return True
+                # Do not return here; continue to other migrations
             
             print(f"🔧 Adding {len(missing_columns)} missing columns: {missing_columns}")
             
