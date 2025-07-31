@@ -1,7 +1,7 @@
 from flask import request, jsonify, current_app
 from werkzeug.security import generate_password_hash
 import uuid
-import jwt
+from flask_jwt_extended import create_access_token
 from datetime import datetime, timedelta
 
 from server.models.user import User
@@ -74,11 +74,8 @@ def register():
     db.session.add(user)
     db.session.commit()
     
-    # Generate token
-    token = jwt.encode({
-        'user_id': str(user.user_id),
-        'exp': datetime.utcnow() + timedelta(days=1)
-    }, current_app.config['JWT_SECRET_KEY'], algorithm='HS256')
+    # Generate token using Flask-JWT-Extended (sets 'sub' claim)
+    token = create_access_token(identity=user.user_id)
     
     return create_success_response(
         data={
@@ -121,11 +118,8 @@ def login():
     user.last_login = datetime.utcnow()
     db.session.commit()
     
-    # Generate token
-    token = jwt.encode({
-        'user_id': str(user.user_id),
-        'exp': datetime.utcnow() + timedelta(days=1)
-    }, current_app.config['JWT_SECRET_KEY'], algorithm='HS256')
+    # Generate token using Flask-JWT-Extended (sets 'sub' claim)
+    token = create_access_token(identity=user.user_id)
     
     return create_success_response(
         data={

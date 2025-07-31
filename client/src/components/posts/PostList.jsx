@@ -1,10 +1,16 @@
 import React from 'react';
+<<<<<<< HEAD
 import { Link } from 'react-router-dom';
 import { Edit, Trash2, Eye } from 'lucide-react';
+=======
+import { useSelector } from 'react-redux';
+import PostCard from './PostCard';
+>>>>>>> dc6beeb0b98745dd463c3cde4e146e2767f2abff
 import LoadingSpinner from '../common/LoadingSpinner/LoadingSpinner';
 import Image from '../common/Image/Image';
 
 const PostList = ({ 
+<<<<<<< HEAD
   posts, 
   isLoading, 
   showActions, 
@@ -18,6 +24,16 @@ const PostList = ({
   }
 
   if (!isLoading && (!posts || posts.length === 0)) {
+=======
+  isLoading = false, 
+  showActions = true,
+  emptyMessage = "No posts found",
+  emptySubMessage = "Be the first to share your agricultural knowledge!"
+}) => {
+  const posts = useSelector(state => state.posts.posts);
+
+  if (isLoading) {
+>>>>>>> dc6beeb0b98745dd463c3cde4e146e2767f2abff
     return (
       <div className="text-center py-16 bg-gray-50 rounded-lg mt-8">
         <h3 className="text-xl font-semibold text-gray-700">{emptyMessage}</h3>
