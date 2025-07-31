@@ -10,6 +10,9 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'jwt-secret-key')
     JWT_ACCESS_TOKEN_EXPIRES = 86400  # 24 hours
+    JWT_TOKEN_LOCATION = ['headers']  # Look for JWTs in headers (adjust if you use cookies)
+    JWT_HEADER_NAME = "Authorization"  # Default header for JWTs
+    JWT_HEADER_TYPE = "Bearer"  # Default type for JWTs
     # Set upload folder relative to server directory for Render deployment
     UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max upload
