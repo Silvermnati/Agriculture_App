@@ -88,6 +88,29 @@ def auto_migrate():
         else:
             print("✅ user_follows.notification_enabled already exists")
 
+        # --- Add image_url to communities if missing ---
+        print("🔄 Auto-migration: Checking communities.image_url column...")
+        result = conn.execute(db.text("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'communities' 
+            AND column_name = 'image_url'
+        """))
+        exists = result.fetchone()
+        if not exists:
+            try:
+                conn.execute(db.text("ALTER TABLE communities ADD COLUMN image_url VARCHAR(255)"))
+                conn.commit()
+                print("✅ Added column: image_url to communities")
+            except Exception as e:
+                if "already exists" in str(e):
+                    print("ℹ️  Column image_url already exists")
+                else:
+                    print(f"❌ Failed to add image_url: {e}")
+                    return False
+        else:
+            print("✅ communities.image_url already exists")
+
         print("✅ All auto-migrations completed")
         return True
                 
