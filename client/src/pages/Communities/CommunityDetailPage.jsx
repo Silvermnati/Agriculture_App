@@ -83,7 +83,10 @@ const CommunityDetailPage = () => {
     alert(`Deleting post ${postId}`);
   };
 
-  const posts = communityPosts[communityId] || [];
+  const postsObj = communityPosts[communityId];
+  const posts = Array.isArray(postsObj)
+    ? postsObj
+    : (postsObj?.posts || []);
 
   if (isLoading) {
     return <LoadingSpinner text="Loading community..." />;
