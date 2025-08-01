@@ -67,6 +67,18 @@ const LocationManagement = () => {
 
   const handleSubmitLocation = async (e) => {
     e.preventDefault();
+    
+    // Frontend validation
+    if (!locationForm.country_id || locationForm.country_id.trim() === '') {
+      alert('Please select a country');
+      return;
+    }
+    
+    if (!locationForm.city || locationForm.city.trim() === '') {
+      alert('Please enter a city name');
+      return;
+    }
+    
     try {
       console.log('Submitting location form data:', locationForm);
       if (editingItem) {
@@ -81,7 +93,15 @@ const LocationManagement = () => {
     } catch (error) {
       console.error('Failed to save location:', error);
       console.error('Error details:', error.response?.data);
-      alert(error.response?.data?.message || 'Failed to save location');
+      console.error('Full error response:', JSON.stringify(error.response?.data, null, 2));
+      
+      // Handle different error response formats
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error?.message ||
+                          error.response?.data?.error?.details ||
+                          error.response?.data?.error ||
+                          'Failed to save location';
+      alert(errorMessage);
     }
   };
 

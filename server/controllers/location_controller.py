@@ -207,11 +207,16 @@ def create_location(current_user):
     
     data = request.get_json()
     
+    # Debug: Log the received data
+    print(f"DEBUG: Received location data: {data}")
+    
     if not data:
         return jsonify({'message': 'No data provided'}), 400
     
     # Validate required fields
-    if not data.get('country_id'):
+    country_id = data.get('country_id')
+    if not country_id or str(country_id).strip() == '':
+        print(f"DEBUG: Missing or empty country_id in data: {data}")
         return jsonify({'message': 'Country ID is required'}), 400
     
     # Validate country exists
