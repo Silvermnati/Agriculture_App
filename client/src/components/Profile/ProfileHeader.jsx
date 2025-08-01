@@ -50,7 +50,7 @@ const ProfileHeader = ({ user }) => {
   return (
     <div className="profile-header">
       <div className="profile-header-background">
-        <div className="profile-header-overlay"></div>
+        {/* Overlay removed as per new design */}
       </div>
       
       <div className="profile-header-content">
@@ -137,25 +137,7 @@ const ProfileHeader = ({ user }) => {
           </div>
         </div>
         
-        <div className="profile-header-actions">
-          <Button
-            variant={editMode ? 'secondary' : 'primary'}
-            onClick={handleEditToggle}
-            icon={<Edit size={16} />}
-            className="edit-profile-btn"
-          >
-            {editMode ? 'Cancel Edit' : 'Edit Profile'}
-          </Button>
-          
-          <Button
-            variant="outline"
-            onClick={() => dispatch(setActiveTab('settings'))}
-            icon={<Settings size={16} />}
-            className="settings-btn"
-          >
-            Settings
-          </Button>
-        </div>
+        
       </div>
       
       {/* Expert Profile Stats */}

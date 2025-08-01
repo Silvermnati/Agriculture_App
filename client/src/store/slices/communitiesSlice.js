@@ -145,7 +145,9 @@ export const communitiesSlice = createSlice({
       })
       .addCase(getCommunities.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.communities = action.payload.communities || action.payload;
+        // Ensure we always get an array for communities
+        const communities = action.payload.communities || action.payload.data || action.payload;
+        state.communities = Array.isArray(communities) ? communities : [];
         state.pagination = action.payload.pagination || {};
       })
       .addCase(getCommunities.rejected, (state, action) => {
@@ -185,9 +187,9 @@ export const communitiesSlice = createSlice({
       })
       .addCase(joinCommunity.fulfilled, (state, action) => {
         state.isLoading = false;
-        // Update community membership status
+        // Update community membership status (handle both id and community_id)
         const communityIndex = state.communities.findIndex(
-          c => c.id === action.payload.communityId
+          c => (c.id || c.community_id) === action.payload.communityId
         );
         if (communityIndex !== -1) {
           state.communities[communityIndex].is_member = !state.communities[communityIndex].is_member;
@@ -199,7 +201,8 @@ export const communitiesSlice = createSlice({
           }
         }
         // Update current community if it's the same
-        if (state.currentCommunity && state.currentCommunity.id === action.payload.communityId) {
+        const currentCommunityId = state.currentCommunity?.id || state.currentCommunity?.community_id;
+        if (state.currentCommunity && currentCommunityId === action.payload.communityId) {
           state.currentCommunity.is_member = !state.currentCommunity.is_member;
           if (state.currentCommunity.is_member) {
             state.currentCommunity.member_count += 1;

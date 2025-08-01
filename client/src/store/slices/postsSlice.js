@@ -121,6 +121,20 @@ export const getComments = createAsyncThunk(
   }
 );
 
+export const deleteComment = createAsyncThunk(
+  'posts/deleteComment',
+  async ({ postId, commentId }, thunkAPI) => {
+    try {
+      await postsAPI.deleteComment(commentId);
+      return { postId, commentId };
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.error?.message || error.response?.data?.message || 'Failed to delete comment'
+      );
+    }
+  }
+);
+
 const initialState = {
   posts: [],
   currentPost: null,
@@ -239,6 +253,11 @@ const postsSlice = createSlice({
         state.message = action.payload;
       })
       // Toggle Like
+      .addCase(toggleLike.pending, (state) => {
+        // Don't set global loading for likes to avoid UI freezing
+        state.isError = false;
+        state.message = '';
+      })
       .addCase(toggleLike.fulfilled, (state, action) => {
         const { postId, liked, like_count } = action.payload;
         
@@ -255,6 +274,10 @@ const postsSlice = createSlice({
         if (state.currentPost && (state.currentPost.id === postId || state.currentPost.post_id === postId)) {
           updatePostLikeState(state.currentPost);
         }
+      })
+      .addCase(toggleLike.rejected, (state, action) => {
+        state.isError = true;
+        state.message = action.payload;
       })
       // Add Comment
       .addCase(addComment.pending, (state) => {
@@ -290,6 +313,22 @@ const postsSlice = createSlice({
       .addCase(getComments.fulfilled, (state, action) => {
         const { postId, comments } = action.payload;
         state.postComments[postId] = comments;
+      })
+      // Delete Comment
+      .addCase(deleteComment.fulfilled, (state, action) => {
+        const { postId, commentId } = action.payload;
+        if (state.postComments[postId]) {
+          state.postComments[postId] = state.postComments[postId].filter(
+            (comment) => comment.comment_id !== commentId
+          );
+        }
+        const postIndex = state.posts.findIndex(post => post.id === postId || post.post_id === postId);
+        if (postIndex !== -1) {
+          state.posts[postIndex].comment_count = Math.max(0, (state.posts[postIndex].comment_count || 0) - 1);
+        }
+        if (state.currentPost && (state.currentPost.id === postId || state.currentPost.post_id === postId)) {
+          state.currentPost.comment_count = Math.max(0, (state.currentPost.comment_count || 0) - 1);
+        }
       });
   },
 });

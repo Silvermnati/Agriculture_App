@@ -4,7 +4,6 @@ import ExpertList from '../../components/Experts/ExpertList';
 import ExpertFilters from '../../components/Experts/ExpertFilters';
 import LoadingSpinner from '../../components/common/LoadingSpinner/LoadingSpinner';
 import { getExperts, reset } from '../../store/slices/expertsSlice';
-import { mockExperts } from '../../utils/mockData';
 
 const ExpertsPage = () => {
   const dispatch = useDispatch();
@@ -13,18 +12,7 @@ const ExpertsPage = () => {
   const [filters, setFilters] = useState({});
 
   useEffect(() => {
-    // Try to fetch from API first, fallback to mock data
-    const fetchExperts = async () => {
-      try {
-        await dispatch(getExperts(filters)).unwrap();
-      } catch (error) {
-        // If API fails, use mock data for development
-        console.warn('API failed, using mock data:', error);
-        // You can set mock data here if needed for development
-      }
-    };
-
-    fetchExperts();
+    dispatch(getExperts(filters));
     
     // Cleanup function
     return () => {
@@ -47,11 +35,21 @@ const ExpertsPage = () => {
         ) : isError ? (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             <p>{message}</p>
-            <p className="text-sm mt-2">Using demo data for development.</p>
+            <button 
+              onClick={() => dispatch(getExperts(filters))}
+              className="mt-2 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+            >
+              Try Again
+            </button>
           </div>
-        ) : null}
-        
-        <ExpertList experts={experts.length > 0 ? experts : mockExperts} />
+        ) : experts.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-gray-500 text-lg mb-4">No experts found</div>
+            <p className="text-gray-400">Try adjusting your filters or check back later.</p>
+          </div>
+        ) : (
+          <ExpertList experts={experts} />
+        )}
       </div>
     </div>
   );

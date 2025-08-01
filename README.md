@@ -21,6 +21,12 @@ A Flask-based API for the Agricultural Super App, providing endpoints for user m
 - JWT Authentication
 - Cloudinary for image storage
 
+## Google Slides Presentation.
+Follow the link below to check the presentation.
+
+https://docs.google.com/presentation/d/1P_Y0yafrs_kARiSbf4OQqjhgJc-pha8ZNJrQSQ68T8I/edit?usp=sharing
+
+
 ## Local Development
 
 1. Clone the repository

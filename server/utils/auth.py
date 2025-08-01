@@ -1,76 +1,35 @@
 from functools import wraps
 from flask import request, jsonify, current_app, g
-import jwt
+from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request
 from server.models.user import User
 from server.database import db
 import uuid
 
 def token_required(f):
-    """Decorator for endpoints that require authentication."""
+    """Decorator for endpoints that require authentication (Flask-JWT-Extended version)."""
     @wraps(f)
+    @jwt_required()
     def decorated(*args, **kwargs):
-        token = None
-        
-        # Get token from header
-        if 'Authorization' in request.headers:
-            auth_header = request.headers['Authorization']
-            if auth_header.startswith('Bearer '):
-                token = auth_header.split(' ')[1]
-        
-        if not token:
+        user_id = get_jwt_identity()
+        current_user = User.query.filter_by(user_id=user_id).first()
+        if not current_user:
             return jsonify({
                 'success': False,
                 'error': {
-                    'code': 'AUTHENTICATION_REQUIRED',
-                    'message': 'Authentication token is required'
+                    'code': 'USER_NOT_FOUND',
+                    'message': 'User not found'
                 }
-            }), 401
-        
-        try:
-            # Decode token
-            data = jwt.decode(token, current_app.config['JWT_SECRET_KEY'], algorithms=['HS256'])
-            current_user = User.query.filter_by(user_id=data['user_id']).first()
-            
-            if not current_user:
-                return jsonify({
-                    'success': False,
-                    'error': {
-                        'code': 'USER_NOT_FOUND',
-                        'message': 'User not found'
-                    }
-                }), 404
-                
-            if not current_user.is_active:
-                return jsonify({
-                    'success': False,
-                    'error': {
-                        'code': 'ACCOUNT_INACTIVE',
-                        'message': 'User account is inactive'
-                    }
-                }), 403
-                
-            # Store user in Flask's g object for access in other decorators
-            g.current_user = current_user
-                
-        except jwt.ExpiredSignatureError:
+            }), 404
+        if not current_user.is_active:
             return jsonify({
                 'success': False,
                 'error': {
-                    'code': 'TOKEN_EXPIRED',
-                    'message': 'Authentication token has expired'
+                    'code': 'ACCOUNT_INACTIVE',
+                    'message': 'User account is inactive'
                 }
-            }), 401
-        except jwt.InvalidTokenError:
-            return jsonify({
-                'success': False,
-                'error': {
-                    'code': 'INVALID_TOKEN',
-                    'message': 'Invalid authentication token'
-                }
-            }), 401
-            
+            }), 403
+        g.current_user = current_user
         return f(current_user, *args, **kwargs)
-    
     return decorated
 
 
@@ -210,3 +169,21 @@ def verified_user_required(f):
         return f(current_user, *args, **kwargs)
     
     return decorated
+
+
+def get_current_user_optional():
+    """
+    Get current user from token if available, return None if not authenticated.
+    This is useful for endpoints that work with or without authentication.
+    """
+    try:
+        verify_jwt_in_request(optional=True)
+        user_id = get_jwt_identity()
+        if not user_id:
+            return None
+        current_user = User.query.filter_by(user_id=user_id).first()
+        if not current_user or not current_user.is_active:
+            return None
+        return current_user
+    except Exception:
+        return None

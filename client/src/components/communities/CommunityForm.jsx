@@ -26,6 +26,7 @@ const CommunityForm = ({ isOpen, onClose }) => {
 
   const [newCrop, setNewCrop] = useState('');
   const [errors, setErrors] = useState({});
+  const [resetTrigger, setResetTrigger] = useState(0);
 
   const communityTypes = [
     { value: 'Regional', label: 'Regional', description: 'Location-based community' },
@@ -134,6 +135,7 @@ const CommunityForm = ({ isOpen, onClose }) => {
         image_url: ''
       });
       setErrors({});
+      setResetTrigger(prev => prev + 1); // Trigger FileUpload reset
       
       onClose();
       
@@ -159,6 +161,7 @@ const CommunityForm = ({ isOpen, onClose }) => {
     });
     setErrors({});
     setNewCrop('');
+    setResetTrigger(prev => prev + 1); // Trigger FileUpload reset
   };
 
   return (
@@ -181,6 +184,7 @@ const CommunityForm = ({ isOpen, onClose }) => {
               acceptedTypes="image/*"
               maxSize={2 * 1024 * 1024} // 2MB
               className="mb-2"
+              resetTrigger={resetTrigger}
             />
             {formData.image_url && (
               <div className="mt-2">

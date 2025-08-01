@@ -13,9 +13,10 @@
 
 .settings-section {
   background: white;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #e2e8f0; /* Lighter border */
   border-radius: 12px;
   overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); /* Softer shadow */
 }
 
 .settings-section-header {
@@ -23,26 +24,26 @@
   align-items: center;
   gap: 1rem;
   padding: 1.5rem;
-  background: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+  background: #f8fafc; /* Light background */
+  border-bottom: 1px solid #e2e8f0; /* Lighter border */
 }
 
 .settings-icon {
-  color: #10b981;
+  color: #4CAF50; /* Green icon color */
   flex-shrink: 0;
 }
 
 .settings-section-header h3 {
-  font-size: 1.125rem;
+  font-size: 1.25rem; /* Slightly larger title */
   font-weight: 600;
-  color: #1f2937;
+  color: #334155; /* Darker grey for title */
   margin: 0;
 }
 
 .settings-section-header p {
-  color: #6b7280;
+  color: #64748b; /* Softer grey for description */
   margin: 0.25rem 0 0 0;
-  font-size: 0.875rem;
+  font-size: 0.9rem; /* Slightly larger description */
 }
 
 .settings-options {
@@ -60,7 +61,7 @@
 }
 
 .setting-item.danger-zone {
-  border-top: 1px solid #fecaca;
+  border-top: 1px solid #fecaca; /* Red border for danger zone */
   padding-top: 1.5rem;
   margin-top: 1rem;
 }
@@ -71,28 +72,30 @@
 
 .setting-label {
   font-weight: 500;
-  color: #1f2937;
+  color: #334155; /* Darker grey for label */
   display: block;
   margin-bottom: 0.25rem;
 }
 
 .setting-description {
-  color: #6b7280;
+  color: #64748b; /* Softer grey for description */
   font-size: 0.875rem;
 }
 
 .setting-select {
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  padding: 0.6rem 1rem; /* Adjusted padding */
+  border: 1px solid #ced4da; /* Lighter border */
+  border-radius: 8px; /* More rounded corners */
   background: white;
   min-width: 150px;
+  font-size: 0.95rem;
+  color: #495057;
 }
 
 .setting-select:focus {
   outline: none;
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  border-color: #4CAF50; /* Green on focus */
+  box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25); /* Softer shadow */
 }
 
 /* Toggle Switch */
@@ -116,7 +119,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #d1d5db;
+  background-color: #ced4da; /* Light grey for off state */
   transition: 0.2s;
   border-radius: 24px;
 }
@@ -134,7 +137,7 @@
 }
 
 input:checked + .toggle-slider {
-  background-color: #10b981;
+  background-color: #4CAF50; /* Green for on state */
 }
 
 input:checked + .toggle-slider:before {
@@ -142,7 +145,7 @@ input:checked + .toggle-slider:before {
 }
 
 input:focus + .toggle-slider {
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25); /* Green shadow on focus */
 }
 
 .settings-actions {
@@ -150,7 +153,7 @@ input:focus + .toggle-slider {
   bottom: 0;
   background: white;
   padding: 1rem 2rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid #e2e8f0; /* Lighter border */
   display: flex;
   justify-content: flex-end;
   gap: 1rem;

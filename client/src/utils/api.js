@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { API_ENDPOINTS } from './constants';
 
-// Create axios instance. Always use the production API URL since we don't have a local backend
+// Create axios instance - temporarily using production API for development
 const API_URL = 'https://agriculture-app-1-u2a6.onrender.com/api';
 
 const api = axios.create({
@@ -16,7 +16,10 @@ api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`;
+      console.log('API: Adding token to request:', token.substring(0, 20) + '...');
+    } else {
+      console.warn('API: No token found in localStorage');
     }
     return config;
   },
@@ -31,15 +34,23 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Handle token expiration
-    if (error.response && error.response.status === 401) {
-      // Check if the error is due to token expiration
-      if (error.response.data.message === 'Token has expired') {
-        // Clear local storage
+    console.error('API Error:', error.response?.data || error.message);
+    
+    if (error.response?.status === 401) {
+      const errorCode = error.response?.data?.error?.code;
+      const errorMessage = error.response?.data?.error?.message || error.response?.data?.message;
+      
+      if (errorCode === 'TOKEN_EXPIRED' || errorCode === 'INVALID_TOKEN' || errorMessage === 'Token has expired') {
+        console.warn('Token expired or invalid, clearing auth data');
+        
+        // Clear auth data
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         
-        // Redirect to login page
+        // Show user-friendly message
+        alert('Your session has expired. Please log in again.');
+        
+        // Redirect to login
         window.location.href = '/login';
       }
     }
@@ -50,7 +61,20 @@ api.interceptors.response.use(
 
 // Auth API calls
 export const authAPI = {
-  register: (userData) => api.post(API_ENDPOINTS.AUTH.REGISTER, userData),
+  register: (userData) => {
+    console.log('API: Registering user with data:', userData);
+    return api.post(API_ENDPOINTS.AUTH.REGISTER, userData)
+      .then(response => {
+        console.log('API: Registration response:', response);
+        return response;
+      })
+      .catch(error => {
+        console.error('API: Registration error:', error);
+        console.error('API: Error response:', error.response?.data);
+        console.error('API: Error details:', JSON.stringify(error.response?.data, null, 2));
+        throw error;
+      });
+  },
   login: (credentials) => api.post(API_ENDPOINTS.AUTH.LOGIN, credentials),
   getProfile: () => api.get(API_ENDPOINTS.AUTH.PROFILE),
   updateProfile: (profileData) => api.put(API_ENDPOINTS.AUTH.PROFILE, profileData),
@@ -83,32 +107,50 @@ export const postsAPI = {
   getPost: (postId) => api.get(`${API_ENDPOINTS.POSTS.BASE}/${postId}`),
   createPost: (postData) => {
     console.log('API createPost called with:', postData);
-    const formData = new FormData();
-    Object.keys(postData).forEach(key => {
-      if (key === 'featured_image' && postData[key]) {
-        formData.append(key, postData[key]);
-        console.log(`Added file: ${key}`, postData[key]);
-      } else if (Array.isArray(postData[key])) {
-        // Backend expects arrays as JSON strings
-        const jsonValue = JSON.stringify(postData[key]);
-        formData.append(key, jsonValue);
-        console.log(`Added array as JSON: ${key} = ${jsonValue}`);
-      } else {
-        formData.append(key, postData[key]);
-        console.log(`Added field: ${key} = ${postData[key]}`);
+    
+    // Check if postData is FormData or regular object
+    if (postData instanceof FormData) {
+      console.log('Received FormData object');
+      console.log('FormData entries:');
+      for (let [key, value] of postData.entries()) {
+        console.log(`${key}: ${value}`);
       }
-    });
-    
-    console.log('Making API request to:', API_ENDPOINTS.POSTS.BASE);
-    console.log('Full API URL:', `${API_URL}${API_ENDPOINTS.POSTS.BASE}`);
-    console.log('Environment check - import.meta.env.PROD:', import.meta.env.PROD);
-    console.log('Current API_URL:', API_URL);
-    
-    return api.post(API_ENDPOINTS.POSTS.BASE, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+      
+      console.log('Making API request to:', API_ENDPOINTS.POSTS.BASE);
+      console.log('Full API URL:', `${API_URL}${API_ENDPOINTS.POSTS.BASE}`);
+      
+      return api.post(API_ENDPOINTS.POSTS.BASE, postData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    } else {
+      // Legacy handling for regular objects
+      const formData = new FormData();
+      Object.keys(postData).forEach(key => {
+        if (key === 'featured_image' && postData[key]) {
+          formData.append(key, postData[key]);
+          console.log(`Added file: ${key}`, postData[key]);
+        } else if (Array.isArray(postData[key])) {
+          postData[key].forEach(item => formData.append(`${key}[]`, item));
+          console.log(`Added array: ${key}[] = ${postData[key].join(', ')}`);
+        } else {
+          formData.append(key, postData[key]);
+          console.log(`Added field: ${key} = ${postData[key]}`);
+        }
+      });
+      
+      console.log('Making API request to:', API_ENDPOINTS.POSTS.BASE);
+      console.log('Full API URL:', `${API_URL}${API_ENDPOINTS.POSTS.BASE}`);
+      console.log('Environment check - import.meta.env.PROD:', import.meta.env.PROD);
+      console.log('Current API_URL:', API_URL);
+      
+      return api.post(API_ENDPOINTS.POSTS.BASE, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    }
   },
   updatePost: (postId, postData) => {
     // Handle both regular data and FormData for file uploads
@@ -118,7 +160,7 @@ export const postsAPI = {
         if (key === 'featured_image' && postData[key]) {
           formData.append(key, postData[key]);
         } else if (Array.isArray(postData[key])) {
-          formData.append(key, JSON.stringify(postData[key]));
+          postData[key].forEach(item => formData.append(`${key}[]`, item));
         } else {
           formData.append(key, postData[key]);
         }
@@ -130,9 +172,14 @@ export const postsAPI = {
     return api.put(`${API_ENDPOINTS.POSTS.BASE}/${postId}`, postData);
   },
   deletePost: (postId) => api.delete(`${API_ENDPOINTS.POSTS.BASE}/${postId}`),
-  addComment: (postId, commentData) => api.post(API_ENDPOINTS.POSTS.COMMENTS(postId), commentData),
+  addComment: (postId, commentData) => {
+    console.log('API: Adding comment to post:', postId, 'with data:', commentData);
+    console.log('API: Token in localStorage:', localStorage.getItem('token') ? 'Present' : 'Missing');
+    return api.post(API_ENDPOINTS.POSTS.COMMENTS(postId), commentData);
+  },
   getComments: (postId) => api.get(API_ENDPOINTS.POSTS.COMMENTS(postId)),
-  toggleLike: (postId) => api.post(API_ENDPOINTS.POSTS.LIKE(postId))
+  toggleLike: (postId) => api.post(API_ENDPOINTS.POSTS.LIKE(postId)),
+  deleteComment: (commentId) => api.delete(API_ENDPOINTS.COMMENTS.DELETE(commentId))
 };
 
 // Communities API calls
@@ -152,7 +199,7 @@ export const communitiesAPI = {
 export const expertsAPI = {
   getExperts: (params) => api.get(API_ENDPOINTS.EXPERTS.BASE, { params }),
   getExpert: (expertId) => api.get(`${API_ENDPOINTS.EXPERTS.BASE}/${expertId}`),
-  createExpertProfile: (expertData) => api.post(API_ENDPOINTS.EXPERTS.BASE, expertData),
+  createExpertProfile: (expertData) => api.post(`${API_ENDPOINTS.EXPERTS.BASE}/profile`, expertData),
   updateExpertProfile: (expertId, expertData) => api.put(`${API_ENDPOINTS.EXPERTS.BASE}/${expertId}`, expertData),
   bookConsultation: (consultationData) => api.post(API_ENDPOINTS.EXPERTS.CONSULTATIONS, consultationData),
   getConsultations: () => api.get(API_ENDPOINTS.EXPERTS.CONSULTATIONS)
@@ -168,7 +215,7 @@ export const articlesAPI = {
       if (key === 'featured_image' && articleData[key]) {
         formData.append(key, articleData[key]);
       } else if (Array.isArray(articleData[key])) {
-        formData.append(key, JSON.stringify(articleData[key]));
+        articleData[key].forEach(item => formData.append(`${key}[]`, item));
       } else {
         formData.append(key, articleData[key]);
       }
@@ -247,6 +294,62 @@ export const uploadAPI = {
       },
     });
   }
+};
+
+// Payments API calls
+export const paymentsAPI = {
+  initiatePayment: (paymentData) => api.post(API_ENDPOINTS.PAYMENTS.INITIATE, paymentData),
+  initiateConsultationPayment: (paymentData) => api.post('/payments/consultation/initiate', paymentData),
+  getPaymentStatus: (paymentId) => api.get(API_ENDPOINTS.PAYMENTS.STATUS(paymentId)),
+  getPaymentHistory: (params) => api.get(API_ENDPOINTS.PAYMENTS.HISTORY, { params }),
+  requestRefund: (paymentId, refundData) => api.post(API_ENDPOINTS.PAYMENTS.REFUND(paymentId), refundData)
+};
+
+// Notifications API calls
+export const notificationsAPI = {
+  getNotifications: (params) => api.get(API_ENDPOINTS.NOTIFICATIONS.BASE, { params }),
+  markAsRead: (notificationIds) => api.post(API_ENDPOINTS.NOTIFICATIONS.MARK_READ, { notification_ids: notificationIds }),
+  getPreferences: () => api.get(API_ENDPOINTS.NOTIFICATIONS.PREFERENCES),
+  updatePreferences: (preferences) => api.put(API_ENDPOINTS.NOTIFICATIONS.PREFERENCES, preferences),
+  getHistory: (params) => api.get(API_ENDPOINTS.NOTIFICATIONS.HISTORY, { params })
+};
+
+// Follow API calls
+export const followAPI = {
+  followUser: (userId) => api.post(API_ENDPOINTS.FOLLOW.FOLLOW_USER(userId)),
+  unfollowUser: (userId) => api.delete(API_ENDPOINTS.FOLLOW.FOLLOW_USER(userId)),
+  getFollowers: (userId, params) => api.get(API_ENDPOINTS.FOLLOW.FOLLOWERS(userId), { params }),
+  getFollowing: (userId, params) => api.get(API_ENDPOINTS.FOLLOW.FOLLOWING(userId), { params })
+};
+
+// Comments API calls
+export const commentsAPI = {
+  editComment: (commentId, commentData) => api.put(API_ENDPOINTS.COMMENTS.EDIT(commentId), commentData),
+  deleteComment: (commentId) => api.delete(API_ENDPOINTS.COMMENTS.DELETE(commentId)),
+  getEditHistory: (commentId) => api.get(API_ENDPOINTS.COMMENTS.EDIT_HISTORY(commentId))
+};
+
+// Admin API calls
+export const adminAPI = {
+  // Users management
+  getAllUsers: (params) => api.get('/admin/users', { params }),
+  getUserById: (userId) => api.get(`/admin/users/${userId}`),
+  updateUserStatus: (userId) => api.patch(`/admin/users/${userId}/status`),
+  deleteUser: (userId) => api.delete(`/admin/users/${userId}`),
+  
+  // Analytics and stats
+  getStats: () => api.get('/admin/stats'),
+  getRecentActivity: (params) => api.get('/admin/activity', { params }),
+  
+  // Posts management (using existing posts API with admin privileges)
+  getAllPosts: (params) => api.get('/posts', { params }),
+  updatePostStatus: (postId, status) => api.patch(`/posts/${postId}/status`, { status }),
+  
+  // Communities management (using existing communities API)
+  getAllCommunities: (params) => api.get('/communities', { params }),
+  
+  // System management
+  getSystemHealth: () => api.get('/health')
 };
 
 export default api;

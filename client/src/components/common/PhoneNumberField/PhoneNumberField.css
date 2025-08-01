@@ -1,0 +1,166 @@
+/* === Phone Number Field: Main container === */
+.phone-number-field {
+  position: relative;
+}
+
+/* === Shared Label Styling === */
+.phone-number-field__label {
+  display: block;
+  font-weight: 600;
+  color: #374151; /* Consistent with other labels */
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.phone-number-field__required {
+  color: #ef4444;
+  margin-left: 0.25rem;
+}
+
+/* === Input Container: Flex wrapper for button and input === */
+.phone-number-field__input-container {
+  display: flex;
+  align-items: stretch;
+  position: relative;
+}
+
+/* === Country Selector Button === */
+.phone-number-field__country-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1rem;
+  background-color: #ffffff; /* Match input background */
+  border: 1px solid #d1d5db; /* Match input border */
+  border-right: 1px solid #e5e7eb; /* A slightly lighter separator */
+  border-radius: 8px 0 0 8px; /* Match input radius */
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  min-width: 7rem;
+  height: 100%;
+}
+
+.phone-number-field__country-button:hover {
+  background-color: #f9fafb;
+}
+
+.phone-number-field__country-button:focus {
+  outline: none;
+  border-color: #28a745;
+  box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.15);
+  z-index: 1;
+}
+
+.phone-number-field__country-flag {
+  font-size: 1.5rem; /* Larger flag */
+  line-height: 1;
+}
+
+.phone-number-field__country-code {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.phone-number-field__dropdown-arrow {
+  width: 1rem;
+  height: 1rem;
+  color: #6b7280;
+  transition: transform 0.2s ease-in-out;
+}
+
+.phone-number-field__dropdown-arrow--open {
+  transform: rotate(180deg);
+}
+
+/* === Phone Number Input === */
+.phone-number-field__input {
+  flex: 1;
+  padding: 0.875rem 1.125rem;
+  border: 1px solid #d1d5db;
+  border-left: none;
+  border-radius: 0 8px 8px 0; /* Match input radius */
+  font-size: 1rem;
+  color: #111827;
+  background-color: #ffffff;
+  transition: all 0.2s ease-in-out;
+  outline: none;
+  z-index: 0;
+}
+
+.phone-number-field__input:focus {
+  border-color: #28a745;
+  box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.15);
+  z-index: 2;
+}
+
+/* === Validation & Error States === */
+.phone-number-field__input--error,
+.phone-number-field__input--error + .phone-number-field__country-button {
+  border-color: #e53e3e !important;
+}
+
+.phone-number-field__input--error {
+  background-color: #fff5f5;
+}
+
+.phone-number-field__error {
+  color: #e53e3e;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+/* === Dropdown Menu === */
+.phone-number-field__dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 300px; /* A fixed, wider dropdown */
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.phone-number-field__search-container {
+  padding: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.phone-number-field__search {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+  outline: none;
+}
+
+.phone-number-field__country-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.phone-number-field__country-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  text-align: left;
+}
+
+.phone-number-field__country-option:hover {
+  background-color: #f3f4f6;
+}
+
+.phone-number-field__country-option--selected {
+  background-color: #e6f7f0;
+  font-weight: 600;
+}

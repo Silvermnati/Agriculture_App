@@ -123,11 +123,22 @@ class UserFollow(db.Model):
     follow_id = db.Column(db.Integer, primary_key=True)
     follower_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.user_id'), nullable=False)
     following_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.user_id'), nullable=False)
+    notification_enabled = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
     follower = db.relationship('User', foreign_keys=[follower_id], backref=db.backref('following', lazy=True))
     following = db.relationship('User', foreign_keys=[following_id], backref=db.backref('followers', lazy=True))
+    
+    def to_dict(self):
+        """Convert follow relationship to dictionary."""
+        return {
+            'follow_id': self.follow_id,
+            'follower_id': str(self.follower_id),
+            'following_id': str(self.following_id),
+            'notification_enabled': self.notification_enabled,
+            'created_at': self.created_at.isoformat()
+        }
     
     __table_args__ = (
         db.UniqueConstraint('follower_id', 'following_id', name='unique_follow'),
