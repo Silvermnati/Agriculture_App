@@ -26,6 +26,7 @@ def get_posts(current_user=None):
     - category: string
     - crop: string
     - season: string (spring, summer, fall, winter)
+    - tags: string (case-insensitive tag filtering)
     - search: string
     - sort_by: string (date, popularity, relevance)
     """
@@ -36,6 +37,7 @@ def get_posts(current_user=None):
     crops = request.args.get('crop', type=str)
     season = request.args.get('season', type=str)
     locations = request.args.get('location', type=str)
+    tags = request.args.get('tags', type=str)
     search = request.args.get('search')
     sort_by = request.args.get('sort_by', 'date')
     
@@ -87,6 +89,13 @@ def get_posts(current_user=None):
         if location_list:
             # Use 'overlap' (&& operator) to find posts with any of the specified locations
             query = query.filter(Post.applicable_locations.op('&&')(location_list))
+    
+    if tags:
+        # Handle case-insensitive tag filtering
+        tag_name = tags.strip()
+        if tag_name:
+            # Use case-insensitive filtering with ILIKE to handle capitalization differences
+            query = query.filter(Post.tags.any(Tag.name.ilike(f'%{tag_name}%')))
     
     if search:
         query = query.filter(

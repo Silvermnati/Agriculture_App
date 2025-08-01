@@ -22,7 +22,7 @@ import PostsPage from './pages/posts/PostsPage';
 import ProfilePage from './pages/Profile/ProfilePage';
 // import websocketService from './services/websocketService'; // Temporarily disabled
 
-import './App.css';
+
 
 // Create a separate component for routes that needs access to Redux state
 const AppRoutes = () => {

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { commentsAPI } from '../../utils/api';
 import Image from '../common/Image/Image';
+import './CommentItem.css';
 
 const CommentItem = ({ comment, onCommentUpdate, onDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -115,12 +116,14 @@ const CommentItem = ({ comment, onCommentUpdate, onDelete }) => {
   return (
     <div className="comment-item">
       <div className="comment-header">
-        <Image 
-          src={author?.avatar_url}
-          alt={author?.name || 'User'}
-          className="avatar"
-          fallbackType="avatar"
-        />
+        <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-200 flex-shrink-0">
+          <Image 
+            src={author?.avatar_url}
+            alt={author?.name || 'User'}
+            className="w-full h-full object-cover"
+            fallbackType="avatar"
+          />
+        </div>
         <div className="comment-author-info">
           <strong>{author?.name || 'Anonymous User'}</strong>
           <span className="comment-date">

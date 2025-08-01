@@ -31,26 +31,24 @@
   border-bottom: 1px solid #e5e7eb;
 }
 
-.mpesa-payment-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #111827;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 .mpesa-logo {
-  width: 32px;
-  height: 32px;
-  background: #00a651;
-  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-weight: bold;
-  font-size: 0.875rem;
+  flex: 1;
+}
+
+.mpesa-logo-img {
+  height: 70px;
+  width: auto;
+  max-width: 250px;
+  object-fit: contain;
+  transition: transform 0.2s ease;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.mpesa-logo-img:hover {
+  transform: scale(1.02);
 }
 
 .close-button {

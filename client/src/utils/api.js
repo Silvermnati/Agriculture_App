@@ -197,7 +197,20 @@ export const communitiesAPI = {
 
 // Experts API calls
 export const expertsAPI = {
-  getExperts: (params) => api.get(API_ENDPOINTS.EXPERTS.BASE, { params }),
+  getExperts: (params) => {
+    // Clean up params to avoid server errors
+    const cleanParams = {};
+    if (params) {
+      Object.keys(params).forEach(key => {
+        const value = params[key];
+        // Only include non-empty values
+        if (value !== null && value !== undefined && value !== '') {
+          cleanParams[key] = value;
+        }
+      });
+    }
+    return api.get(API_ENDPOINTS.EXPERTS.BASE, { params: cleanParams });
+  },
   getExpert: (expertId) => api.get(`${API_ENDPOINTS.EXPERTS.BASE}/${expertId}`),
   createExpertProfile: (expertData) => api.post(`${API_ENDPOINTS.EXPERTS.BASE}/profile`, expertData),
   updateExpertProfile: (expertId, expertData) => api.put(`${API_ENDPOINTS.EXPERTS.BASE}/${expertId}`, expertData),

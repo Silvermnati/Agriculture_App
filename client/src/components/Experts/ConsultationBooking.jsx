@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Calendar, Clock, DollarSign, User, MessageSquare } from 'lucide-react';
+import { Calendar, Clock, DollarSign, MessageSquare } from 'lucide-react';
 import { bookConsultation } from '../../store/slices/expertsSlice';
 import Modal from '../common/Modal/Modal';
 import Button from '../common/Button/Button';
@@ -11,7 +11,6 @@ import Image from '../common/Image/Image';
 const ConsultationBooking = ({ expert, isOpen, onClose }) => {
   const dispatch = useDispatch();
   const { isLoading, isError, message } = useSelector((state) => state.experts);
-  const { user } = useSelector((state) => state.auth);
 
   const [formData, setFormData] = useState({
     topic: '',
@@ -160,18 +159,20 @@ const ConsultationBooking = ({ expert, isOpen, onClose }) => {
       <div className="max-w-md mx-auto">
         {/* Expert Info */}
         <div className="flex items-center mb-6 p-4 bg-gray-50 rounded-lg">
-          <Image
-            src={expert.avatar_url}
-            alt={expert.name || 'Expert'}
-            className="w-12 h-12 rounded-full object-cover mr-4"
-            fallbackType="expert"
-          />
+          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 mr-4 flex-shrink-0">
+            <Image
+              src={expert.avatar_url}
+              alt={expert.name || 'Expert'}
+              className="w-full h-full object-cover"
+              fallbackType="expert"
+            />
+          </div>
           <div>
             <h3 className="font-semibold text-gray-900">{expert.name}</h3>
             <p className="text-sm text-gray-600">{expert.title}</p>
             <div className="flex items-center text-sm text-green-600 mt-1">
               <DollarSign className="w-4 h-4 mr-1" />
-              <span>${expert.hourly_rate}/hour</span>
+              <span>{expert.currency === 'KES' ? 'KSh' : '$'} {expert.consultation_fee || expert.hourly_rate}/hour</span>
             </div>
           </div>
         </div>
@@ -277,11 +278,11 @@ const ConsultationBooking = ({ expert, isOpen, onClose }) => {
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">Estimated Cost:</span>
               <span className="text-lg font-semibold text-green-600">
-                ${calculateCost()} {expert.currency || 'USD'}
+                {expert.currency === 'KES' ? 'KSh' : '$'}{calculateCost()}
               </span>
             </div>
             <p className="text-xs text-gray-500 mt-1">
-              {formData.duration} minutes × ${expert.hourly_rate}/hour
+              {formData.duration} minutes × {expert.currency === 'KES' ? 'KSh' : '$'}{expert.hourly_rate}/hour
             </p>
           </div>
 
