@@ -100,6 +100,7 @@ def create_community(current_user):
         focus_crops=data.get('focus_crops'),
         location_city=data.get('location_city'),
         location_country=data.get('location_country'),
+        image_url=data.get('image_url'),
         is_private=data.get('is_private', False),
         created_by=current_user.user_id
     )
