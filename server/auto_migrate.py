@@ -42,13 +42,13 @@ def auto_migrate():
             
             print(f"🔧 Adding {len(missing_columns)} missing columns: {missing_columns}")
             
-            # Add missing columns
+            # Add missing columns with proper timezone handling
             column_definitions = {
                 'is_edited': "ALTER TABLE comments ADD COLUMN is_edited BOOLEAN DEFAULT false NOT NULL",
                 'edit_count': "ALTER TABLE comments ADD COLUMN edit_count INTEGER DEFAULT 0 NOT NULL", 
-                'last_edited_at': "ALTER TABLE comments ADD COLUMN last_edited_at TIMESTAMP",
+                'last_edited_at': "ALTER TABLE comments ADD COLUMN last_edited_at TIMESTAMP WITH TIME ZONE",
                 'is_deleted': "ALTER TABLE comments ADD COLUMN is_deleted BOOLEAN DEFAULT false NOT NULL",
-                'deleted_at': "ALTER TABLE comments ADD COLUMN deleted_at TIMESTAMP"
+                'deleted_at': "ALTER TABLE comments ADD COLUMN deleted_at TIMESTAMP WITH TIME ZONE"
             }
             
             for column in missing_columns:
@@ -64,6 +64,34 @@ def auto_migrate():
                         return False
             
             print("✅ Comment tracking fields migration completed")
+
+        # --- Fix existing timestamp columns to be timezone-aware ---
+        with db.engine.connect() as conn:
+            print("🔄 Auto-migration: Converting timestamp columns to timezone-aware...")
+            
+            timestamp_fixes = [
+                "ALTER TABLE comments ALTER COLUMN created_at TYPE TIMESTAMP WITH TIME ZONE",
+                "ALTER TABLE comments ALTER COLUMN updated_at TYPE TIMESTAMP WITH TIME ZONE",
+                "ALTER TABLE posts ALTER COLUMN created_at TYPE TIMESTAMP WITH TIME ZONE", 
+                "ALTER TABLE posts ALTER COLUMN updated_at TYPE TIMESTAMP WITH TIME ZONE",
+                "ALTER TABLE posts ALTER COLUMN published_at TYPE TIMESTAMP WITH TIME ZONE",
+                "ALTER TABLE users ALTER COLUMN created_at TYPE TIMESTAMP WITH TIME ZONE",
+                "ALTER TABLE users ALTER COLUMN updated_at TYPE TIMESTAMP WITH TIME ZONE",
+                "ALTER TABLE users ALTER COLUMN last_login TYPE TIMESTAMP WITH TIME ZONE",
+                "ALTER TABLE notifications ALTER COLUMN created_at TYPE TIMESTAMP WITH TIME ZONE",
+                "ALTER TABLE notifications ALTER COLUMN read_at TYPE TIMESTAMP WITH TIME ZONE"
+            ]
+            
+            for fix_sql in timestamp_fixes:
+                try:
+                    conn.execute(db.text(fix_sql))
+                    conn.commit()
+                    print(f"✅ Fixed timezone for: {fix_sql.split()[2]}")
+                except Exception as e:
+                    if "does not exist" in str(e) or "cannot be cast" in str(e):
+                        print(f"ℹ️  Skipping {fix_sql.split()[2]} (table/column doesn't exist or already correct)")
+                    else:
+                        print(f"⚠️  Warning fixing {fix_sql.split()[2]}: {e}")
 
         # --- Add notification_enabled to user_follows if missing ---
         with db.engine.connect() as conn:

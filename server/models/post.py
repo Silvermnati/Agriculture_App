@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 
@@ -152,8 +152,8 @@ class Comment(db.Model):
     # Soft deletion fields
     is_deleted = db.Column(db.Boolean, default=False, nullable=False)
     deleted_at = db.Column(db.DateTime, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
     
     # Relationships
     post = db.relationship('Post', backref=db.backref('comments', lazy=True))
@@ -161,7 +161,7 @@ class Comment(db.Model):
     parent_comment = db.relationship('Comment', remote_side=[comment_id], backref=db.backref('replies', lazy=True))
     
     def to_dict(self, include_replies=True):
-        """Convert comment to dictionary."""
+        """Convert comment to dictionary with proper UTC timestamps."""
         comment_dict = {
             'comment_id': str(self.comment_id),
             'parent_comment_id': str(self.parent_comment_id) if self.parent_comment_id else None,
@@ -173,11 +173,11 @@ class Comment(db.Model):
             } if self.user else None,
             'is_edited': self.is_edited,
             'edit_count': self.edit_count,
-            'last_edited_at': self.last_edited_at.isoformat() if self.last_edited_at else None,
+            'last_edited_at': self.last_edited_at.replace(tzinfo=timezone.utc).isoformat() if self.last_edited_at else None,
             'is_deleted': self.is_deleted,
-            'deleted_at': self.deleted_at.isoformat() if self.deleted_at else None,
-            'created_at': self.created_at.isoformat(),
-            'updated_at': self.updated_at.isoformat()
+            'deleted_at': self.deleted_at.replace(tzinfo=timezone.utc).isoformat() if self.deleted_at else None,
+            'created_at': self.created_at.replace(tzinfo=timezone.utc).isoformat(),
+            'updated_at': self.updated_at.replace(tzinfo=timezone.utc).isoformat()
         }
         
         if include_replies:

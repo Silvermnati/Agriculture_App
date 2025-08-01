@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Users, Wheat, MapPin, FileText, MessageSquare, TrendingUp, Plus } from 'lucide-react';
 import { adminAPI } from '../../utils/api';
 import { useAdmin } from '../../contexts/AdminContext';
+import { formatTimeAgo } from '../../utils/timeHelpers';
 
 const SystemStats = () => {
   const { refreshTrigger, setActiveTab } = useAdmin();
@@ -63,18 +64,6 @@ const SystemStats = () => {
     fetchStats();
     fetchRecentActivity();
   }, [refreshTrigger]); // Refresh when refreshTrigger changes
-
-  // Helper function to format time ago
-  const formatTimeAgo = (timestamp) => {
-    const now = new Date();
-    const time = new Date(timestamp);
-    const diffInMinutes = Math.floor((now - time) / (1000 * 60));
-    
-    if (diffInMinutes < 1) return 'Just now';
-    if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`;
-    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} hours ago`;
-    return `${Math.floor(diffInMinutes / 1440)} days ago`;
-  };
 
   // Helper function to get activity color based on type
   const getActivityColor = (type) => {

@@ -4,7 +4,7 @@ Comment service for managing comment edit/delete functionality with history trac
 
 import logging
 from typing import List, Dict, Optional, Any
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from server.database import db
 from server.models.post import Comment, CommentEdit
@@ -93,8 +93,8 @@ class CommentService:
             setattr(comment, 'is_edited', True)
             current_edit_count = getattr(comment, 'edit_count', 0)
             setattr(comment, 'edit_count', current_edit_count + 1)
-            setattr(comment, 'last_edited_at', datetime.utcnow())
-            comment.updated_at = datetime.utcnow()
+            setattr(comment, 'last_edited_at', datetime.now(timezone.utc))
+            comment.updated_at = datetime.now(timezone.utc)
             
             # Save changes
             db.session.add(edit_record)

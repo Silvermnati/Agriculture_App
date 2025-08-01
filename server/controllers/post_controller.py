@@ -565,40 +565,41 @@ def delete_post(current_user, post_id):
     except ValueError:
         return create_error_response('INVALID_POST_ID', 'Invalid post ID format', status_code=400)
     
-    post = Post.query.get(post_id)
-    if not post:
-        return create_error_response('POST_NOT_FOUND', 'Post not found', status_code=404)
-    
-    # Check permissions
-    is_admin = current_user.role == 'admin'
-    is_author = post.author_id == current_user.user_id
-    
-    if not is_admin and not is_author:
-        return create_error_response('FORBIDDEN', 'You can only delete your own posts', status_code=403)
-    
-    # Admin hard delete - completely remove post and all related data
-    if is_admin:
-        from server.models.post import Comment, PostLike, PostEditHistory
+    try:
+        post = Post.query.get(post_id)
+        if not post:
+            return create_error_response('POST_NOT_FOUND', 'Post not found', status_code=404)
         
-        # Delete all related data
-        Comment.query.filter_by(post_id=post_id).delete()
-        PostLike.query.filter_by(post_id=post_id).delete()
-        PostEditHistory.query.filter_by(post_id=post_id).delete()
+        # Check permissions
+        is_admin = current_user.role == 'admin'
+        is_author = post.author_id == current_user.user_id
         
-        # Delete the post itself
-        db.session.delete(post)
-        db.session.commit()
+        if not is_admin and not is_author:
+            return create_error_response('FORBIDDEN', 'You can only delete your own posts', status_code=403)
         
-        return create_success_response(message='Post permanently deleted successfully')
-    
-    # User soft delete (archive) their own post
-    else:
-        post.status = 'archived'
-        post.updated_at = datetime.utcnow()
-        db.session.commit()
+        # Admin hard delete - completely remove post and all related data
+        if is_admin:
+            from server.models.post import Comment, PostLike, PostEditHistory
+            
+            # Delete all related data
+            Comment.query.filter_by(post_id=post_id).delete()
+            PostLike.query.filter_by(post_id=post_id).delete()
+            PostEditHistory.query.filter_by(post_id=post_id).delete()
+            
+            # Delete the post itself
+            db.session.delete(post)
+            db.session.commit()
+            
+            return create_success_response(message='Post permanently deleted successfully')
         
-        return create_success_response(message='Post archived successfully')
-        
+        # User soft delete (archive) their own post
+        else:
+            post.status = 'archived'
+            post.updated_at = datetime.utcnow()
+            db.session.commit()
+            
+            return create_success_response(message='Post archived successfully')
+            
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Error deleting post {post_id}: {str(e)}")
