@@ -81,11 +81,25 @@ const LocationManagement = () => {
     
     try {
       console.log('Submitting location form data:', locationForm);
+      
+      // Convert data types before sending to backend
+      const formattedData = {
+        country_id: parseInt(locationForm.country_id),
+        state_id: locationForm.state_id ? parseInt(locationForm.state_id) : null,
+        city: locationForm.city,
+        latitude: locationForm.latitude ? parseFloat(locationForm.latitude) : null,
+        longitude: locationForm.longitude ? parseFloat(locationForm.longitude) : null,
+        climate_zone: locationForm.climate_zone || null,
+        elevation: locationForm.elevation ? parseInt(locationForm.elevation) : null
+      };
+      
+      console.log('Formatted data for backend:', formattedData);
+      
       if (editingItem) {
-        await locationsAPI.updateLocation(editingItem.location_id, locationForm);
+        await locationsAPI.updateLocation(editingItem.location_id, formattedData);
         alert('Location updated successfully!');
       } else {
-        await locationsAPI.createLocation(locationForm);
+        await locationsAPI.createLocation(formattedData);
         alert('Location created successfully!');
       }
       await fetchData();
@@ -126,11 +140,18 @@ const LocationManagement = () => {
   const handleSubmitState = async (e) => {
     e.preventDefault();
     try {
+      // Convert data types for state form
+      const formattedStateData = {
+        country_id: parseInt(stateForm.country_id),
+        name: stateForm.name,
+        code: stateForm.code || null
+      };
+      
       if (editingItem) {
-        await locationsAPI.updateState(editingItem.state_id, stateForm);
+        await locationsAPI.updateState(editingItem.state_id, formattedStateData);
         alert('State updated successfully!');
       } else {
-        await locationsAPI.createState(stateForm);
+        await locationsAPI.createState(formattedStateData);
         alert(`State "${stateForm.name}" created successfully!`);
       }
       // Refresh states for the selected country
@@ -141,7 +162,11 @@ const LocationManagement = () => {
       handleCloseModal();
     } catch (error) {
       console.error('Failed to save state:', error);
-      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Failed to save state';
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error?.message ||
+                          error.response?.data?.error?.details ||
+                          error.response?.data?.error || 
+                          'Failed to save state';
       alert(errorMessage);
     }
   };
