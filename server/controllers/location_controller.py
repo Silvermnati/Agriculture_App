@@ -220,15 +220,23 @@ def create_location(current_user):
         return jsonify({'message': 'Country not found'}), 404
     
     # Validate state if provided
-    if data.get('state_id'):
-        state = StateProvince.query.get(data.get('state_id'))
-        if not state or state.country_id != data.get('country_id'):
-            return jsonify({'message': 'State not found or does not belong to the specified country'}), 404
+    state_id = data.get('state_id')
+    if state_id and str(state_id).strip():  # Check if state_id exists and is not empty
+        try:
+            state_id = int(state_id)
+            country_id = int(data.get('country_id'))
+            state = StateProvince.query.get(state_id)
+            if not state or state.country_id != country_id:
+                return jsonify({'message': 'State not found or does not belong to the specified country'}), 404
+        except (ValueError, TypeError):
+            return jsonify({'message': 'Invalid state ID format'}), 400
+    else:
+        state_id = None  # Set to None if empty string or not provided
     
     # Create location
     location = Location(
         country_id=data.get('country_id'),
-        state_id=data.get('state_id'),
+        state_id=state_id,  # Use the validated state_id
         city=data.get('city'),
         latitude=data.get('latitude'),
         longitude=data.get('longitude'),
@@ -387,11 +395,18 @@ def update_location(current_user, location_id):
     
     # Validate state if provided
     if 'state_id' in data:
-        if data['state_id']:  # Only validate if state_id is not empty
-            state = StateProvince.query.get(data['state_id'])
-            if not state or state.country_id != location.country_id:
-                return jsonify({'message': 'State not found or does not belong to the specified country'}), 404
-        location.state_id = data['state_id'] if data['state_id'] else None
+        state_id = data['state_id']
+        if state_id and str(state_id).strip():  # Check if state_id exists and is not empty
+            try:
+                state_id = int(state_id)
+                state = StateProvince.query.get(state_id)
+                if not state or state.country_id != location.country_id:
+                    return jsonify({'message': 'State not found or does not belong to the specified country'}), 404
+                location.state_id = state_id
+            except (ValueError, TypeError):
+                return jsonify({'message': 'Invalid state ID format'}), 400
+        else:
+            location.state_id = None
     
     # Update other fields
     for field in ['city', 'latitude', 'longitude', 'climate_zone', 'elevation']:

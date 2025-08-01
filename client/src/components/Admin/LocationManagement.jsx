@@ -68,6 +68,7 @@ const LocationManagement = () => {
   const handleSubmitLocation = async (e) => {
     e.preventDefault();
     try {
+      console.log('Submitting location form data:', locationForm);
       if (editingItem) {
         await locationsAPI.updateLocation(editingItem.location_id, locationForm);
         alert('Location updated successfully!');
@@ -79,6 +80,7 @@ const LocationManagement = () => {
       handleCloseModal();
     } catch (error) {
       console.error('Failed to save location:', error);
+      console.error('Error details:', error.response?.data);
       alert(error.response?.data?.message || 'Failed to save location');
     }
   };
