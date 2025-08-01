@@ -266,7 +266,13 @@ export const locationsAPI = {
   getLocations: (params) => api.get(API_ENDPOINTS.LOCATIONS.BASE, { params }),
   createCountry: (countryData) => api.post(API_ENDPOINTS.LOCATIONS.COUNTRIES, countryData),
   createState: (stateData) => api.post(`${API_ENDPOINTS.LOCATIONS.BASE}/states`, stateData),
-  createLocation: (locationData) => api.post(API_ENDPOINTS.LOCATIONS.BASE, locationData)
+  createLocation: (locationData) => api.post(API_ENDPOINTS.LOCATIONS.BASE, locationData),
+  updateCountry: (countryId, countryData) => api.put(`${API_ENDPOINTS.LOCATIONS.COUNTRIES}/${countryId}`, countryData),
+  updateState: (stateId, stateData) => api.put(`${API_ENDPOINTS.LOCATIONS.BASE}/states/${stateId}`, stateData),
+  updateLocation: (locationId, locationData) => api.put(`${API_ENDPOINTS.LOCATIONS.BASE}/${locationId}`, locationData),
+  deleteCountry: (countryId) => api.delete(`${API_ENDPOINTS.LOCATIONS.COUNTRIES}/${countryId}`),
+  deleteState: (stateId) => api.delete(`${API_ENDPOINTS.LOCATIONS.BASE}/states/${stateId}`),
+  deleteLocation: (locationId) => api.delete(`${API_ENDPOINTS.LOCATIONS.BASE}/${locationId}`)
 };
 
 // Categories API calls

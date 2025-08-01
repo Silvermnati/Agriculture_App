@@ -14,8 +14,10 @@ import {
   Calendar
 } from 'lucide-react';
 import { adminAPI } from '../../../utils/api';
+import { useAdmin } from '../../../contexts/AdminContext';
 
 const UsersManagement = () => {
+  const { triggerRefresh } = useAdmin();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -84,6 +86,7 @@ const UsersManagement = () => {
       try {
         await adminAPI.deleteUser(userId);
         setUsers(users.filter(user => user.id !== userId));
+        triggerRefresh(); // Trigger refresh for system stats
         alert('User deleted successfully');
       } catch (error) {
         console.error('Failed to delete user:', error);

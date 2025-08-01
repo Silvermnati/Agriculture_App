@@ -12,6 +12,7 @@ const LocationManagement = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('locations');
+  const [selectedCountryForStates, setSelectedCountryForStates] = useState('');
   
   const [locationForm, setLocationForm] = useState({
     country_id: '',
@@ -68,10 +69,11 @@ const LocationManagement = () => {
     e.preventDefault();
     try {
       if (editingItem) {
-        // Update location - would need update endpoint
-        console.log('Update location not implemented in backend');
+        await locationsAPI.updateLocation(editingItem.location_id, locationForm);
+        alert('Location updated successfully!');
       } else {
         await locationsAPI.createLocation(locationForm);
+        alert('Location created successfully!');
       }
       await fetchData();
       handleCloseModal();
@@ -85,10 +87,11 @@ const LocationManagement = () => {
     e.preventDefault();
     try {
       if (editingItem) {
-        // Update country - would need update endpoint
-        console.log('Update country not implemented in backend');
+        await locationsAPI.updateCountry(editingItem.country_id, countryForm);
+        alert('Country updated successfully!');
       } else {
         await locationsAPI.createCountry(countryForm);
+        alert('Country created successfully!');
       }
       await fetchData();
       handleCloseModal();
@@ -102,16 +105,22 @@ const LocationManagement = () => {
     e.preventDefault();
     try {
       if (editingItem) {
-        // Update state - would need update endpoint
-        console.log('Update state not implemented in backend');
+        await locationsAPI.updateState(editingItem.state_id, stateForm);
+        alert('State updated successfully!');
       } else {
         await locationsAPI.createState(stateForm);
+        alert(`State "${stateForm.name}" created successfully!`);
+      }
+      // Refresh states for the selected country
+      if (stateForm.country_id) {
+        await fetchStates(stateForm.country_id);
       }
       await fetchData();
       handleCloseModal();
     } catch (error) {
       console.error('Failed to save state:', error);
-      alert(error.response?.data?.message || 'Failed to save state');
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Failed to save state';
+      alert(errorMessage);
     }
   };
 
@@ -136,16 +145,60 @@ const LocationManagement = () => {
     setEditingItem(item);
     setShowModal(true);
     
-    if (item && type === 'location') {
-      setLocationForm({
-        country_id: item.country_id || '',
-        state_id: item.state_id || '',
-        city: item.city || '',
-        latitude: item.latitude || '',
-        longitude: item.longitude || '',
-        climate_zone: item.climate_zone || '',
-        elevation: item.elevation || ''
-      });
+    if (item) {
+      if (type === 'location') {
+        setLocationForm({
+          country_id: item.country_id || '',
+          state_id: item.state_id || '',
+          city: item.city || '',
+          latitude: item.latitude || '',
+          longitude: item.longitude || '',
+          climate_zone: item.climate_zone || '',
+          elevation: item.elevation || ''
+        });
+        
+        // Fetch states for the existing country when editing
+        if (item.country_id) {
+          fetchStates(item.country_id);
+        }
+      } else if (type === 'country') {
+        setCountryForm({
+          name: item.name || '',
+          code: item.code || ''
+        });
+      } else if (type === 'state') {
+        setStateForm({
+          country_id: item.country_id || '',
+          name: item.name || '',
+          code: item.code || ''
+        });
+      }
+    }
+  };
+
+  const handleDelete = async (type, item) => {
+    const confirmMessage = `Are you sure you want to delete this ${type}? This action cannot be undone.`;
+    if (!window.confirm(confirmMessage)) return;
+
+    try {
+      if (type === 'location') {
+        await locationsAPI.deleteLocation(item.location_id);
+        alert('Location deleted successfully!');
+      } else if (type === 'country') {
+        await locationsAPI.deleteCountry(item.country_id);
+        alert('Country deleted successfully!');
+      } else if (type === 'state') {
+        await locationsAPI.deleteState(item.state_id);
+        alert('State deleted successfully!');
+        // Refresh states if we're viewing states for this country
+        if (selectedCountryForStates === item.country_id.toString()) {
+          await fetchStates(selectedCountryForStates);
+        }
+      }
+      await fetchData();
+    } catch (error) {
+      console.error(`Failed to delete ${type}:`, error);
+      alert(error.response?.data?.message || `Failed to delete ${type}`);
     }
   };
 
@@ -155,6 +208,10 @@ const LocationManagement = () => {
 
   const filteredCountries = countries.filter(country =>
     country.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredStates = states.filter(state =>
+    state.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const renderLocationsTab = () => (
@@ -210,8 +267,16 @@ const LocationManagement = () => {
                     <button
                       onClick={() => openModal('location', location)}
                       className="text-blue-600 hover:text-blue-900"
+                      title="Edit location"
                     >
                       <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete('location', location)}
+                      className="text-red-600 hover:text-red-900"
+                      title="Delete location"
+                    >
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </td>
@@ -253,13 +318,116 @@ const LocationManagement = () => {
                   <button
                     onClick={() => openModal('country', country)}
                     className="text-blue-600 hover:text-blue-900"
+                    title="Edit country"
                   >
                     <Edit className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete('country', country)}
+                    className="text-red-600 hover:text-red-900"
+                    title="Delete country"
+                  >
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </td>
             </tr>
           ))}
+        </tbody>
+      </table>
+    </div>
+  );
+
+  const renderStatesTab = () => (
+    <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="p-4 border-b border-gray-200 space-y-3">
+        <p className="text-sm text-gray-600">
+          Select a country from the dropdown to view its states, or add a new state.
+        </p>
+        <div className="flex items-center space-x-4">
+          <label className="text-sm font-medium text-gray-700">View states for:</label>
+          <select
+            value={selectedCountryForStates}
+            onChange={(e) => {
+              setSelectedCountryForStates(e.target.value);
+              if (e.target.value) {
+                fetchStates(e.target.value);
+              } else {
+                setStates([]);
+              }
+            }}
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            <option value="">Select a country</option>
+            {countries.map(country => (
+              <option key={country.country_id} value={country.country_id}>
+                {country.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Name
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Code
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Country
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
+          {loading ? (
+            <tr>
+              <td colSpan="4" className="px-6 py-4 text-center">Loading...</td>
+            </tr>
+          ) : filteredStates.length === 0 ? (
+            <tr>
+              <td colSpan="4" className="px-6 py-4 text-center text-gray-500">
+                No states found. Select a country or add a new state.
+              </td>
+            </tr>
+          ) : (
+            filteredStates.map((state) => (
+              <tr key={state.state_id}>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {state.name}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {state.code || '-'}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {state.country?.name || '-'}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => openModal('state', state)}
+                      className="text-blue-600 hover:text-blue-900"
+                      title="Edit state"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete('state', state)}
+                      className="text-red-600 hover:text-red-900"
+                      title="Delete state"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>
@@ -297,7 +465,7 @@ const LocationManagement = () => {
       {/* Tabs */}
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
-          {['locations', 'countries'].map((tab) => (
+          {['locations', 'countries', 'states'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -328,6 +496,7 @@ const LocationManagement = () => {
       {/* Content */}
       {activeTab === 'locations' && renderLocationsTab()}
       {activeTab === 'countries' && renderCountriesTab()}
+      {activeTab === 'states' && renderStatesTab()}
 
       {/* Modal */}
       {showModal && (
@@ -345,8 +514,16 @@ const LocationManagement = () => {
                     required
                     value={locationForm.country_id}
                     onChange={(e) => {
-                      setLocationForm({ ...locationForm, country_id: e.target.value });
-                      if (e.target.value) fetchStates(e.target.value);
+                      setLocationForm({ 
+                        ...locationForm, 
+                        country_id: e.target.value,
+                        state_id: '' // Clear state when country changes
+                      });
+                      if (e.target.value) {
+                        fetchStates(e.target.value);
+                      } else {
+                        setStates([]); // Clear states if no country selected
+                      }
                     }}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   >

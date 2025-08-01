@@ -25,10 +25,17 @@ def get_states(country_id):
     if not country:
         return jsonify({'message': 'Country not found'}), 404
     
-    states = StateProvince.query.filter_by(country_id=country_id).order_by(StateProvince.name).all()
+    states = StateProvince.query.options(joinedload(StateProvince.country)).filter_by(country_id=country_id).order_by(StateProvince.name).all()
+    
+    # Include country information in each state
+    states_with_country = []
+    for state in states:
+        state_dict = state.to_dict()
+        state_dict['country'] = state.country.to_dict() if state.country else None
+        states_with_country.append(state_dict)
     
     return jsonify({
-        'states': [state.to_dict() for state in states],
+        'states': states_with_country,
         'country': country.to_dict()
     }), 200
 
@@ -350,6 +357,73 @@ def delete_country(current_user, country_id):
     db.session.commit()
     
     return jsonify({'message': 'Country deleted successfully'}), 200
+
+
+@token_required
+def update_location(current_user, location_id):
+    """
+    Update a location (admin only).
+    """
+    # Check if user is admin
+    if current_user.role != 'admin':
+        return jsonify({'message': 'Admin access required'}), 403
+    
+    location = Location.query.get(location_id)
+    
+    if not location:
+        return jsonify({'message': 'Location not found'}), 404
+    
+    data = request.get_json()
+    
+    if not data:
+        return jsonify({'message': 'No data provided'}), 400
+    
+    # Validate country if provided
+    if 'country_id' in data:
+        country = Country.query.get(data['country_id'])
+        if not country:
+            return jsonify({'message': 'Country not found'}), 404
+        location.country_id = data['country_id']
+    
+    # Validate state if provided
+    if 'state_id' in data:
+        if data['state_id']:  # Only validate if state_id is not empty
+            state = StateProvince.query.get(data['state_id'])
+            if not state or state.country_id != location.country_id:
+                return jsonify({'message': 'State not found or does not belong to the specified country'}), 404
+        location.state_id = data['state_id'] if data['state_id'] else None
+    
+    # Update other fields
+    for field in ['city', 'latitude', 'longitude', 'climate_zone', 'elevation']:
+        if field in data:
+            setattr(location, field, data[field])
+    
+    db.session.commit()
+    
+    return jsonify({
+        'message': 'Location updated successfully',
+        'location': location.to_dict()
+    }), 200
+
+
+@token_required
+def delete_location(current_user, location_id):
+    """
+    Delete a location (admin only).
+    """
+    # Check if user is admin
+    if current_user.role != 'admin':
+        return jsonify({'message': 'Admin access required'}), 403
+    
+    location = Location.query.get(location_id)
+    
+    if not location:
+        return jsonify({'message': 'Location not found'}), 404
+    
+    db.session.delete(location)
+    db.session.commit()
+    
+    return jsonify({'message': 'Location deleted successfully'}), 200
 
 
 @token_required

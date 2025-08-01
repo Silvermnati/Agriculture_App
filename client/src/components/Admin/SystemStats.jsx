@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Wheat, MapPin, FileText, MessageSquare, TrendingUp } from 'lucide-react';
 import { adminAPI } from '../../utils/api';
+import { useAdmin } from '../../contexts/AdminContext';
 
 const SystemStats = () => {
+  const { refreshTrigger } = useAdmin();
   const [stats, setStats] = useState({
     users: 0,
     crops: 0,
@@ -15,6 +17,7 @@ const SystemStats = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
+        setStats(prev => ({ ...prev, loading: true }));
         const response = await adminAPI.getStats();
         const data = response.data.data;
 
@@ -33,7 +36,7 @@ const SystemStats = () => {
     };
 
     fetchStats();
-  }, []);
+  }, [refreshTrigger]); // Refresh when refreshTrigger changes
 
   const statCards = [
     {

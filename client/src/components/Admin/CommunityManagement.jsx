@@ -15,46 +15,24 @@ const CommunityManagement = () => {
   const fetchCommunities = async () => {
     try {
       setLoading(true);
-      const response = await communitiesAPI.getCommunities();
-      setCommunities(response.data?.communities || []);
+      const response = await communitiesAPI.getCommunities({ limit: 100 });
+      
+      // Handle different response structures
+      let communities = [];
+      if (response.data?.success && response.data?.data) {
+        communities = response.data.data;
+      } else if (response.data?.communities) {
+        communities = response.data.communities;
+      } else if (Array.isArray(response.data)) {
+        communities = response.data;
+      } else if (response.data?.data && Array.isArray(response.data.data)) {
+        communities = response.data.data;
+      }
+      
+      setCommunities(communities);
     } catch (error) {
       console.error('Failed to fetch communities:', error);
-      // Show sample data if API fails
-      setCommunities([
-        {
-          community_id: '1',
-          name: 'Organic Farmers Kenya',
-          description: 'A community for organic farmers in Kenya to share knowledge and best practices.',
-          community_type: 'Regional',
-          member_count: 245,
-          posts_count: 89,
-          is_private: false,
-          created_at: '2024-01-10T10:30:00Z',
-          focus_crops: ['Corn', 'Tomatoes', 'Beans']
-        },
-        {
-          community_id: '2',
-          name: 'Coffee Growers Network',
-          description: 'Connect with coffee farmers and learn about cultivation techniques.',
-          community_type: 'Crop-Specific',
-          member_count: 156,
-          posts_count: 67,
-          is_private: false,
-          created_at: '2024-01-08T14:22:00Z',
-          focus_crops: ['Coffee']
-        },
-        {
-          community_id: '3',
-          name: 'Urban Farming Enthusiasts',
-          description: 'Urban farming techniques and space-efficient growing methods.',
-          community_type: 'Urban',
-          member_count: 89,
-          posts_count: 34,
-          is_private: true,
-          created_at: '2024-01-05T09:15:00Z',
-          focus_crops: ['Herbs', 'Vegetables']
-        }
-      ]);
+      setCommunities([]); // Set empty array instead of sample data
     } finally {
       setLoading(false);
     }

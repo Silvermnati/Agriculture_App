@@ -14,6 +14,7 @@ import {
   Share2
 } from 'lucide-react';
 import { adminAPI, postsAPI } from '../../../utils/api';
+import Image from '../../../components/common/Image/Image';
 
 const PostsManagement = () => {
   const [posts, setPosts] = useState([]);
@@ -55,7 +56,7 @@ const PostsManagement = () => {
         title: post.title,
         content: post.content || post.excerpt || '',
         author: {
-          name: post.author ? `${post.author.first_name} ${post.author.last_name}` : 'Unknown Author',
+          name: post.author ? `${post.author.first_name || ''} ${post.author.last_name || ''}`.trim() || post.author.name || 'Unknown Author' : 'Unknown Author',
           email: post.author?.email || 'unknown@example.com',
           avatar: post.author?.avatar_url
         },
@@ -367,7 +368,7 @@ const PostsManagement = () => {
         </div>
       </div>
 
-      {/* Posts Table */}
+      {/* Posts Table - Compact Design */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         {loading ? (
           <div className="p-8 text-center">
@@ -376,25 +377,22 @@ const PostsManagement = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Post
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/5">
+                    Post Details
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                     Author
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Category
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                     Stats
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                     Actions
                   </th>
                 </tr>
@@ -402,15 +400,32 @@ const PostsManagement = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredPosts.map((post) => (
                   <tr key={post.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div className="max-w-xs">
-                        <div className="text-sm font-medium text-gray-900 truncate">{post.title}</div>
-                        <div className="text-sm text-gray-500 truncate">{post.content}</div>
+                    <td className="px-4 py-4">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                          <Image 
+                            src={post.featured_image_url} 
+                            alt={post.title}
+                            className="w-full h-full object-cover"
+                            fallbackType="post"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-gray-900 truncate" title={post.title}>
+                            {post.title}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {post.category.name}
+                          </div>
+                          <div className="text-xs text-gray-400 mt-1">
+                            {post.created_at ? new Date(post.created_at).toLocaleDateString() : 'No date'}
+                          </div>
+                        </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-2">
+                        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-2 flex-shrink-0">
                           {post.author.avatar ? (
                             <img src={post.author.avatar} alt={post.author.name} className="w-8 h-8 rounded-full object-cover" />
                           ) : (
@@ -419,13 +434,10 @@ const PostsManagement = () => {
                             </span>
                           )}
                         </div>
-                        <div className="text-sm text-gray-900">{post.author.name}</div>
+                        <div className="text-sm text-gray-900 truncate">{post.author.name}</div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-900">{post.category.name}</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         {getStatusIcon(post.status)}
                         <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(post.status)}`}>
@@ -433,27 +445,41 @@ const PostsManagement = () => {
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div className="flex space-x-4">
-                        <span>{post.view_count} views</span>
-                        <span>{post.like_count} likes</span>
-                        <span>{post.comment_count} comments</span>
+                    <td className="px-4 py-4 whitespace-nowrap text-xs text-gray-900">
+                      <div className="space-y-1">
+                        <div className="flex items-center">
+                          <Eye className="w-3 h-3 mr-1 text-gray-400" />
+                          <span>{post.view_count}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <Heart className="w-3 h-3 mr-1 text-gray-400" />
+                          <span>{post.like_count}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <MessageSquare className="w-3 h-3 mr-1 text-gray-400" />
+                          <span>{post.comment_count}</span>
+                        </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
                         <button
                           onClick={() => handleViewPost(post)}
-                          className="text-blue-600 hover:text-blue-900"
+                          className="text-blue-600 hover:text-blue-900 p-1"
+                          title="View Post"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button className="text-green-600 hover:text-green-900">
+                        <button 
+                          className="text-green-600 hover:text-green-900 p-1"
+                          title="Edit Post"
+                        >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDeletePost(post.id)}
-                          className="text-red-600 hover:text-red-900"
+                          className="text-red-600 hover:text-red-900 p-1"
+                          title="Delete Post"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
