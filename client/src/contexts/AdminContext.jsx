@@ -10,7 +10,7 @@ export const useAdmin = () => {
   return context;
 };
 
-export const AdminProvider = ({ children }) => {
+export const AdminProvider = ({ children, setActiveTab }) => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const triggerRefresh = () => {
@@ -18,7 +18,7 @@ export const AdminProvider = ({ children }) => {
   };
 
   return (
-    <AdminContext.Provider value={{ refreshTrigger, triggerRefresh }}>
+    <AdminContext.Provider value={{ refreshTrigger, triggerRefresh, setActiveTab }}>
       {children}
     </AdminContext.Provider>
   );

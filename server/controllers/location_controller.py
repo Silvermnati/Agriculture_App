@@ -346,7 +346,7 @@ def update_state(current_user, state_id):
 @token_required
 def delete_country(current_user, country_id):
     """
-    Delete a country (admin only).
+    Delete a country (admin only). Force delete removes all states and locations.
     """
     # Check if user is admin
     if current_user.role != 'admin':
@@ -357,19 +357,44 @@ def delete_country(current_user, country_id):
     if not country:
         return jsonify({'message': 'Country not found'}), 404
     
-    # Check if country has states or locations
-    state_count = StateProvince.query.filter_by(country_id=country_id).count()
-    location_count = Location.query.filter_by(country_id=country_id).count()
-    
-    if state_count > 0 or location_count > 0:
-        return jsonify({
-            'message': f'Cannot delete country. It has {state_count} states and {location_count} locations'
-        }), 409
-    
-    db.session.delete(country)
-    db.session.commit()
-    
-    return jsonify({'message': 'Country deleted successfully'}), 200
+    try:
+        # Get force parameter
+        force = request.args.get('force', 'false').lower() == 'true'
+        
+        if not force:
+            # Check if country has states or locations
+            state_count = StateProvince.query.filter_by(country_id=country_id).count()
+            location_count = Location.query.filter_by(country_id=country_id).count()
+            
+            if state_count > 0 or location_count > 0:
+                return jsonify({
+                    'message': f'Cannot delete country. It has {state_count} states and {location_count} locations. Use force=true to delete anyway.',
+                    'states': state_count,
+                    'locations': location_count
+                }), 409
+        
+        else:
+            # Force delete - remove all states and locations
+            # First update users who reference these locations
+            from server.models.user import User
+            User.query.filter_by(country=country.name).update({'country': None})
+            
+            # Delete all locations in this country
+            Location.query.filter_by(country_id=country_id).delete()
+            
+            # Delete all states in this country
+            StateProvince.query.filter_by(country_id=country_id).delete()
+        
+        # Delete the country
+        db.session.delete(country)
+        db.session.commit()
+        
+        return jsonify({'message': 'Country deleted successfully'}), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error deleting country {country_id}: {str(e)}")
+        return jsonify({'message': 'Failed to delete country'}), 500
 
 
 @token_required
@@ -449,7 +474,7 @@ def delete_location(current_user, location_id):
 @token_required
 def delete_state(current_user, state_id):
     """
-    Delete a state/province (admin only).
+    Delete a state/province (admin only). Force delete removes all locations.
     """
     # Check if user is admin
     if current_user.role != 'admin':
@@ -460,15 +485,38 @@ def delete_state(current_user, state_id):
     if not state:
         return jsonify({'message': 'State not found'}), 404
     
-    # Check if state has locations
-    location_count = Location.query.filter_by(state_id=state_id).count()
-    
-    if location_count > 0:
-        return jsonify({
-            'message': f'Cannot delete state. It has {location_count} locations'
-        }), 409
-    
-    db.session.delete(state)
-    db.session.commit()
-    
-    return jsonify({'message': 'State deleted successfully'}), 200
+    try:
+        # Get force parameter
+        force = request.args.get('force', 'false').lower() == 'true'
+        
+        if not force:
+            # Check if state has locations
+            location_count = Location.query.filter_by(state_id=state_id).count()
+            
+            if location_count > 0:
+                return jsonify({
+                    'message': f'Cannot delete state. It has {location_count} locations. Use force=true to delete anyway.',
+                    'locations': location_count
+                }), 409
+        
+        else:
+            # Force delete - remove all locations in this state
+            # First update users who reference these locations
+            from server.models.user import User
+            locations_in_state = Location.query.filter_by(state_id=state_id).all()
+            for location in locations_in_state:
+                User.query.filter_by(city=location.city).update({'city': None})
+            
+            # Delete all locations in this state
+            Location.query.filter_by(state_id=state_id).delete()
+        
+        # Delete the state
+        db.session.delete(state)
+        db.session.commit()
+        
+        return jsonify({'message': 'State deleted successfully'}), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error deleting state {state_id}: {str(e)}")
+        return jsonify({'message': 'Failed to delete state'}), 500

@@ -368,7 +368,12 @@ export const adminAPI = {
   getAllCommunities: (params) => api.get('/communities', { params }),
   
   // System management
-  getSystemHealth: () => api.get('/health')
+  getSystemHealth: () => api.get('/health'),
+  
+  // Additional endpoints for complete stats
+  getCrops: () => api.get('/crops'),
+  getLocations: () => api.get('/locations'),
+  getCategories: () => api.get('/categories')
 };
 
 export default api;

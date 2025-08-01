@@ -312,19 +312,34 @@ def update_article(current_user, article_id):
 @token_required
 def delete_article(current_user, article_id):
     """
-    Delete (archive) an article.
+    Delete an article. Admins can hard delete, users can only archive their own articles.
     """
-    article = Article.query.get(article_id)
-    
-    if not article:
-        return jsonify({'message': 'Article not found'}), 404
-    
-    # Check if user is author or admin
-    if article.author_id != current_user.user_id and current_user.role != 'admin':
-        return jsonify({'message': 'Unauthorized'}), 403
-    
-    # Soft delete (archive) the article
-    article.status = 'archived'
-    db.session.commit()
-    
-    return jsonify({'message': 'Article archived successfully'}), 200
+    try:
+        article = Article.query.get(article_id)
+        
+        if not article:
+            return jsonify({'message': 'Article not found'}), 404
+        
+        # Check permissions
+        is_admin = current_user.role == 'admin'
+        is_author = article.author_id == current_user.user_id
+        
+        if not is_admin and not is_author:
+            return jsonify({'message': 'Unauthorized'}), 403
+        
+        # Admin hard delete - completely remove article
+        if is_admin:
+            db.session.delete(article)
+            db.session.commit()
+            return jsonify({'message': 'Article permanently deleted successfully'}), 200
+        
+        # User soft delete (archive) their own article
+        else:
+            article.status = 'archived'
+            db.session.commit()
+            return jsonify({'message': 'Article archived successfully'}), 200
+            
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error deleting article {article_id}: {str(e)}")
+        return jsonify({'message': 'Failed to delete article'}), 500

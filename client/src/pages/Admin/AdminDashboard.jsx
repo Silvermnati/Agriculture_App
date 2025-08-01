@@ -87,7 +87,7 @@ const AdminDashboard = () => {
   }
 
   return (
-    <AdminProvider>
+    <AdminProvider setActiveTab={setActiveTab}>
       <div className="min-h-screen bg-gray-100">
         {/* Header */}
         <header className="bg-white shadow-sm border-b">

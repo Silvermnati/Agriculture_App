@@ -202,34 +202,52 @@ def update_community(current_user, community_id):
 @token_required
 def delete_community(current_user, community_id):
     """
-    Delete a community.
+    Delete a community with complete cascade deletion.
     """
-    community = Community.query.get(community_id)
-    
-    if not community:
-        return jsonify({'message': 'Community not found'}), 404
-    
-    # Check if user is admin
-    member = CommunityMember.query.filter_by(
-        community_id=community_id,
-        user_id=current_user.user_id,
-        role='admin'
-    ).first()
-    
-    if not member and current_user.role != 'admin':
-        return jsonify({'message': 'Unauthorized'}), 403
-    
-    # Delete community members
-    CommunityMember.query.filter_by(community_id=community_id).delete()
-    
-    # Delete community posts
-    CommunityPost.query.filter_by(community_id=community_id).delete()
-    
-    # Delete community
-    db.session.delete(community)
-    db.session.commit()
-    
-    return jsonify({'message': 'Community deleted successfully'}), 200
+    try:
+        community = Community.query.get(community_id)
+        
+        if not community:
+            return jsonify({'message': 'Community not found'}), 404
+        
+        # Check if user is community admin or system admin
+        member = CommunityMember.query.filter_by(
+            community_id=community_id,
+            user_id=current_user.user_id,
+            role='admin'
+        ).first()
+        
+        if not member and current_user.role != 'admin':
+            return jsonify({'message': 'Unauthorized'}), 403
+        
+        # Complete cascade deletion
+        from server.models.community import CommunityPost, CommunityPostLike, CommunityComment
+        
+        # Get all community posts
+        community_posts = CommunityPost.query.filter_by(community_id=community_id).all()
+        
+        # Delete all post-related data
+        for post in community_posts:
+            # Delete post likes
+            CommunityPostLike.query.filter_by(post_id=post.post_id).delete()
+            # Delete post comments
+            CommunityComment.query.filter_by(post_id=post.post_id).delete()
+            # Delete the post
+            db.session.delete(post)
+        
+        # Delete community members
+        CommunityMember.query.filter_by(community_id=community_id).delete()
+        
+        # Delete the community
+        db.session.delete(community)
+        db.session.commit()
+        
+        return jsonify({'message': 'Community and all related data deleted successfully'}), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error deleting community {community_id}: {str(e)}")
+        return jsonify({'message': 'Failed to delete community'}), 500
 
 
 @token_required
@@ -464,47 +482,54 @@ def update_community_post(current_user, community_id, post_id):
 @token_required
 def delete_community_post(current_user, community_id, post_id):
     """
-    Delete a community post.
+    Delete a community post with complete cascade deletion.
     """
-    # Check if community exists
-    community = Community.query.get(community_id)
-    
-    if not community:
-        return jsonify({'message': 'Community not found'}), 404
-    
-    # Get post
-    post = CommunityPost.query.filter_by(
-        community_id=community_id,
-        post_id=post_id
-    ).first()
-    
-    if not post:
-        return jsonify({'message': 'Post not found'}), 404
-    
-    # Check if user is the author or a community admin/moderator
-    is_author = post.user_id == current_user.user_id
-    
-    member = CommunityMember.query.filter_by(
-        community_id=community_id,
-        user_id=current_user.user_id
-    ).first()
-    
-    is_admin_or_mod = member and member.role in ['admin', 'moderator']
-    
-    if not (is_author or is_admin_or_mod or current_user.role == 'admin'):
-        return jsonify({'message': 'Unauthorized to delete this post'}), 403
-    
-    # Delete post likes
-    PostLike.query.filter_by(post_id=post_id).delete()
-    
-    # Delete post comments
-    PostComment.query.filter_by(post_id=post_id).delete()
-    
-    # Delete post
-    db.session.delete(post)
-    db.session.commit()
-    
-    return jsonify({'message': 'Post deleted successfully'}), 200
+    try:
+        # Check if community exists
+        community = Community.query.get(community_id)
+        
+        if not community:
+            return jsonify({'message': 'Community not found'}), 404
+        
+        # Get post
+        post = CommunityPost.query.filter_by(
+            community_id=community_id,
+            post_id=post_id
+        ).first()
+        
+        if not post:
+            return jsonify({'message': 'Post not found'}), 404
+        
+        # Check if user is the author or a community admin/moderator
+        is_author = post.user_id == current_user.user_id
+        
+        member = CommunityMember.query.filter_by(
+            community_id=community_id,
+            user_id=current_user.user_id
+        ).first()
+        
+        is_admin_or_mod = member and member.role in ['admin', 'moderator']
+        
+        if not (is_author or is_admin_or_mod or current_user.role == 'admin'):
+            return jsonify({'message': 'Unauthorized to delete this post'}), 403
+        
+        # Complete cascade deletion
+        # Delete post likes
+        PostLike.query.filter_by(post_id=post_id).delete()
+        
+        # Delete post comments
+        PostComment.query.filter_by(post_id=post_id).delete()
+        
+        # Delete the post
+        db.session.delete(post)
+        db.session.commit()
+        
+        return jsonify({'message': 'Post and all related data deleted successfully'}), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error deleting community post {post_id}: {str(e)}")
+        return jsonify({'message': 'Failed to delete post'}), 500
 
 
 @token_required
@@ -807,47 +832,53 @@ def update_post_comment(current_user, community_id, post_id, comment_id):
 @token_required
 def delete_post_comment(current_user, community_id, post_id, comment_id):
     """
-    Delete a comment.
+    Delete a comment with complete cascade deletion.
     """
-    # Check if community exists
-    community = Community.query.get(community_id)
-    
-    if not community:
-        return jsonify({'message': 'Community not found'}), 404
-    
-    # Get post
-    post = CommunityPost.query.filter_by(
-        community_id=community_id,
-        post_id=post_id
-    ).first()
-    
-    if not post:
-        return jsonify({'message': 'Post not found'}), 404
-    
-    # Get comment
-    comment = PostComment.query.filter_by(
-        post_id=post_id,
-        comment_id=comment_id
-    ).first()
-    
-    if not comment:
-        return jsonify({'message': 'Comment not found'}), 404
-    
-    # Check if user is the comment author or a community admin/moderator
-    is_author = comment.user_id == current_user.user_id
-    
-    member = CommunityMember.query.filter_by(
-        community_id=community_id,
-        user_id=current_user.user_id
-    ).first()
-    
-    is_admin_or_mod = member and member.role in ['admin', 'moderator']
-    
-    if not (is_author or is_admin_or_mod or current_user.role == 'admin'):
-        return jsonify({'message': 'Unauthorized to delete this comment'}), 403
-    
-    # Delete comment
-    db.session.delete(comment)
-    db.session.commit()
-    
-    return jsonify({'message': 'Comment deleted successfully'}), 200
+    try:
+        # Check if community exists
+        community = Community.query.get(community_id)
+        
+        if not community:
+            return jsonify({'message': 'Community not found'}), 404
+        
+        # Get post
+        post = CommunityPost.query.filter_by(
+            community_id=community_id,
+            post_id=post_id
+        ).first()
+        
+        if not post:
+            return jsonify({'message': 'Post not found'}), 404
+        
+        # Get comment
+        comment = PostComment.query.filter_by(
+            post_id=post_id,
+            comment_id=comment_id
+        ).first()
+        
+        if not comment:
+            return jsonify({'message': 'Comment not found'}), 404
+        
+        # Check if user is the comment author or a community admin/moderator
+        is_author = comment.user_id == current_user.user_id
+        
+        member = CommunityMember.query.filter_by(
+            community_id=community_id,
+            user_id=current_user.user_id
+        ).first()
+        
+        is_admin_or_mod = member and member.role in ['admin', 'moderator']
+        
+        if not (is_author or is_admin_or_mod or current_user.role == 'admin'):
+            return jsonify({'message': 'Unauthorized to delete this comment'}), 403
+        
+        # Delete the comment (no cascade needed for comments currently)
+        db.session.delete(comment)
+        db.session.commit()
+        
+        return jsonify({'message': 'Comment deleted successfully'}), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error deleting comment {comment_id}: {str(e)}")
+        return jsonify({'message': 'Failed to delete comment'}), 500

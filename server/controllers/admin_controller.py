@@ -148,7 +148,7 @@ def update_user_status(current_user, user_id):
 @token_required
 @admin_required
 def delete_user(current_user, user_id):
-    """Delete a user (admin only)."""
+    """Permanently delete a user and all related data (admin only)."""
     try:
         user = User.query.get(user_id)
         if not user:
@@ -158,16 +158,115 @@ def delete_user(current_user, user_id):
         if user.role == 'admin':
             return create_error_response('FORBIDDEN', 'Cannot delete admin accounts', status_code=403)
         
-        # In a real implementation, you might want to soft delete or archive the user
-        # For now, we'll just mark as inactive
-        user.is_active = False
-        user.updated_at = datetime.utcnow()
+        # Import all related models
+        from server.models.post import Post, Comment, PostLike, PostEditHistory
+        from server.models.community import Community, CommunityMember, CommunityPost, CommunityPostLike, CommunityComment
+        from server.models.expert import ExpertProfile, Consultation, ExpertReview
+        from server.models.article import Article
+        from server.models.crop import UserCrop
+        from server.models.payment import Payment
+        from server.models.notifications import Notification, NotificationPreference
+        from server.models.user import UserExpertise, UserFollow
+        
+        user_uuid = user.user_id
+        
+        # Delete in order to avoid foreign key constraint violations
+        
+        # 1. Delete user's notifications and preferences
+        Notification.query.filter_by(user_id=user_uuid).delete()
+        NotificationPreference.query.filter_by(user_id=user_uuid).delete()
+        
+        # 2. Delete user's payments
+        Payment.query.filter_by(user_id=user_uuid).delete()
+        
+        # 3. Delete user's crops
+        UserCrop.query.filter_by(user_id=user_uuid).delete()
+        
+        # 4. Delete user's expertise
+        UserExpertise.query.filter_by(user_id=user_uuid).delete()
+        
+        # 5. Delete follow relationships (both as follower and following)
+        UserFollow.query.filter_by(follower_id=user_uuid).delete()
+        UserFollow.query.filter_by(following_id=user_uuid).delete()
+        
+        # 6. Delete expert-related data if user is an expert
+        if user.role == 'expert':
+            # Delete expert reviews (both given and received)
+            ExpertReview.query.filter_by(expert_id=user_uuid).delete()
+            ExpertReview.query.filter_by(reviewer_id=user_uuid).delete()
+            
+            # Delete consultations (both as expert and farmer)
+            Consultation.query.filter_by(expert_id=user_uuid).delete()
+            Consultation.query.filter_by(farmer_id=user_uuid).delete()
+            
+            # Delete expert profile
+            ExpertProfile.query.filter_by(user_id=user_uuid).delete()
+        
+        # 7. Delete user's articles
+        Article.query.filter_by(author_id=user_uuid).delete()
+        
+        # 8. Delete community-related data
+        # Delete community post likes
+        CommunityPostLike.query.filter_by(user_id=user_uuid).delete()
+        
+        # Delete community comments
+        CommunityComment.query.filter_by(user_id=user_uuid).delete()
+        
+        # Delete community posts
+        CommunityPost.query.filter_by(user_id=user_uuid).delete()
+        
+        # Delete community memberships
+        CommunityMember.query.filter_by(user_id=user_uuid).delete()
+        
+        # Delete communities created by user (this will cascade to related data)
+        communities_to_delete = Community.query.filter_by(created_by=user_uuid).all()
+        for community in communities_to_delete:
+            # Delete all community members
+            CommunityMember.query.filter_by(community_id=community.community_id).delete()
+            # Delete all community posts and their likes/comments
+            community_posts = CommunityPost.query.filter_by(community_id=community.community_id).all()
+            for post in community_posts:
+                CommunityPostLike.query.filter_by(post_id=post.post_id).delete()
+                CommunityComment.query.filter_by(post_id=post.post_id).delete()
+            CommunityPost.query.filter_by(community_id=community.community_id).delete()
+            # Delete the community
+            db.session.delete(community)
+        
+        # 9. Delete post-related data
+        # Get all posts by the user
+        user_posts = Post.query.filter_by(author_id=user_uuid).all()
+        for post in user_posts:
+            # Delete post likes
+            PostLike.query.filter_by(post_id=post.id).delete()
+            # Delete post edit history
+            PostEditHistory.query.filter_by(post_id=post.id).delete()
+            # Delete comments on the post
+            Comment.query.filter_by(post_id=post.id).delete()
+            # Delete the post
+            db.session.delete(post)
+        
+        # 10. Delete comments made by the user on other posts
+        Comment.query.filter_by(user_id=user_uuid).delete()
+        
+        # 11. Delete post likes by the user
+        PostLike.query.filter_by(user_id=user_uuid).delete()
+        
+        # 12. Delete post edit history by the user
+        PostEditHistory.query.filter_by(edited_by=user_uuid).delete()
+        
+        # 13. Finally, delete the user
+        db.session.delete(user)
+        
+        # Commit all deletions
         db.session.commit()
         
-        return create_success_response(message='User deactivated successfully')
+        current_app.logger.info(f"User {user_id} and all related data permanently deleted by admin {current_user.user_id}")
+        
+        return create_success_response(message='User and all related data permanently deleted successfully')
         
     except Exception as e:
-        current_app.logger.error(f"Error deleting user {user_id}: {str(e)}")
+        db.session.rollback()
+        current_app.logger.error(f"Error permanently deleting user {user_id}: {str(e)}")
         return create_error_response('SERVER_ERROR', 'Failed to delete user', status_code=500)
 
 
