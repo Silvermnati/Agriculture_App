@@ -346,7 +346,7 @@ def get_recent_activity(current_user):
         # Add post creations
         for post in recent_posts:
             activity.append({
-                'id': f"post_{post.id}",
+                'id': f"post_{post.post_id}",
                 'type': 'post_created',
                 'description': f"New post: {post.title}",
                 'user': f"{post.author.first_name} {post.author.last_name}" if post.author else "Unknown",
