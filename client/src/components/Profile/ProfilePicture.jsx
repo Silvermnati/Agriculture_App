@@ -1,7 +1,7 @@
-import React, { useState, useRef } from 'react';
-import { Camera, User, Upload } from 'lucide-react';
-import LoadingSpinner from '../common/LoadingSpinner/LoadingSpinner';
-import './ProfilePicture.css';
+import React from 'react';
+import PropTypes from 'prop-types';
+import { Camera } from 'lucide-react';
+import Image from '../common/Image/Image';
 
 const ProfilePicture = ({ 
   imageUrl, 
@@ -12,13 +12,17 @@ const ProfilePicture = ({
   isUploading = false,
   className = ''
 }) => {
-  const [imageError, setImageError] = useState(false);
-  const fileInputRef = useRef(null);
 
   const sizeClasses = {
-    small: 'profile-picture-small',
-    medium: 'profile-picture-medium',
-    large: 'profile-picture-large'
+    small: 'w-10 h-10 text-sm',
+    medium: 'w-20 h-20 text-lg',
+    large: 'w-32 h-32 text-2xl'
+  };
+
+  const borderClasses = {
+    small: 'border-2',
+    medium: 'border-3',
+    large: 'border-4'
   };
 
   const generateInitials = (name) => {
@@ -31,116 +35,68 @@ const ProfilePicture = ({
       .slice(0, 2);
   };
 
-  const handleImageError = () => {
-    setImageError(true);
-  };
-
   const handleFileSelect = (event) => {
     const file = event.target.files?.[0];
     if (file && onImageChange) {
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        alert('Please select an image file');
-        return;
-      }
-      
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('Image size must be less than 5MB');
-        return;
-      }
-      
       onImageChange(file);
-    }
-    
-    // Reset input value to allow selecting the same file again
-    if (event.target) {
-      event.target.value = '';
     }
   };
 
   const handleClick = () => {
     if (editable && !isUploading) {
-      fileInputRef.current?.click();
+      document.getElementById('profile-image-input')?.click();
     }
   };
 
-  const renderImage = () => {
-    if (isUploading) {
-      return (
-        <div className="profile-picture-loading">
-          <LoadingSpinner size="small" />
-        </div>
-      );
-    }
-
-    if (imageUrl && !imageError) {
-      return (
-        <img
-          src={imageUrl}
-          alt={`${userName}'s profile`}
-          onError={handleImageError}
-          className="profile-picture-image"
-        />
-      );
-    }
-
-    // Default avatar with initials
-    return (
-      <div className="profile-picture-default">
-        <span className="profile-picture-initials">
-          {generateInitials(userName)}
-        </span>
-      </div>
-    );
-  };
-
-  const renderOverlay = () => {
-    if (!editable || isUploading) return null;
-
-    return (
-      <div className="profile-picture-overlay">
-        <div className="profile-picture-overlay-content">
-          <Camera size={size === 'large' ? 24 : 16} />
-          <span className="profile-picture-overlay-text">
-            {imageUrl && !imageError ? 'Change' : 'Upload'}
-          </span>
-        </div>
-      </div>
-    );
-  };
+  const initialsPlaceholder = (
+    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-green-400 to-green-600 text-white rounded-full">
+      <span className="font-semibold">{generateInitials(userName)}</span>
+    </div>
+  );
 
   return (
-    <div className={`profile-picture ${sizeClasses[size]} ${className}`}>
+    <div className={`relative rounded-full overflow-hidden ${borderClasses[size]} border-white shadow-lg ${sizeClasses[size]} flex-shrink-0 ${className}`}>
       <div 
-        className={`profile-picture-container ${editable ? 'profile-picture-editable' : ''}`}
+        className={`w-full h-full ${editable ? 'cursor-pointer' : ''}`}
         onClick={handleClick}
-        role={editable ? 'button' : undefined}
-        tabIndex={editable ? 0 : undefined}
-        onKeyDown={(e) => {
-          if (editable && (e.key === 'Enter' || e.key === ' ')) {
-            e.preventDefault();
-            handleClick();
-          }
-        }}
-        aria-label={editable ? 'Change profile picture' : undefined}
       >
-        {renderImage()}
-        {renderOverlay()}
+        <Image
+          src={imageUrl}
+          alt={`${userName}'s profile`}
+          className="w-full h-full rounded-full"
+          fallbackType="avatar"
+          placeholder={initialsPlaceholder}
+        />
+        {editable && !isUploading && (
+          <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300 rounded-full">
+            <div className="text-white text-center">
+              <Camera size={size === 'large' ? 24 : 16} />
+              <span className="text-xs mt-1 block">Change</span>
+            </div>
+          </div>
+        )}
       </div>
-      
       {editable && (
         <input
-          ref={fileInputRef}
+          id="profile-image-input"
           type="file"
           accept="image/*"
           onChange={handleFileSelect}
-          className="profile-picture-input"
-          aria-hidden="true"
+          className="hidden"
         />
       )}
     </div>
   );
+};
+
+ProfilePicture.propTypes = {
+  imageUrl: PropTypes.string,
+  userName: PropTypes.string,
+  size: PropTypes.oneOf(['small', 'medium', 'large']),
+  editable: PropTypes.bool,
+  onImageChange: PropTypes.func,
+  isUploading: PropTypes.bool,
+  className: PropTypes.string
 };
 
 export default ProfilePicture;

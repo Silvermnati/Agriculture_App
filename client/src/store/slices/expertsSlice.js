@@ -72,7 +72,17 @@ export const expertsSlice = createSlice({
       .addCase(getExperts.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
-        state.message = action.payload.message;
+        // Provide user-friendly error messages
+        const errorMessage = action.payload?.message || action.payload?.error?.message || 'Failed to load experts';
+        
+        // Handle specific server errors
+        if (errorMessage.includes('availability') || errorMessage.includes('filter')) {
+          state.message = 'There was an issue with the availability filter. Please try selecting a different filter or refresh the page.';
+        } else if (errorMessage.includes('500') || errorMessage.includes('Internal Server Error')) {
+          state.message = 'Server is temporarily unavailable. Please try again in a few moments.';
+        } else {
+          state.message = errorMessage;
+        }
       })
       .addCase(getExpert.pending, (state) => {
         state.isLoading = true;

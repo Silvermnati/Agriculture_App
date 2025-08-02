@@ -10,14 +10,14 @@ const CommentSection = ({ postId, comments }) => {
   const dispatch = useDispatch();
 
   return (
-    <section id="comments" className="comment-section">
-      <h2>Comments ({comments?.length || 0})</h2>
+    <section id="comments" className="mt-8">
+      <h2 className="text-2xl font-bold text-gray-800 mb-4">Comments ({comments?.length || 0})</h2>
       {isAuthenticated ? (
         <CommentForm postId={postId} />
       ) : (
-        <p>Please <Link to="/login">log in</Link> to post a comment.</p>
+        <p className="text-gray-600">Please <Link to="/login" className="text-green-600 hover:underline">log in</Link> to post a comment.</p>
       )}
-      <div className="comment-list">
+      <div className="mt-6 space-y-4">
         {comments && comments.length > 0 ? (
           comments.map((comment, index) => {
             // Generate a more robust key that handles temporary states
@@ -39,7 +39,7 @@ const CommentSection = ({ postId, comments }) => {
             );
           })
         ) : (
-          <p>No comments yet. Be the first to share your thoughts!</p>
+          <p className="text-gray-500">No comments yet. Be the first to share your thoughts!</p>
         )}
       </div>
     </section>

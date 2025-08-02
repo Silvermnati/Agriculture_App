@@ -91,18 +91,22 @@ export const getOptimizedImageUrl = (url, options = {}) => {
   
   if (!url) return null;
   
-  // If it's already an optimized URL (contains w= and h=), return as is
-  if (url.includes('w=') && url.includes('h=')) {
-    return url;
+  // If it's a Cloudinary URL, apply transformations
+  if (url.includes('res.cloudinary.com')) {
+    const parts = url.split('/upload/');
+    if (parts.length === 2) {
+      const transformations = `w_${width},h_${height},q_${quality},f_${format}`;
+      return `${parts[0]}/upload/${transformations}/${parts[1]}`;
+    }
   }
-  
+
   // If it's an Unsplash URL, add optimization parameters
-  if (url.includes('unsplash.com')) {
+  if (url.includes('images.unsplash.com')) {
     const separator = url.includes('?') ? '&' : '?';
     return `${url}${separator}w=${width}&h=${height}&fit=crop&crop=center&q=${quality}&fm=${format}`;
   }
   
-  // For other URLs, return as is (could be extended to support other CDNs)
+  // For other URLs, return as is
   return url;
 };
 

@@ -188,6 +188,7 @@ export const communitiesAPI = {
   getCommunity: (communityId) => api.get(`${API_ENDPOINTS.COMMUNITIES.BASE}/${communityId}`),
   createCommunity: (communityData) => api.post(API_ENDPOINTS.COMMUNITIES.BASE, communityData),
   updateCommunity: (communityId, communityData) => api.put(`${API_ENDPOINTS.COMMUNITIES.BASE}/${communityId}`, communityData),
+  deleteCommunity: (communityId) => api.delete(`${API_ENDPOINTS.COMMUNITIES.BASE}/${communityId}`),
   joinCommunity: (communityId) => api.post(API_ENDPOINTS.COMMUNITIES.JOIN(communityId)),
   getCommunityPosts: (communityId, params) => api.get(API_ENDPOINTS.COMMUNITIES.POSTS(communityId), { params }),
   createCommunityPost: (communityId, postData) => api.post(API_ENDPOINTS.COMMUNITIES.POSTS(communityId), postData),
@@ -197,7 +198,20 @@ export const communitiesAPI = {
 
 // Experts API calls
 export const expertsAPI = {
-  getExperts: (params) => api.get(API_ENDPOINTS.EXPERTS.BASE, { params }),
+  getExperts: (params) => {
+    // Clean up params to avoid server errors
+    const cleanParams = {};
+    if (params) {
+      Object.keys(params).forEach(key => {
+        const value = params[key];
+        // Only include non-empty values
+        if (value !== null && value !== undefined && value !== '') {
+          cleanParams[key] = value;
+        }
+      });
+    }
+    return api.get(API_ENDPOINTS.EXPERTS.BASE, { params: cleanParams });
+  },
   getExpert: (expertId) => api.get(`${API_ENDPOINTS.EXPERTS.BASE}/${expertId}`),
   createExpertProfile: (expertData) => api.post(`${API_ENDPOINTS.EXPERTS.BASE}/profile`, expertData),
   updateExpertProfile: (expertId, expertData) => api.put(`${API_ENDPOINTS.EXPERTS.BASE}/${expertId}`, expertData),
@@ -253,7 +267,13 @@ export const locationsAPI = {
   getLocations: (params) => api.get(API_ENDPOINTS.LOCATIONS.BASE, { params }),
   createCountry: (countryData) => api.post(API_ENDPOINTS.LOCATIONS.COUNTRIES, countryData),
   createState: (stateData) => api.post(`${API_ENDPOINTS.LOCATIONS.BASE}/states`, stateData),
-  createLocation: (locationData) => api.post(API_ENDPOINTS.LOCATIONS.BASE, locationData)
+  createLocation: (locationData) => api.post(API_ENDPOINTS.LOCATIONS.BASE, locationData),
+  updateCountry: (countryId, countryData) => api.put(`${API_ENDPOINTS.LOCATIONS.COUNTRIES}/${countryId}`, countryData),
+  updateState: (stateId, stateData) => api.put(`${API_ENDPOINTS.LOCATIONS.BASE}/states/${stateId}`, stateData),
+  updateLocation: (locationId, locationData) => api.put(`${API_ENDPOINTS.LOCATIONS.BASE}/${locationId}`, locationData),
+  deleteCountry: (countryId) => api.delete(`${API_ENDPOINTS.LOCATIONS.COUNTRIES}/${countryId}`),
+  deleteState: (stateId) => api.delete(`${API_ENDPOINTS.LOCATIONS.BASE}/states/${stateId}`),
+  deleteLocation: (locationId) => api.delete(`${API_ENDPOINTS.LOCATIONS.BASE}/${locationId}`)
 };
 
 // Categories API calls
@@ -349,7 +369,12 @@ export const adminAPI = {
   getAllCommunities: (params) => api.get('/communities', { params }),
   
   // System management
-  getSystemHealth: () => api.get('/health')
+  getSystemHealth: () => api.get('/health'),
+  
+  // Additional endpoints for complete stats
+  getCrops: () => api.get('/crops'),
+  getLocations: () => api.get('/locations'),
+  getCategories: () => api.get('/categories')
 };
 
 export default api;

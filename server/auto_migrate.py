@@ -38,17 +38,17 @@ def auto_migrate():
             
             if not missing_columns:
                 print("✅ Comment tracking fields already exist")
-                return True
+                # Do not return here; continue to other migrations
             
             print(f"🔧 Adding {len(missing_columns)} missing columns: {missing_columns}")
             
-            # Add missing columns
+            # Add missing columns with proper timezone handling
             column_definitions = {
                 'is_edited': "ALTER TABLE comments ADD COLUMN is_edited BOOLEAN DEFAULT false NOT NULL",
                 'edit_count': "ALTER TABLE comments ADD COLUMN edit_count INTEGER DEFAULT 0 NOT NULL", 
-                'last_edited_at': "ALTER TABLE comments ADD COLUMN last_edited_at TIMESTAMP",
+                'last_edited_at': "ALTER TABLE comments ADD COLUMN last_edited_at TIMESTAMP WITH TIME ZONE",
                 'is_deleted': "ALTER TABLE comments ADD COLUMN is_deleted BOOLEAN DEFAULT false NOT NULL",
-                'deleted_at': "ALTER TABLE comments ADD COLUMN deleted_at TIMESTAMP"
+                'deleted_at': "ALTER TABLE comments ADD COLUMN deleted_at TIMESTAMP WITH TIME ZONE"
             }
             
             for column in missing_columns:
@@ -65,28 +65,81 @@ def auto_migrate():
             
             print("✅ Comment tracking fields migration completed")
 
+        # --- Fix existing timestamp columns to be timezone-aware ---
+        with db.engine.connect() as conn:
+            print("🔄 Auto-migration: Converting timestamp columns to timezone-aware...")
+            
+            timestamp_fixes = [
+                "ALTER TABLE comments ALTER COLUMN created_at TYPE TIMESTAMP WITH TIME ZONE",
+                "ALTER TABLE comments ALTER COLUMN updated_at TYPE TIMESTAMP WITH TIME ZONE",
+                "ALTER TABLE posts ALTER COLUMN created_at TYPE TIMESTAMP WITH TIME ZONE", 
+                "ALTER TABLE posts ALTER COLUMN updated_at TYPE TIMESTAMP WITH TIME ZONE",
+                "ALTER TABLE posts ALTER COLUMN published_at TYPE TIMESTAMP WITH TIME ZONE",
+                "ALTER TABLE users ALTER COLUMN created_at TYPE TIMESTAMP WITH TIME ZONE",
+                "ALTER TABLE users ALTER COLUMN updated_at TYPE TIMESTAMP WITH TIME ZONE",
+                "ALTER TABLE users ALTER COLUMN last_login TYPE TIMESTAMP WITH TIME ZONE",
+                "ALTER TABLE notifications ALTER COLUMN created_at TYPE TIMESTAMP WITH TIME ZONE",
+                "ALTER TABLE notifications ALTER COLUMN read_at TYPE TIMESTAMP WITH TIME ZONE"
+            ]
+            
+            for fix_sql in timestamp_fixes:
+                try:
+                    conn.execute(db.text(fix_sql))
+                    conn.commit()
+                    print(f"✅ Fixed timezone for: {fix_sql.split()[2]}")
+                except Exception as e:
+                    if "does not exist" in str(e) or "cannot be cast" in str(e):
+                        print(f"ℹ️  Skipping {fix_sql.split()[2]} (table/column doesn't exist or already correct)")
+                    else:
+                        print(f"⚠️  Warning fixing {fix_sql.split()[2]}: {e}")
+
         # --- Add notification_enabled to user_follows if missing ---
-        print("🔄 Auto-migration: Checking user_follows.notification_enabled column...")
-        result = conn.execute(db.text("""
-            SELECT column_name 
-            FROM information_schema.columns 
-            WHERE table_name = 'user_follows' 
-            AND column_name = 'notification_enabled'
-        """))
-        exists = result.fetchone()
-        if not exists:
-            try:
-                conn.execute(db.text("ALTER TABLE user_follows ADD COLUMN notification_enabled BOOLEAN DEFAULT TRUE NOT NULL"))
-                conn.commit()
-                print("✅ Added column: notification_enabled to user_follows")
-            except Exception as e:
-                if "already exists" in str(e):
-                    print("ℹ️  Column notification_enabled already exists")
-                else:
-                    print(f"❌ Failed to add notification_enabled: {e}")
-                    return False
-        else:
-            print("✅ user_follows.notification_enabled already exists")
+        with db.engine.connect() as conn:
+            print("🔄 Auto-migration: Checking user_follows.notification_enabled column...")
+            result = conn.execute(db.text("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name = 'user_follows' 
+                AND column_name = 'notification_enabled'
+            """))
+            exists = result.fetchone()
+            if not exists:
+                try:
+                    conn.execute(db.text("ALTER TABLE user_follows ADD COLUMN notification_enabled BOOLEAN DEFAULT TRUE NOT NULL"))
+                    conn.commit()
+                    print("✅ Added column: notification_enabled to user_follows")
+                except Exception as e:
+                    if "already exists" in str(e):
+                        print("ℹ️  Column notification_enabled already exists")
+                    else:
+                        print(f"❌ Failed to add notification_enabled: {e}")
+                        return False
+            else:
+                print("✅ user_follows.notification_enabled already exists")
+
+        # --- Add image_url to communities if missing ---
+        with db.engine.connect() as conn:
+            print("🔄 Auto-migration: Checking communities.image_url column...")
+            result = conn.execute(db.text("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name = 'communities' 
+                AND column_name = 'image_url'
+            """))
+            exists = result.fetchone()
+            if not exists:
+                try:
+                    conn.execute(db.text("ALTER TABLE communities ADD COLUMN image_url VARCHAR(255)"))
+                    conn.commit()
+                    print("✅ Added column: image_url to communities")
+                except Exception as e:
+                    if "already exists" in str(e):
+                        print("ℹ️  Column image_url already exists")
+                    else:
+                        print(f"❌ Failed to add image_url: {e}")
+                        return False
+            else:
+                print("✅ communities.image_url already exists")
 
         print("✅ All auto-migrations completed")
         return True

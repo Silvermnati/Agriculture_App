@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { getFallbackImage, getOptimizedImageUrl, getFullImageUrl } from '../../../utils/imageHelpers';
-import './Image.css';
 
-const Image = ({ 
+
+const CustomImage = ({ 
   src, 
   alt = 'Image', 
   className = '', 
+  width,
+  height,
   fallbackSrc = null,
   fallbackType = 'post',
   placeholder = null,
@@ -17,7 +19,7 @@ const Image = ({
 }) => {
   // Convert relative URLs to full URLs first, then optimize if requested
   const fullSrc = getFullImageUrl(src);
-  const optimizedSrc = optimize && fullSrc ? getOptimizedImageUrl(fullSrc) : fullSrc;
+  const optimizedSrc = optimize && fullSrc ? getOptimizedImageUrl(fullSrc, { width, height }) : fullSrc;
   
   // If there's no source URL, immediately use fallback
   const initialSrc = optimizedSrc || (fallbackSrc ? getFullImageUrl(fallbackSrc) : getFallbackImage(fallbackType));
@@ -63,22 +65,22 @@ const Image = ({
   }
 
   return (
-    <div className={`image-container ${className}`}>
+    <div className={`relative w-full h-full block bg-gray-100 overflow-hidden ${className}`}>
       {imageState.loading && (
-        <div className="image-loading">
-          <div className="image-loading-spinner"></div>
+        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-10">
+          <div className="w-8 h-8 border-4 border-t-green-500 border-gray-200 rounded-full animate-spin"></div>
         </div>
       )}
       
       {imageState.error && placeholder ? (
-        <div className="image-placeholder">
+        <div className="w-full h-full flex items-center justify-center">
           {placeholder}
         </div>
       ) : (
         <img
           src={imageState.currentSrc}
           alt={alt}
-          className={`image ${className} ${imageState.loading ? 'image-loading-state' : ''}`}
+          className={`w-full h-full object-cover object-center block ${imageState.loading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
           onLoad={handleImageLoad}
           onError={handleImageError}
           {...props}
@@ -88,7 +90,7 @@ const Image = ({
   );
 };
 
-Image.propTypes = {
+CustomImage.propTypes = {
   src: PropTypes.string,
   alt: PropTypes.string,
   className: PropTypes.string,
@@ -100,4 +102,4 @@ Image.propTypes = {
   onError: PropTypes.func
 };
 
-export default Image;
+export default CustomImage;

@@ -9,6 +9,15 @@
   border-radius: inherit; /* Inherit border-radius from parent for circular images */
 }
 
+/* === Ensure circular images maintain their shape === */
+.image-container.rounded-full {
+  border-radius: 50% !important;
+}
+
+.image-container.rounded-full .image {
+  border-radius: 50% !important;
+}
+
 /* === The actual <img> element === */
 .image-container .image {
   width: 100%;

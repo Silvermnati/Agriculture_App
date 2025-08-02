@@ -14,6 +14,10 @@ import {
   Share2
 } from 'lucide-react';
 import { adminAPI, postsAPI } from '../../../utils/api';
+import Image from '../../../components/common/Image/Image';
+import useToast from '../../../hooks/useToast';
+import ConfirmationModal from '../../../components/common/ConfirmationModal/ConfirmationModal';
+import { ToastContainer } from '../../../components/common/Toast/Toast';
 
 const PostsManagement = () => {
   const [posts, setPosts] = useState([]);
@@ -24,6 +28,9 @@ const PostsManagement = () => {
   const [selectedPost, setSelectedPost] = useState(null);
   const [showPostModal, setShowPostModal] = useState(false);
   const [error, setError] = useState(null);
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, post: null });
+  const [deleting, setDeleting] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     fetchPosts();
@@ -55,7 +62,7 @@ const PostsManagement = () => {
         title: post.title,
         content: post.content || post.excerpt || '',
         author: {
-          name: post.author ? `${post.author.first_name} ${post.author.last_name}` : 'Unknown Author',
+          name: post.author ? `${post.author.first_name || ''} ${post.author.last_name || ''}`.trim() || post.author.name || 'Unknown Author' : 'Unknown Author',
           email: post.author?.email || 'unknown@example.com',
           avatar: post.author?.avatar_url
         },
@@ -97,16 +104,31 @@ const PostsManagement = () => {
     setShowPostModal(true);
   };
 
-  const handleDeletePost = async (postId) => {
-    if (window.confirm('Are you sure you want to delete this post?')) {
-      try {
-        await postsAPI.deletePost(postId);
-        setPosts(posts.filter(post => post.id !== postId));
-      } catch (error) {
-        console.error('Failed to delete post:', error);
-        alert('Failed to delete post. Please try again.');
-      }
+  const handleDeletePost = async () => {
+    if (!deleteModal.post) return;
+    
+    setDeleting(true);
+    try {
+      await postsAPI.deletePost(deleteModal.post.post_id || deleteModal.post.id);
+      setPosts(posts.filter(post => 
+        (post.post_id || post.id) !== (deleteModal.post.post_id || deleteModal.post.id)
+      ));
+      toast.success('Post deleted successfully!');
+      setDeleteModal({ isOpen: false, post: null });
+    } catch (error) {
+      console.error('Failed to delete post:', error);
+      toast.error('Failed to delete post. Please try again.');
+    } finally {
+      setDeleting(false);
     }
+  };
+
+  const openDeleteModal = (post) => {
+    setDeleteModal({ isOpen: true, post });
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal({ isOpen: false, post: null });
   };
 
   const handleUpdateStatus = async (postId, newStatus) => {
@@ -287,7 +309,7 @@ const PostsManagement = () => {
                 </button>
               )}
               <button 
-                onClick={() => handleDeletePost(post.id)}
+                onClick={() => openDeleteModal(post)}
                 className="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700"
               >
                 Delete
@@ -314,19 +336,19 @@ const PostsManagement = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Posts Management</h1>
-        <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center space-x-2">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Posts Management</h1>
+        <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center justify-center space-x-2 w-full sm:w-auto">
           <Plus className="w-4 h-4" />
           <span>Create Post</span>
         </button>
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-        <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4">
+      <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-200">
+        <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
           <div className="flex-1">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -367,7 +389,7 @@ const PostsManagement = () => {
         </div>
       </div>
 
-      {/* Posts Table */}
+      {/* Posts Table - Compact Design */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         {loading ? (
           <div className="p-8 text-center">
@@ -376,25 +398,22 @@ const PostsManagement = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Post
+                  <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Post Details
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="hidden sm:table-cell px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Author
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Category
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="hidden md:table-cell px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="hidden lg:table-cell px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Stats
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -402,15 +421,32 @@ const PostsManagement = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredPosts.map((post) => (
                   <tr key={post.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div className="max-w-xs">
-                        <div className="text-sm font-medium text-gray-900 truncate">{post.title}</div>
-                        <div className="text-sm text-gray-500 truncate">{post.content}</div>
+                    <td className="px-4 py-4">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                          <Image 
+                            src={post.featured_image_url} 
+                            alt={post.title}
+                            className="w-full h-full object-cover"
+                            fallbackType="post"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-gray-900 truncate" title={post.title}>
+                            {post.title}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {post.category.name}
+                          </div>
+                          <div className="text-xs text-gray-400 mt-1">
+                            {post.created_at ? new Date(post.created_at).toLocaleDateString() : 'No date'}
+                          </div>
+                        </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-2">
+                        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-2 flex-shrink-0">
                           {post.author.avatar ? (
                             <img src={post.author.avatar} alt={post.author.name} className="w-8 h-8 rounded-full object-cover" />
                           ) : (
@@ -419,13 +455,10 @@ const PostsManagement = () => {
                             </span>
                           )}
                         </div>
-                        <div className="text-sm text-gray-900">{post.author.name}</div>
+                        <div className="text-sm text-gray-900 truncate">{post.author.name}</div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-900">{post.category.name}</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         {getStatusIcon(post.status)}
                         <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(post.status)}`}>
@@ -433,27 +466,41 @@ const PostsManagement = () => {
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div className="flex space-x-4">
-                        <span>{post.view_count} views</span>
-                        <span>{post.like_count} likes</span>
-                        <span>{post.comment_count} comments</span>
+                    <td className="px-4 py-4 whitespace-nowrap text-xs text-gray-900">
+                      <div className="space-y-1">
+                        <div className="flex items-center">
+                          <Eye className="w-3 h-3 mr-1 text-gray-400" />
+                          <span>{post.view_count}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <Heart className="w-3 h-3 mr-1 text-gray-400" />
+                          <span>{post.like_count}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <MessageSquare className="w-3 h-3 mr-1 text-gray-400" />
+                          <span>{post.comment_count}</span>
+                        </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
                         <button
                           onClick={() => handleViewPost(post)}
-                          className="text-blue-600 hover:text-blue-900"
+                          className="text-blue-600 hover:text-blue-900 p-1"
+                          title="View Post"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button className="text-green-600 hover:text-green-900">
+                        <button 
+                          className="text-green-600 hover:text-green-900 p-1"
+                          title="Edit Post"
+                        >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDeletePost(post.id)}
-                          className="text-red-600 hover:text-red-900"
+                          onClick={() => openDeleteModal(post)}
+                          className="text-red-600 hover:text-red-900 p-1"
+                          title="Delete Post"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -473,6 +520,22 @@ const PostsManagement = () => {
         isOpen={showPostModal}
         onClose={() => setShowPostModal(false)}
       />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={handleDeletePost}
+        title="Delete Post"
+        message={`Are you sure you want to delete "${deleteModal.post?.title}"? This action cannot be undone and will remove all comments and likes associated with this post.`}
+        confirmText="Delete Post"
+        cancelText="Cancel"
+        type="danger"
+        loading={deleting}
+      />
+
+      {/* Toast Container */}
+      <ToastContainer toasts={toast.toasts} removeToast={toast.removeToast} />
     </div>
   );
 };

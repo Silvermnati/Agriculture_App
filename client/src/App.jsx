@@ -8,6 +8,10 @@ import NotificationSettings from './pages/Notifications/NotificationSettings';
 import NotificationHistory from './pages/Notifications/NotificationHistory';
 import AdminLogin from './pages/Admin/AdminLogin';
 import AdminDashboard from './pages/Admin/AdminDashboard';
+import About from './pages/About/About';
+import Privacy from './pages/Privacy/Privacy';
+import Terms from './pages/Terms/Terms';
+import Contact from './pages/Contact/Contact';
 
 import store from './store';
 import Layout from './components/Layout/Layout';
@@ -22,7 +26,7 @@ import PostsPage from './pages/posts/PostsPage';
 import ProfilePage from './pages/Profile/ProfilePage';
 // import websocketService from './services/websocketService'; // Temporarily disabled
 
-import './App.css';
+
 
 // Create a separate component for routes that needs access to Redux state
 const AppRoutes = () => {
@@ -76,6 +80,12 @@ const AppRoutes = () => {
         <Route path="/admin" element={<Navigate to="/admin/login" />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        
+        {/* Footer pages - accessible to all users */}
+        <Route path="/about" element={<About />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/contact" element={<Contact />} />
       </Routes>
     </Layout>
   );

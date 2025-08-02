@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { toggleLike } from '../../store/slices/postsSlice';
 import { Heart, MessageCircle } from 'lucide-react';
-import './PostInteraction.css';
+
 
 const PostInteraction = ({ post }) => {
   const dispatch = useDispatch();
@@ -32,18 +32,18 @@ const PostInteraction = ({ post }) => {
       <button
         onClick={handleLikeClick}
         disabled={isLoading}
-        className={`interaction-button like-button ${isLiked ? 'liked' : ''}`}
+        className={`flex items-center space-x-2 text-gray-500 hover:text-red-600 transition-colors duration-300 ${isLiked ? 'text-red-600' : ''}`}
         aria-label="Like post"
       >
         <Heart size={16} fill={isLiked ? 'currentColor' : 'none'} strokeWidth={isLiked ? 2 : 1.5} />
-        <span className="count">{post.like_count || 0}</span>
+        <span className="font-medium">{post.like_count || 0}</span>
       </button>
       <Link
         to={`/posts/${post.id || post.post_id}#comments`}
-        className="interaction-button comment-info"
+        className="flex items-center space-x-2 text-gray-500 hover:text-green-600 transition-colors duration-300"
       >
         <MessageCircle size={16} />
-        <span className="count">{post.comment_count || 0}</span>
+        <span className="font-medium">{post.comment_count || 0}</span>
       </Link>
     </>
   );

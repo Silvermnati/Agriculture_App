@@ -26,6 +26,7 @@ def get_posts(current_user=None):
     - category: string
     - crop: string
     - season: string (spring, summer, fall, winter)
+    - tags: string (case-insensitive tag filtering)
     - search: string
     - sort_by: string (date, popularity, relevance)
     """
@@ -36,6 +37,7 @@ def get_posts(current_user=None):
     crops = request.args.get('crop', type=str)
     season = request.args.get('season', type=str)
     locations = request.args.get('location', type=str)
+    tags = request.args.get('tags', type=str)
     search = request.args.get('search')
     sort_by = request.args.get('sort_by', 'date')
     
@@ -87,6 +89,13 @@ def get_posts(current_user=None):
         if location_list:
             # Use 'overlap' (&& operator) to find posts with any of the specified locations
             query = query.filter(Post.applicable_locations.op('&&')(location_list))
+    
+    if tags:
+        # Handle case-insensitive tag filtering
+        tag_name = tags.strip()
+        if tag_name:
+            # Use case-insensitive filtering with ILIKE to handle capitalization differences
+            query = query.filter(Post.tags.any(Tag.name.ilike(f'%{tag_name}%')))
     
     if search:
         query = query.filter(
@@ -545,10 +554,9 @@ def update_post(current_user, post_id, resource=None):
 
 
 @token_required
-@resource_owner_required(Post, 'post_id', 'author_id')
-def delete_post(current_user, post_id, resource=None):
+def delete_post(current_user, post_id):
     """
-    Delete (archive) a post.
+    Delete a post. Admins can hard delete, users can only archive their own posts.
     """
     try:
         # Convert string post_id to UUID
@@ -557,14 +565,44 @@ def delete_post(current_user, post_id, resource=None):
     except ValueError:
         return create_error_response('INVALID_POST_ID', 'Invalid post ID format', status_code=400)
     
-    post = resource  # Provided by resource_owner_required decorator
-    
-    # Soft delete (archive) the post
-    post.status = 'archived'
-    post.updated_at = datetime.utcnow()
-    db.session.commit()
-    
-    return create_success_response(message='Post archived successfully')
+    try:
+        post = Post.query.get(post_id)
+        if not post:
+            return create_error_response('POST_NOT_FOUND', 'Post not found', status_code=404)
+        
+        # Check permissions
+        is_admin = current_user.role == 'admin'
+        is_author = post.author_id == current_user.user_id
+        
+        if not is_admin and not is_author:
+            return create_error_response('FORBIDDEN', 'You can only delete your own posts', status_code=403)
+        
+        # Admin hard delete - completely remove post and all related data
+        if is_admin:
+            from server.models.post import Comment, ArticlePostLike
+            
+            # Delete all related data
+            Comment.query.filter_by(post_id=post.post_id).delete()
+            ArticlePostLike.query.filter_by(post_id=post.post_id).delete()
+            
+            # Delete the post itself
+            db.session.delete(post)
+            db.session.commit()
+            
+            return create_success_response(message='Post permanently deleted successfully')
+        
+        # User soft delete (archive) their own post
+        else:
+            post.status = 'archived'
+            post.updated_at = datetime.utcnow()
+            db.session.commit()
+            
+            return create_success_response(message='Post archived successfully')
+            
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error deleting post {post_id}: {str(e)}")
+        return create_error_response('SERVER_ERROR', 'Failed to delete post', status_code=500)
 
 
 def get_comments(post_id):

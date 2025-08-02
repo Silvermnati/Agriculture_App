@@ -122,7 +122,8 @@ const CommunityForm = ({ isOpen, onClose }) => {
 
     try {
       const result = await dispatch(createCommunity(formData)).unwrap();
-      
+      // Support both wrapped and flat responses
+      const community = result.community || result;
       // Reset form
       setFormData({
         name: '',
@@ -140,8 +141,8 @@ const CommunityForm = ({ isOpen, onClose }) => {
       onClose();
       
       // Navigate to the new community
-      if (result.id) {
-        navigate(`/communities/${result.id}`);
+      if (community.id || community.community_id) {
+        navigate(`/communities/${community.id || community.community_id}`);
       }
     } catch (error) {
       console.error('Failed to create community:', error);
