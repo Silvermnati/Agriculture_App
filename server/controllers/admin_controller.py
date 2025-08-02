@@ -172,8 +172,8 @@ def delete_user(current_user, user_id):
         from server.models.expert import ExpertProfile, Consultation, ExpertReview
         from server.models.article import Article
         from server.models.crop import UserCrop
-        from server.models.payment import Payment
-        from server.models.notifications import Notification, NotificationPreferences
+        from server.models.payment import Payment, TransactionLog
+        from server.models.notifications import Notification, NotificationPreferences, NotificationDelivery
         from server.models.user import UserExpertise, UserFollow
         
         # Delete in correct order to avoid foreign key constraint violations
@@ -193,32 +193,42 @@ def delete_user(current_user, user_id):
         # 4. Delete expert profile
         ExpertProfile.query.filter_by(user_id=user_uuid).delete()
         
-        # 5. Delete user's payments
+        # 5. Delete transaction logs first (they reference payments)
+        user_payments = Payment.query.filter_by(user_id=user_uuid).all()
+        for payment in user_payments:
+            TransactionLog.query.filter_by(payment_id=payment.payment_id).delete()
+        
+        # 6. Delete user's payments (after transaction logs are deleted)
         Payment.query.filter_by(user_id=user_uuid).delete()
         
-        # 6. Delete user's notifications and preferences
+        # 7. Delete notification deliveries first (they reference notifications)
+        user_notifications = Notification.query.filter_by(user_id=user_uuid).all()
+        for notification in user_notifications:
+            NotificationDelivery.query.filter_by(notification_id=notification.notification_id).delete()
+        
+        # 8. Delete user's notifications and preferences
         Notification.query.filter_by(user_id=user_uuid).delete()
         NotificationPreferences.query.filter_by(user_id=user_uuid).delete()
         
-        # 7. Delete user's crops
+        # 9. Delete user's crops
         UserCrop.query.filter_by(user_id=user_uuid).delete()
         
-        # 8. Delete user's expertise and follows
+        # 10. Delete user's expertise and follows
         UserExpertise.query.filter_by(user_id=user_uuid).delete()
         UserFollow.query.filter_by(follower_id=user_uuid).delete()
         UserFollow.query.filter_by(following_id=user_uuid).delete()
         
-        # 9. Delete community post likes and comments by user
+        # 11. Delete community post likes and comments by user
         PostLike.query.filter_by(user_id=user_uuid).delete()
         PostComment.query.filter_by(user_id=user_uuid).delete()
         
-        # 10. Delete community posts by user
+        # 12. Delete community posts by user
         CommunityPost.query.filter_by(user_id=user_uuid).delete()
         
-        # 11. Delete community memberships
+        # 13. Delete community memberships
         CommunityMember.query.filter_by(user_id=user_uuid).delete()
         
-        # 12. Delete communities created by user (with cascade)
+        # 14. Delete communities created by user (with cascade)
         communities_to_delete = Community.query.filter_by(created_by=user_uuid).all()
         for community in communities_to_delete:
             # Delete all community members
@@ -232,13 +242,13 @@ def delete_user(current_user, user_id):
             # Delete the community
             db.session.delete(community)
         
-        # 13. Delete article post likes by the user
+        # 15. Delete article post likes by the user
         ArticlePostLike.query.filter_by(user_id=user_uuid).delete()
         
-        # 14. Delete comments made by the user on posts
+        # 16. Delete comments made by the user on posts
         Comment.query.filter_by(user_id=user_uuid).delete()
         
-        # 15. Delete posts by the user (with cascade)
+        # 17. Delete posts by the user (with cascade)
         user_posts = Post.query.filter_by(author_id=user_uuid).all()
         for post in user_posts:
             # Delete post likes
@@ -248,10 +258,10 @@ def delete_user(current_user, user_id):
             # Delete the post
             db.session.delete(post)
         
-        # 16. Delete user's articles
+        # 18. Delete user's articles
         Article.query.filter_by(author_id=user_uuid).delete()
         
-        # 17. Finally, delete the user
+        # 19. Finally, delete the user
         db.session.delete(user)
         
         # Commit all deletions
