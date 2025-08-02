@@ -155,18 +155,18 @@ const SystemStats = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6">
         {statCards.map((stat, index) => {
           const Icon = stat.icon;
           return (
-            <div key={index} className="bg-white rounded-lg shadow-md p-6">
+            <div key={index} className="bg-white rounded-lg shadow-md p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600">{stat.title}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900">{stat.value}</p>
                 </div>
-                <div className={`p-3 rounded-full ${stat.color}`}>
-                  <Icon className="w-6 h-6 text-white" />
+                <div className={`p-2 sm:p-3 rounded-full ${stat.color}`}>
+                  <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
               </div>
 
@@ -176,9 +176,9 @@ const SystemStats = () => {
       </div>
 
       {/* Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
           {activityLoading ? (
             <div className="space-y-3">
               {[...Array(3)].map((_, i) => (
@@ -206,8 +206,8 @@ const SystemStats = () => {
           )}
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+        <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
           <div className="space-y-3">
             <button 
               onClick={() => handleQuickAction('crop')}

@@ -104,9 +104,9 @@ const CommunityManagement = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Community Management</h2>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Community Management</h2>
         <div className="text-sm text-gray-600">
           Total Communities: {communities.length}
         </div>
@@ -139,135 +139,232 @@ const CommunityManagement = () => {
 
       {/* Communities Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Community
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Type
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Privacy
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Members
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Posts
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Focus Crops
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Created
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {loading ? (
-              <tr>
-                <td colSpan="8" className="px-6 py-4 text-center">Loading...</td>
-              </tr>
-            ) : filteredCommunities.length === 0 ? (
-              <tr>
-                <td colSpan="8" className="px-6 py-4 text-center text-gray-500">
+        {loading ? (
+          <div className="p-8 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto"></div>
+            <p className="mt-2 text-gray-600">Loading communities...</p>
+          </div>
+        ) : (
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Community
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Type
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Privacy
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Members
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Posts
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Focus Crops
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Created
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredCommunities.length === 0 ? (
+                    <tr>
+                      <td colSpan="8" className="px-6 py-4 text-center text-gray-500">
+                        No communities found
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredCommunities.map((community) => (
+                      <tr key={community.community_id}>
+                        <td className="px-6 py-4">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900 max-w-xs">
+                              {community.name}
+                            </div>
+                            <div className="text-sm text-gray-500 max-w-xs truncate">
+                              {community.description}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeBadgeColor(community.community_type)}`}>
+                            {community.community_type}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            community.is_private 
+                              ? 'bg-red-100 text-red-800' 
+                              : 'bg-green-100 text-green-800'
+                          }`}>
+                            {community.is_private ? 'Private' : 'Public'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center text-sm text-gray-900">
+                            <Users className="w-4 h-4 mr-1" />
+                            {community.member_count || 0}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center text-sm text-gray-900">
+                            <MessageSquare className="w-4 h-4 mr-1" />
+                            {community.posts_count || 0}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-wrap gap-1 max-w-xs">
+                            {community.focus_crops?.slice(0, 2).map((crop, index) => (
+                              <span 
+                                key={index}
+                                className="inline-flex px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded"
+                              >
+                                {crop}
+                              </span>
+                            ))}
+                            {community.focus_crops?.length > 2 && (
+                              <span className="inline-flex px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded">
+                                +{community.focus_crops.length - 2}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {formatDate(community.created_at)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => toast.info(`View community: ${community.name}`, { duration: 3000 })}
+                              className="text-blue-600 hover:text-blue-900 p-1"
+                              title="View Community"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => toast.info(`Edit community: ${community.name}`, { duration: 3000 })}
+                              className="text-green-600 hover:text-green-900 p-1"
+                              title="Edit Community"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => openDeleteModal(community)}
+                              className="text-red-600 hover:text-red-900 p-1"
+                              title="Delete Community"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="lg:hidden">
+              {filteredCommunities.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">
                   No communities found
-                </td>
-              </tr>
-            ) : (
-              filteredCommunities.map((community) => (
-                <tr key={community.community_id}>
-                  <td className="px-6 py-4">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900 max-w-xs">
-                        {community.name}
+                </div>
+              ) : (
+                filteredCommunities.map((community) => (
+                  <div key={community.community_id} className="p-4 border-b border-gray-200 last:border-b-0">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-gray-900 truncate">
+                          {community.name}
+                        </div>
+                        <div className="text-sm text-gray-500 mt-1 line-clamp-2">
+                          {community.description}
+                        </div>
+                        <div className="flex items-center space-x-2 mt-2">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeBadgeColor(community.community_type)}`}>
+                            {community.community_type}
+                          </span>
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            community.is_private 
+                              ? 'bg-red-100 text-red-800' 
+                              : 'bg-green-100 text-green-800'
+                          }`}>
+                            {community.is_private ? 'Private' : 'Public'}
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-4 mt-2 text-sm text-gray-600">
+                          <div className="flex items-center">
+                            <Users className="w-4 h-4 mr-1" />
+                            {community.member_count || 0}
+                          </div>
+                          <div className="flex items-center">
+                            <MessageSquare className="w-4 h-4 mr-1" />
+                            {community.posts_count || 0}
+                          </div>
+                          <div className="text-xs">
+                            {formatDate(community.created_at)}
+                          </div>
+                        </div>
+                        {community.focus_crops && community.focus_crops.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {community.focus_crops.slice(0, 3).map((crop, index) => (
+                              <span 
+                                key={index}
+                                className="inline-flex px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded"
+                              >
+                                {crop}
+                              </span>
+                            ))}
+                            {community.focus_crops.length > 3 && (
+                              <span className="inline-flex px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded">
+                                +{community.focus_crops.length - 3}
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      <div className="text-sm text-gray-500 max-w-xs truncate">
-                        {community.description}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeBadgeColor(community.community_type)}`}>
-                      {community.community_type}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      community.is_private 
-                        ? 'bg-red-100 text-red-800' 
-                        : 'bg-green-100 text-green-800'
-                    }`}>
-                      {community.is_private ? 'Private' : 'Public'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center text-sm text-gray-900">
-                      <Users className="w-4 h-4 mr-1" />
-                      {community.member_count || 0}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center text-sm text-gray-900">
-                      <MessageSquare className="w-4 h-4 mr-1" />
-                      {community.posts_count || 0}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-wrap gap-1 max-w-xs">
-                      {community.focus_crops?.slice(0, 2).map((crop, index) => (
-                        <span 
-                          key={index}
-                          className="inline-flex px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded"
+                      <div className="flex space-x-1 ml-2">
+                        <button
+                          onClick={() => toast.info(`View community: ${community.name}`, { duration: 3000 })}
+                          className="text-blue-600 hover:text-blue-900 p-2"
+                          title="View Community"
                         >
-                          {crop}
-                        </span>
-                      ))}
-                      {community.focus_crops?.length > 2 && (
-                        <span className="inline-flex px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded">
-                          +{community.focus_crops.length - 2}
-                        </span>
-                      )}
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => toast.info(`Edit community: ${community.name}`, { duration: 3000 })}
+                          className="text-green-600 hover:text-green-900 p-2"
+                          title="Edit Community"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => openDeleteModal(community)}
+                          className="text-red-600 hover:text-red-900 p-2"
+                          title="Delete Community"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(community.created_at)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => toast.info(`View community: ${community.name}`, { duration: 3000 })}
-                        className="text-blue-600 hover:text-blue-900"
-                        title="View Community"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => toast.info(`Edit community: ${community.name}`, { duration: 3000 })}
-                        className="text-green-600 hover:text-green-900"
-                        title="Edit Community"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => openDeleteModal(community)}
-                        className="text-red-600 hover:text-red-900"
-                        title="Delete Community"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+                  </div>
+                ))
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Stats Cards */}

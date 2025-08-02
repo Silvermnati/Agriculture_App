@@ -260,9 +260,9 @@ const UsersManagement = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Users Management</h1>
-        <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center space-x-2">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Users Management</h1>
+        <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center justify-center space-x-2 w-full sm:w-auto">
           <Plus className="w-4 h-4" />
           <span>Add User</span>
         </button>
@@ -317,92 +317,159 @@ const UsersManagement = () => {
             <p className="mt-2 text-gray-600">Loading users...</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    User
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Role
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Location
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Join Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-3">
-                          {user.avatar ? (
-                            <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full object-cover" />
-                          ) : (
-                            <span className="text-sm font-bold text-gray-600">
-                              {user.name.charAt(0)}
-                            </span>
-                          )}
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                          <div className="text-sm text-gray-500">{user.email}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="capitalize text-sm text-gray-900">{user.role}</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        user.status === 'active' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {user.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {user.location}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(user.joinDate).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => handleViewUser(user)}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button className="text-green-600 hover:text-green-900">
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => openDeleteModal(user)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      User
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Role
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="hidden lg:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Location
+                    </th>
+                    <th className="hidden lg:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Join Date
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredUsers.map((user) => (
+                    <tr key={user.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-3">
+                            {user.avatar ? (
+                              <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full object-cover" />
+                            ) : (
+                              <span className="text-sm font-bold text-gray-600">
+                                {user.name.charAt(0)}
+                              </span>
+                            )}
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                            <div className="text-sm text-gray-500">{user.email}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="capitalize text-sm text-gray-900">{user.role}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          user.status === 'active' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {user.status}
+                        </span>
+                      </td>
+                      <td className="hidden lg:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {user.location}
+                      </td>
+                      <td className="hidden lg:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {new Date(user.joinDate).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleViewUser(user)}
+                            className="text-blue-600 hover:text-blue-900 p-1"
+                            title="View User"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button 
+                            className="text-green-600 hover:text-green-900 p-1"
+                            title="Edit User"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => openDeleteModal(user)}
+                            className="text-red-600 hover:text-red-900 p-1"
+                            title="Delete User"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden">
+              {filteredUsers.map((user) => (
+                <div key={user.id} className="p-4 border-b border-gray-200 last:border-b-0">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center space-x-3 flex-1">
+                      <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+                        {user.avatar ? (
+                          <img src={user.avatar} alt={user.name} className="w-12 h-12 rounded-full object-cover" />
+                        ) : (
+                          <span className="text-lg font-bold text-gray-600">
+                            {user.name.charAt(0)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-gray-900 truncate">{user.name}</div>
+                        <div className="text-sm text-gray-500 truncate">{user.email}</div>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <span className="capitalize text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                            {user.role}
+                          </span>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            user.status === 'active' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {user.status}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex space-x-1 ml-2">
+                      <button
+                        onClick={() => handleViewUser(user)}
+                        className="text-blue-600 hover:text-blue-900 p-2"
+                        title="View User"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button 
+                        className="text-green-600 hover:text-green-900 p-2"
+                        title="Edit User"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => openDeleteModal(user)}
+                        className="text-red-600 hover:text-red-900 p-2"
+                        title="Delete User"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
 

@@ -120,12 +120,12 @@ const CropManagement = () => {
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Crop Management</h2>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Crop Management</h2>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+          className="flex items-center justify-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 w-full sm:w-auto"
         >
           <Plus className="w-4 h-4" />
           <span>Add Crop</span>
