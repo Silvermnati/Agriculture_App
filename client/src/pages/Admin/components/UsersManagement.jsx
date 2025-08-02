@@ -85,7 +85,7 @@ const UsersManagement = () => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
         await adminAPI.deleteUser(userId);
-        setUsers(users.filter(user => user.id !== userId));
+        setUsers(users.filter(user => (user.user_id || user.id) !== userId));
         triggerRefresh(); // Trigger refresh for system stats
         alert('User deleted successfully');
       } catch (error) {
@@ -371,7 +371,7 @@ const UsersManagement = () => {
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDeleteUser(user.id)}
+                          onClick={() => handleDeleteUser(user.user_id || user.id)}
                           className="text-red-600 hover:text-red-900"
                         >
                           <Trash2 className="w-4 h-4" />

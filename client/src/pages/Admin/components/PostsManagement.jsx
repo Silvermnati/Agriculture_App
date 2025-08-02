@@ -102,7 +102,8 @@ const PostsManagement = () => {
     if (window.confirm('Are you sure you want to delete this post?')) {
       try {
         await postsAPI.deletePost(postId);
-        setPosts(posts.filter(post => post.id !== postId));
+        setPosts(posts.filter(post => (post.post_id || post.id) !== postId));
+        alert('Post deleted successfully!');
       } catch (error) {
         console.error('Failed to delete post:', error);
         alert('Failed to delete post. Please try again.');
@@ -288,7 +289,7 @@ const PostsManagement = () => {
                 </button>
               )}
               <button 
-                onClick={() => handleDeletePost(post.id)}
+                onClick={() => handleDeletePost(post.post_id || post.id)}
                 className="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700"
               >
                 Delete
@@ -477,7 +478,7 @@ const PostsManagement = () => {
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDeletePost(post.id)}
+                          onClick={() => handleDeletePost(post.post_id || post.id)}
                           className="text-red-600 hover:text-red-900 p-1"
                           title="Delete Post"
                         >

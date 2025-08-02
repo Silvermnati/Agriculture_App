@@ -47,8 +47,9 @@ const CommunitiesManagement = () => {
   const handleDeleteCommunity = async (communityId) => {
     if (window.confirm('Are you sure you want to delete this community?')) {
       try {
-        // await communitiesAPI.deleteCommunity(communityId);
-        setCommunities(communities.filter(community => community.id !== communityId));
+        await communitiesAPI.deleteCommunity(communityId);
+        setCommunities(communities.filter(community => community.community_id !== communityId));
+        alert('Community deleted successfully!');
       } catch (error) {
         console.error('Failed to delete community:', error);
         alert('Failed to delete community. Please try again.');
@@ -118,7 +119,7 @@ const CommunitiesManagement = () => {
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => handleDeleteCommunity(community.id)}
+                      onClick={() => handleDeleteCommunity(community.community_id || community.id)}
                       className="text-red-600 hover:text-red-900"
                     >
                       <Trash2 className="w-4 h-4" />

@@ -158,8 +158,16 @@ def delete_user(current_user, user_id):
         if user.role == 'admin':
             return create_error_response('FORBIDDEN', 'Cannot delete admin accounts', status_code=403)
         
-        # Import all related models
-        from server.models.post import Post, Comment, ArticlePostLike
+        user_uuid = user.user_id
+        current_app.logger.info(f"Starting deletion of user {user_id} by admin {current_user.user_id}")
+        
+        # Import all models at once to avoid import issues
+        try:
+            from server.models.post import Post, Comment, ArticlePostLike, CommentEdit
+        except ImportError:
+            from server.models.post import Post, Comment, ArticlePostLike
+            CommentEdit = None
+            
         from server.models.community import Community, CommunityMember, CommunityPost, PostLike, PostComment
         from server.models.expert import ExpertProfile, Consultation, ExpertReview
         from server.models.article import Article
@@ -168,57 +176,49 @@ def delete_user(current_user, user_id):
         from server.models.notifications import Notification, NotificationPreferences
         from server.models.user import UserExpertise, UserFollow
         
-        user_uuid = user.user_id
+        # Delete in correct order to avoid foreign key constraint violations
         
-        # Delete in order to avoid foreign key constraint violations
+        # 1. Delete comment edits first (references comments and users)
+        if CommentEdit:
+            CommentEdit.query.filter_by(edited_by=user_uuid).delete()
         
-        # 1. Delete user's notifications and preferences
+        # 2. Delete expert reviews (both given and received)
+        ExpertReview.query.filter_by(expert_id=user_uuid).delete()
+        ExpertReview.query.filter_by(reviewer_id=user_uuid).delete()
+        
+        # 3. Delete consultations (both as expert and farmer)
+        Consultation.query.filter_by(expert_id=user_uuid).delete()
+        Consultation.query.filter_by(farmer_id=user_uuid).delete()
+        
+        # 4. Delete expert profile
+        ExpertProfile.query.filter_by(user_id=user_uuid).delete()
+        
+        # 5. Delete user's payments
+        Payment.query.filter_by(user_id=user_uuid).delete()
+        
+        # 6. Delete user's notifications and preferences
         Notification.query.filter_by(user_id=user_uuid).delete()
         NotificationPreferences.query.filter_by(user_id=user_uuid).delete()
         
-        # 2. Delete user's payments
-        Payment.query.filter_by(user_id=user_uuid).delete()
-        
-        # 3. Delete user's crops
+        # 7. Delete user's crops
         UserCrop.query.filter_by(user_id=user_uuid).delete()
         
-        # 4. Delete user's expertise
+        # 8. Delete user's expertise and follows
         UserExpertise.query.filter_by(user_id=user_uuid).delete()
-        
-        # 5. Delete follow relationships (both as follower and following)
         UserFollow.query.filter_by(follower_id=user_uuid).delete()
         UserFollow.query.filter_by(following_id=user_uuid).delete()
         
-        # 6. Delete expert-related data if user is an expert
-        if user.role == 'expert':
-            # Delete expert reviews (both given and received)
-            ExpertReview.query.filter_by(expert_id=user_uuid).delete()
-            ExpertReview.query.filter_by(reviewer_id=user_uuid).delete()
-            
-            # Delete consultations (both as expert and farmer)
-            Consultation.query.filter_by(expert_id=user_uuid).delete()
-            Consultation.query.filter_by(farmer_id=user_uuid).delete()
-            
-            # Delete expert profile
-            ExpertProfile.query.filter_by(user_id=user_uuid).delete()
-        
-        # 7. Delete user's articles
-        Article.query.filter_by(author_id=user_uuid).delete()
-        
-        # 8. Delete community-related data
-        # Delete community post likes
+        # 9. Delete community post likes and comments by user
         PostLike.query.filter_by(user_id=user_uuid).delete()
-        
-        # Delete community comments
         PostComment.query.filter_by(user_id=user_uuid).delete()
         
-        # Delete community posts
+        # 10. Delete community posts by user
         CommunityPost.query.filter_by(user_id=user_uuid).delete()
         
-        # Delete community memberships
+        # 11. Delete community memberships
         CommunityMember.query.filter_by(user_id=user_uuid).delete()
         
-        # Delete communities created by user (this will cascade to related data)
+        # 12. Delete communities created by user (with cascade)
         communities_to_delete = Community.query.filter_by(created_by=user_uuid).all()
         for community in communities_to_delete:
             # Delete all community members
@@ -232,24 +232,26 @@ def delete_user(current_user, user_id):
             # Delete the community
             db.session.delete(community)
         
-        # 9. Delete post-related data
-        # Get all posts by the user
+        # 13. Delete article post likes by the user
+        ArticlePostLike.query.filter_by(user_id=user_uuid).delete()
+        
+        # 14. Delete comments made by the user on posts
+        Comment.query.filter_by(user_id=user_uuid).delete()
+        
+        # 15. Delete posts by the user (with cascade)
         user_posts = Post.query.filter_by(author_id=user_uuid).all()
         for post in user_posts:
-            # Delete post likes (ArticlePostLike for regular posts)
+            # Delete post likes
             ArticlePostLike.query.filter_by(post_id=post.post_id).delete()
             # Delete comments on the post
             Comment.query.filter_by(post_id=post.post_id).delete()
             # Delete the post
             db.session.delete(post)
         
-        # 10. Delete comments made by the user on other posts
-        Comment.query.filter_by(user_id=user_uuid).delete()
+        # 16. Delete user's articles
+        Article.query.filter_by(author_id=user_uuid).delete()
         
-        # 11. Delete article post likes by the user
-        ArticlePostLike.query.filter_by(user_id=user_uuid).delete()
-        
-        # 13. Finally, delete the user
+        # 17. Finally, delete the user
         db.session.delete(user)
         
         # Commit all deletions
@@ -262,7 +264,9 @@ def delete_user(current_user, user_id):
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Error permanently deleting user {user_id}: {str(e)}")
-        return create_error_response('SERVER_ERROR', 'Failed to delete user', status_code=500)
+        import traceback
+        current_app.logger.error(f"Full traceback: {traceback.format_exc()}")
+        return create_error_response('SERVER_ERROR', f'Failed to delete user: {str(e)}', status_code=500)
 
 
 @token_required

@@ -223,9 +223,17 @@ const CommunityManagement = () => {
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => {
+                        onClick={async () => {
                           if (window.confirm(`Are you sure you want to delete ${community.name}?`)) {
-                            alert(`Delete community: ${community.name}`);
+                            try {
+                              await communitiesAPI.deleteCommunity(community.community_id || community.id);
+                              // Refresh the communities list
+                              fetchCommunities();
+                              alert('Community deleted successfully!');
+                            } catch (error) {
+                              console.error('Failed to delete community:', error);
+                              alert('Failed to delete community. Please try again.');
+                            }
                           }
                         }}
                         className="text-red-600 hover:text-red-900"

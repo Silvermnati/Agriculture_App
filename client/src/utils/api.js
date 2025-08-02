@@ -188,6 +188,7 @@ export const communitiesAPI = {
   getCommunity: (communityId) => api.get(`${API_ENDPOINTS.COMMUNITIES.BASE}/${communityId}`),
   createCommunity: (communityData) => api.post(API_ENDPOINTS.COMMUNITIES.BASE, communityData),
   updateCommunity: (communityId, communityData) => api.put(`${API_ENDPOINTS.COMMUNITIES.BASE}/${communityId}`, communityData),
+  deleteCommunity: (communityId) => api.delete(`${API_ENDPOINTS.COMMUNITIES.BASE}/${communityId}`),
   joinCommunity: (communityId) => api.post(API_ENDPOINTS.COMMUNITIES.JOIN(communityId)),
   getCommunityPosts: (communityId, params) => api.get(API_ENDPOINTS.COMMUNITIES.POSTS(communityId), { params }),
   createCommunityPost: (communityId, postData) => api.post(API_ENDPOINTS.COMMUNITIES.POSTS(communityId), postData),
