@@ -13,9 +13,6 @@ AgriConnect is designed to bridge the gap between traditional farming practices 
 - **Access** curated agricultural content and resources
 
 ## ✨ Key Features
-
-### 🔐 User Management
-
 - Secure JWT-based authentication and authorization
 - Role-based access control (Farmers, Experts, Admins)
 - Comprehensive user profiles with agricultural specializations
