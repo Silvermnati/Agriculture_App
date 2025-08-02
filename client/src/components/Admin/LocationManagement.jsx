@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Search } from 'lucide-react';
 import { locationsAPI } from '../../utils/api';
+import useToast from '../../hooks/useToast';
+import ConfirmationModal from '../common/ConfirmationModal/ConfirmationModal';
+import { ToastContainer } from '../common/Toast/Toast';
 
 const LocationManagement = () => {
   const [locations, setLocations] = useState([]);
@@ -13,6 +16,9 @@ const LocationManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('locations');
   const [selectedCountryForStates, setSelectedCountryForStates] = useState('');
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, item: null, type: null });
+  const [deleting, setDeleting] = useState(false);
+  const toast = useToast();
   
   const [locationForm, setLocationForm] = useState({
     country_id: '',
@@ -70,12 +76,12 @@ const LocationManagement = () => {
     
     // Frontend validation
     if (!locationForm.country_id || locationForm.country_id.trim() === '') {
-      alert('Please select a country');
+      toast.error('Please select a country');
       return;
     }
     
     if (!locationForm.city || locationForm.city.trim() === '') {
-      alert('Please enter a city name');
+      toast.error('Please enter a city name');
       return;
     }
     
@@ -97,10 +103,10 @@ const LocationManagement = () => {
       
       if (editingItem) {
         await locationsAPI.updateLocation(editingItem.location_id, formattedData);
-        alert('Location updated successfully!');
+        toast.success('Location updated successfully!');
       } else {
         await locationsAPI.createLocation(formattedData);
-        alert('Location created successfully!');
+        toast.success('Location created successfully!');
       }
       await fetchData();
       handleCloseModal();
@@ -115,7 +121,7 @@ const LocationManagement = () => {
                           error.response?.data?.error?.details ||
                           error.response?.data?.error ||
                           'Failed to save location';
-      alert(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
@@ -124,16 +130,16 @@ const LocationManagement = () => {
     try {
       if (editingItem) {
         await locationsAPI.updateCountry(editingItem.country_id, countryForm);
-        alert('Country updated successfully!');
+        toast.success('Country updated successfully!');
       } else {
         await locationsAPI.createCountry(countryForm);
-        alert('Country created successfully!');
+        toast.success('Country created successfully!');
       }
       await fetchData();
       handleCloseModal();
     } catch (error) {
       console.error('Failed to save country:', error);
-      alert(error.response?.data?.message || 'Failed to save country');
+      toast.error(error.response?.data?.message || 'Failed to save country');
     }
   };
 
@@ -149,10 +155,10 @@ const LocationManagement = () => {
       
       if (editingItem) {
         await locationsAPI.updateState(editingItem.state_id, formattedStateData);
-        alert('State updated successfully!');
+        toast.success('State updated successfully!');
       } else {
         await locationsAPI.createState(formattedStateData);
-        alert(`State "${stateForm.name}" created successfully!`);
+        toast.success(`State "${stateForm.name}" created successfully!`);
       }
       // Refresh states for the selected country
       if (stateForm.country_id) {
@@ -167,7 +173,7 @@ const LocationManagement = () => {
                           error.response?.data?.error?.details ||
                           error.response?.data?.error || 
                           'Failed to save state';
-      alert(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
@@ -223,30 +229,43 @@ const LocationManagement = () => {
     }
   };
 
-  const handleDelete = async (type, item) => {
-    const confirmMessage = `Are you sure you want to delete this ${type}? This action cannot be undone.`;
-    if (!window.confirm(confirmMessage)) return;
-
+  const handleDelete = async () => {
+    if (!deleteModal.item || !deleteModal.type) return;
+    
+    setDeleting(true);
     try {
+      const { type, item } = deleteModal;
+      
       if (type === 'location') {
         await locationsAPI.deleteLocation(item.location_id);
-        alert('Location deleted successfully!');
+        toast.success('Location deleted successfully!');
       } else if (type === 'country') {
         await locationsAPI.deleteCountry(item.country_id);
-        alert('Country deleted successfully!');
+        toast.success('Country deleted successfully!');
       } else if (type === 'state') {
         await locationsAPI.deleteState(item.state_id);
-        alert('State deleted successfully!');
+        toast.success('State deleted successfully!');
         // Refresh states if we're viewing states for this country
         if (selectedCountryForStates === item.country_id.toString()) {
           await fetchStates(selectedCountryForStates);
         }
       }
       await fetchData();
+      setDeleteModal({ isOpen: false, item: null, type: null });
     } catch (error) {
-      console.error(`Failed to delete ${type}:`, error);
-      alert(error.response?.data?.message || `Failed to delete ${type}`);
+      console.error(`Failed to delete ${deleteModal.type}:`, error);
+      toast.error(error.response?.data?.message || `Failed to delete ${deleteModal.type}`);
+    } finally {
+      setDeleting(false);
     }
+  };
+
+  const openDeleteModal = (type, item) => {
+    setDeleteModal({ isOpen: true, item, type });
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal({ isOpen: false, item: null, type: null });
   };
 
   const filteredLocations = locations.filter(location =>
@@ -319,7 +338,7 @@ const LocationManagement = () => {
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => handleDelete('location', location)}
+                      onClick={() => openDeleteModal('location', location)}
                       className="text-red-600 hover:text-red-900"
                       title="Delete location"
                     >
@@ -370,7 +389,7 @@ const LocationManagement = () => {
                     <Edit className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => handleDelete('country', country)}
+                    onClick={() => openDeleteModal('country', country)}
                     className="text-red-600 hover:text-red-900"
                     title="Delete country"
                   >
@@ -464,7 +483,7 @@ const LocationManagement = () => {
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => handleDelete('state', state)}
+                      onClick={() => openDeleteModal('state', state)}
                       className="text-red-600 hover:text-red-900"
                       title="Delete state"
                     >
@@ -757,6 +776,22 @@ const LocationManagement = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={handleDelete}
+        title={`Delete ${deleteModal.type ? deleteModal.type.charAt(0).toUpperCase() + deleteModal.type.slice(1) : ''}`}
+        message={`Are you sure you want to delete "${deleteModal.item?.name || deleteModal.item?.city}"? This action cannot be undone and may affect related data.`}
+        confirmText={`Delete ${deleteModal.type ? deleteModal.type.charAt(0).toUpperCase() + deleteModal.type.slice(1) : ''}`}
+        cancelText="Cancel"
+        type="danger"
+        loading={deleting}
+      />
+
+      {/* Toast Container */}
+      <ToastContainer toasts={toast.toasts} removeToast={toast.removeToast} />
     </div>
   );
 };

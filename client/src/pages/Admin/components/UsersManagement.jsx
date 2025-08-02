@@ -15,6 +15,9 @@ import {
 } from 'lucide-react';
 import { adminAPI } from '../../../utils/api';
 import { useAdmin } from '../../../contexts/AdminContext';
+import useToast from '../../../hooks/useToast';
+import ConfirmationModal from '../../../components/common/ConfirmationModal/ConfirmationModal';
+import { ToastContainer } from '../../../components/common/Toast/Toast';
 
 const UsersManagement = () => {
   const { triggerRefresh } = useAdmin();
@@ -26,6 +29,9 @@ const UsersManagement = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [showUserModal, setShowUserModal] = useState(false);
   const [error, setError] = useState(null);
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, user: null });
+  const [deleting, setDeleting] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     fetchUsers();
@@ -81,18 +87,32 @@ const UsersManagement = () => {
     setShowUserModal(true);
   };
 
-  const handleDeleteUser = async (userId) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      try {
-        await adminAPI.deleteUser(userId);
-        setUsers(users.filter(user => (user.user_id || user.id) !== userId));
-        triggerRefresh(); // Trigger refresh for system stats
-        alert('User deleted successfully');
-      } catch (error) {
-        console.error('Failed to delete user:', error);
-        alert('Failed to delete user. Please try again.');
-      }
+  const handleDeleteUser = async () => {
+    if (!deleteModal.user) return;
+    
+    setDeleting(true);
+    try {
+      await adminAPI.deleteUser(deleteModal.user.user_id || deleteModal.user.id);
+      setUsers(users.filter(user => 
+        (user.user_id || user.id) !== (deleteModal.user.user_id || deleteModal.user.id)
+      ));
+      triggerRefresh(); // Trigger refresh for system stats
+      toast.success('User deleted successfully!');
+      setDeleteModal({ isOpen: false, user: null });
+    } catch (error) {
+      console.error('Failed to delete user:', error);
+      toast.error('Failed to delete user. Please try again.');
+    } finally {
+      setDeleting(false);
     }
+  };
+
+  const openDeleteModal = (user) => {
+    setDeleteModal({ isOpen: true, user });
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal({ isOpen: false, user: null });
   };
 
   const handleToggleStatus = async (userId) => {
@@ -110,10 +130,10 @@ const UsersManagement = () => {
           : user
       ));
       
-      alert(`User ${updatedUser.is_active ? 'activated' : 'deactivated'} successfully`);
+      toast.success(`User ${updatedUser.is_active ? 'activated' : 'deactivated'} successfully!`);
     } catch (error) {
       console.error('Failed to update user status:', error);
-      alert('Failed to update user status. Please try again.');
+      toast.error('Failed to update user status. Please try again.');
     }
   };
 
@@ -371,7 +391,7 @@ const UsersManagement = () => {
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDeleteUser(user.user_id || user.id)}
+                          onClick={() => openDeleteModal(user)}
                           className="text-red-600 hover:text-red-900"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -392,6 +412,22 @@ const UsersManagement = () => {
         isOpen={showUserModal}
         onClose={() => setShowUserModal(false)}
       />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={handleDeleteUser}
+        title="Delete User"
+        message={`Are you sure you want to delete "${deleteModal.user?.name}"? This action cannot be undone and will permanently remove all user data, posts, comments, and associated content.`}
+        confirmText="Delete User"
+        cancelText="Cancel"
+        type="danger"
+        loading={deleting}
+      />
+
+      {/* Toast Container */}
+      <ToastContainer toasts={toast.toasts} removeToast={toast.removeToast} />
     </div>
   );
 };
