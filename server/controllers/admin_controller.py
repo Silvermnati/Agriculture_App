@@ -159,13 +159,13 @@ def delete_user(current_user, user_id):
             return create_error_response('FORBIDDEN', 'Cannot delete admin accounts', status_code=403)
         
         # Import all related models
-        from server.models.post import Post, Comment, PostLike, PostEditHistory
-        from server.models.community import Community, CommunityMember, CommunityPost, CommunityPostLike, CommunityComment
+        from server.models.post import Post, Comment, ArticlePostLike
+        from server.models.community import Community, CommunityMember, CommunityPost, PostLike, PostComment
         from server.models.expert import ExpertProfile, Consultation, ExpertReview
         from server.models.article import Article
         from server.models.crop import UserCrop
         from server.models.payment import Payment
-        from server.models.notifications import Notification, NotificationPreference
+        from server.models.notifications import Notification, NotificationPreferences
         from server.models.user import UserExpertise, UserFollow
         
         user_uuid = user.user_id
@@ -174,7 +174,7 @@ def delete_user(current_user, user_id):
         
         # 1. Delete user's notifications and preferences
         Notification.query.filter_by(user_id=user_uuid).delete()
-        NotificationPreference.query.filter_by(user_id=user_uuid).delete()
+        NotificationPreferences.query.filter_by(user_id=user_uuid).delete()
         
         # 2. Delete user's payments
         Payment.query.filter_by(user_id=user_uuid).delete()
@@ -207,10 +207,10 @@ def delete_user(current_user, user_id):
         
         # 8. Delete community-related data
         # Delete community post likes
-        CommunityPostLike.query.filter_by(user_id=user_uuid).delete()
+        PostLike.query.filter_by(user_id=user_uuid).delete()
         
         # Delete community comments
-        CommunityComment.query.filter_by(user_id=user_uuid).delete()
+        PostComment.query.filter_by(user_id=user_uuid).delete()
         
         # Delete community posts
         CommunityPost.query.filter_by(user_id=user_uuid).delete()
@@ -226,8 +226,8 @@ def delete_user(current_user, user_id):
             # Delete all community posts and their likes/comments
             community_posts = CommunityPost.query.filter_by(community_id=community.community_id).all()
             for post in community_posts:
-                CommunityPostLike.query.filter_by(post_id=post.post_id).delete()
-                CommunityComment.query.filter_by(post_id=post.post_id).delete()
+                PostLike.query.filter_by(post_id=post.post_id).delete()
+                PostComment.query.filter_by(post_id=post.post_id).delete()
             CommunityPost.query.filter_by(community_id=community.community_id).delete()
             # Delete the community
             db.session.delete(community)
@@ -236,23 +236,18 @@ def delete_user(current_user, user_id):
         # Get all posts by the user
         user_posts = Post.query.filter_by(author_id=user_uuid).all()
         for post in user_posts:
-            # Delete post likes
-            PostLike.query.filter_by(post_id=post.id).delete()
-            # Delete post edit history
-            PostEditHistory.query.filter_by(post_id=post.id).delete()
+            # Delete post likes (ArticlePostLike for regular posts)
+            ArticlePostLike.query.filter_by(post_id=post.post_id).delete()
             # Delete comments on the post
-            Comment.query.filter_by(post_id=post.id).delete()
+            Comment.query.filter_by(post_id=post.post_id).delete()
             # Delete the post
             db.session.delete(post)
         
         # 10. Delete comments made by the user on other posts
         Comment.query.filter_by(user_id=user_uuid).delete()
         
-        # 11. Delete post likes by the user
-        PostLike.query.filter_by(user_id=user_uuid).delete()
-        
-        # 12. Delete post edit history by the user
-        PostEditHistory.query.filter_by(edited_by=user_uuid).delete()
+        # 11. Delete article post likes by the user
+        ArticlePostLike.query.filter_by(user_id=user_uuid).delete()
         
         # 13. Finally, delete the user
         db.session.delete(user)
@@ -319,28 +314,69 @@ def get_admin_stats(current_user):
 def get_recent_activity(current_user):
     """Get recent system activity for admin dashboard."""
     try:
-        return jsonify({
-            'success': True,
-            'data': {
-                'activity': [
-                    {
-                        'id': 'test_1',
-                        'type': 'test',
-                        'description': 'Test activity',
-                        'user': 'Test User',
-                        'timestamp': '2025-02-08T10:00:00Z',
-                        'details': {'test': True}
-                    }
-                ]
-            }
-        })
+        limit = min(int(request.args.get('limit', 10)), 50)
+        
+        activity = []
+        
+        # Get recent users (with error handling)
+        try:
+            recent_users = User.query.order_by(desc(User.created_at)).limit(5).all()
+            for user in recent_users:
+                activity.append({
+                    'id': f"user_{user.user_id}",
+                    'type': 'user_registered',
+                    'description': f"{user.first_name or 'Unknown'} {user.last_name or 'User'} registered",
+                    'user': f"{user.first_name or 'Unknown'} {user.last_name or 'User'}",
+                    'timestamp': user.created_at.isoformat(),
+                    'details': {'role': user.role, 'email': user.email}
+                })
+        except Exception as e:
+            current_app.logger.error(f"Error fetching recent users: {str(e)}")
+        
+        # Get recent posts (with error handling)
+        try:
+            recent_posts = Post.query.order_by(desc(Post.created_at)).limit(5).all()
+            for post in recent_posts:
+                author_name = "Unknown"
+                if post.author:
+                    author_name = f"{post.author.first_name or 'Unknown'} {post.author.last_name or 'User'}"
+                
+                activity.append({
+                    'id': f"post_{post.post_id}",
+                    'type': 'post_created',
+                    'description': f"New post: {post.title}",
+                    'user': author_name,
+                    'timestamp': post.created_at.isoformat(),
+                    'details': {'title': post.title, 'status': post.status}
+                })
+        except Exception as e:
+            current_app.logger.error(f"Error fetching recent posts: {str(e)}")
+        
+        # Get recent communities (with error handling)
+        try:
+            recent_communities = Community.query.order_by(desc(Community.created_at)).limit(5).all()
+            for community in recent_communities:
+                creator_name = "Unknown"
+                if community.creator:
+                    creator_name = f"{community.creator.first_name or 'Unknown'} {community.creator.last_name or 'User'}"
+                
+                activity.append({
+                    'id': f"community_{community.community_id}",
+                    'type': 'community_created',
+                    'description': f"New community: {community.name}",
+                    'user': creator_name,
+                    'timestamp': community.created_at.isoformat(),
+                    'details': {'name': community.name}
+                })
+        except Exception as e:
+            current_app.logger.error(f"Error fetching recent communities: {str(e)}")
+        
+        # Sort by timestamp (newest first) and limit
+        activity.sort(key=lambda x: x['timestamp'], reverse=True)
+        activity = activity[:limit]
+        
+        return create_success_response(data={'activity': activity})
         
     except Exception as e:
         current_app.logger.error(f"Error getting recent activity: {str(e)}")
-        return jsonify({
-            'success': False,
-            'error': {
-                'code': 'SERVER_ERROR',
-                'message': 'Failed to fetch recent activity'
-            }
-        }), 500
+        return create_error_response('SERVER_ERROR', 'Failed to fetch recent activity', status_code=500)

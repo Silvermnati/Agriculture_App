@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, jsonify, current_app
 from datetime import datetime
 
 from server.models.community import Community, CommunityMember, CommunityPost, PostLike, PostComment
@@ -208,7 +208,7 @@ def delete_community(current_user, community_id):
         community = Community.query.get(community_id)
         
         if not community:
-            return jsonify({'message': 'Community not found'}), 404
+            return create_error_response('COMMUNITY_NOT_FOUND', 'Community not found', status_code=404)
         
         # Check if user is community admin or system admin
         member = CommunityMember.query.filter_by(
@@ -218,10 +218,10 @@ def delete_community(current_user, community_id):
         ).first()
         
         if not member and current_user.role != 'admin':
-            return jsonify({'message': 'Unauthorized'}), 403
+            return create_error_response('FORBIDDEN', 'Unauthorized', status_code=403)
         
         # Complete cascade deletion
-        from server.models.community import CommunityPost, CommunityPostLike, CommunityComment
+        from server.models.community import CommunityPost, PostLike, PostComment
         
         # Get all community posts
         community_posts = CommunityPost.query.filter_by(community_id=community_id).all()
@@ -229,9 +229,9 @@ def delete_community(current_user, community_id):
         # Delete all post-related data
         for post in community_posts:
             # Delete post likes
-            CommunityPostLike.query.filter_by(post_id=post.post_id).delete()
+            PostLike.query.filter_by(post_id=post.post_id).delete()
             # Delete post comments
-            CommunityComment.query.filter_by(post_id=post.post_id).delete()
+            PostComment.query.filter_by(post_id=post.post_id).delete()
             # Delete the post
             db.session.delete(post)
         
@@ -242,12 +242,12 @@ def delete_community(current_user, community_id):
         db.session.delete(community)
         db.session.commit()
         
-        return jsonify({'message': 'Community and all related data deleted successfully'}), 200
+        return create_success_response(message='Community and all related data deleted successfully')
         
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Error deleting community {community_id}: {str(e)}")
-        return jsonify({'message': 'Failed to delete community'}), 500
+        return create_error_response('SERVER_ERROR', 'Failed to delete community', status_code=500)
 
 
 @token_required

@@ -579,12 +579,11 @@ def delete_post(current_user, post_id):
         
         # Admin hard delete - completely remove post and all related data
         if is_admin:
-            from server.models.post import Comment, PostLike, PostEditHistory
+            from server.models.post import Comment, ArticlePostLike
             
             # Delete all related data
-            Comment.query.filter_by(post_id=post_id).delete()
-            PostLike.query.filter_by(post_id=post_id).delete()
-            PostEditHistory.query.filter_by(post_id=post_id).delete()
+            Comment.query.filter_by(post_id=post.post_id).delete()
+            ArticlePostLike.query.filter_by(post_id=post.post_id).delete()
             
             # Delete the post itself
             db.session.delete(post)
