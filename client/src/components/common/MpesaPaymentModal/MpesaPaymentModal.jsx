@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { paymentsAPI } from '../../../utils/api';
+import mpesaLogo from '../../../assets/mpesa.png';
 import './MpesaPaymentModal.css';
 
 const MpesaPaymentModal = ({ 
@@ -218,9 +219,12 @@ const MpesaPaymentModal = ({
     <div className="mpesa-payment-modal" onClick={(e) => e.target === e.currentTarget && handleClose()}>
       <div className="mpesa-payment-content">
         <div className="mpesa-payment-header">
-          <div className="mpesa-payment-title">
-            <div className="mpesa-logo">M</div>
-            M-Pesa Payment
+          <div className="mpesa-logo">
+            <img 
+              src={mpesaLogo} 
+              alt="M-Pesa Payment" 
+              className="mpesa-logo-img"
+            />
           </div>
           <button className="close-button" onClick={handleClose}>
             ×
@@ -273,7 +277,7 @@ const MpesaPaymentModal = ({
               <div className="instructions-title">How to pay:</div>
               <ul className="instructions-list">
                 <li>Enter your M-Pesa registered phone number</li>
-                <li>Click "Pay Now&quot; to initiate payment</li>
+                <li>Click &quot;Pay Now&quot; to initiate payment</li>
                 <li>Check your phone for M-Pesa prompt</li>
                 <li>Enter your M-Pesa PIN to complete payment</li>
               </ul>

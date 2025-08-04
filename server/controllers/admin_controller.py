@@ -148,7 +148,7 @@ def update_user_status(current_user, user_id):
 @token_required
 @admin_required
 def delete_user(current_user, user_id):
-    """Delete a user (admin only)."""
+    """Permanently delete a user and all related data (admin only)."""
     try:
         user = User.query.get(user_id)
         if not user:
@@ -158,17 +158,125 @@ def delete_user(current_user, user_id):
         if user.role == 'admin':
             return create_error_response('FORBIDDEN', 'Cannot delete admin accounts', status_code=403)
         
-        # In a real implementation, you might want to soft delete or archive the user
-        # For now, we'll just mark as inactive
-        user.is_active = False
-        user.updated_at = datetime.utcnow()
+        user_uuid = user.user_id
+        current_app.logger.info(f"Starting deletion of user {user_id} by admin {current_user.user_id}")
+        
+        # Import all models at once to avoid import issues
+        try:
+            from server.models.post import Post, Comment, ArticlePostLike, CommentEdit
+        except ImportError:
+            from server.models.post import Post, Comment, ArticlePostLike
+            CommentEdit = None
+            
+        from server.models.community import Community, CommunityMember, CommunityPost, PostLike, PostComment
+        from server.models.expert import ExpertProfile, Consultation, ExpertReview
+        from server.models.article import Article
+        from server.models.crop import UserCrop
+        from server.models.payment import Payment, TransactionLog
+        from server.models.notifications import Notification, NotificationPreferences, NotificationDelivery
+        from server.models.user import UserExpertise, UserFollow
+        
+        # Delete in correct order to avoid foreign key constraint violations
+        
+        # 1. Delete comment edits first (references comments and users)
+        if CommentEdit:
+            CommentEdit.query.filter_by(edited_by=user_uuid).delete()
+        
+        # 2. Delete expert reviews (both given and received)
+        ExpertReview.query.filter_by(expert_id=user_uuid).delete()
+        ExpertReview.query.filter_by(reviewer_id=user_uuid).delete()
+        
+        # 3. Delete consultations (both as expert and farmer)
+        Consultation.query.filter_by(expert_id=user_uuid).delete()
+        Consultation.query.filter_by(farmer_id=user_uuid).delete()
+        
+        # 4. Delete expert profile
+        ExpertProfile.query.filter_by(user_id=user_uuid).delete()
+        
+        # 5. Delete transaction logs first (they reference payments)
+        user_payments = Payment.query.filter_by(user_id=user_uuid).all()
+        for payment in user_payments:
+            TransactionLog.query.filter_by(payment_id=payment.payment_id).delete()
+        
+        # 6. Delete user's payments (after transaction logs are deleted)
+        Payment.query.filter_by(user_id=user_uuid).delete()
+        
+        # 7. Delete notification deliveries first (they reference notifications)
+        user_notifications = Notification.query.filter_by(user_id=user_uuid).all()
+        for notification in user_notifications:
+            NotificationDelivery.query.filter_by(notification_id=notification.notification_id).delete()
+        
+        # 8. Delete user's notifications and preferences
+        Notification.query.filter_by(user_id=user_uuid).delete()
+        NotificationPreferences.query.filter_by(user_id=user_uuid).delete()
+        
+        # 9. Delete user's crops
+        UserCrop.query.filter_by(user_id=user_uuid).delete()
+        
+        # 10. Delete user's expertise and follows
+        UserExpertise.query.filter_by(user_id=user_uuid).delete()
+        UserFollow.query.filter_by(follower_id=user_uuid).delete()
+        UserFollow.query.filter_by(following_id=user_uuid).delete()
+        
+        # 11. Delete community post likes and comments by user
+        PostLike.query.filter_by(user_id=user_uuid).delete()
+        PostComment.query.filter_by(user_id=user_uuid).delete()
+        
+        # 12. Delete community posts by user
+        CommunityPost.query.filter_by(user_id=user_uuid).delete()
+        
+        # 13. Delete community memberships
+        CommunityMember.query.filter_by(user_id=user_uuid).delete()
+        
+        # 14. Delete communities created by user (with cascade)
+        communities_to_delete = Community.query.filter_by(created_by=user_uuid).all()
+        for community in communities_to_delete:
+            # Delete all community members
+            CommunityMember.query.filter_by(community_id=community.community_id).delete()
+            # Delete all community posts and their likes/comments
+            community_posts = CommunityPost.query.filter_by(community_id=community.community_id).all()
+            for post in community_posts:
+                PostLike.query.filter_by(post_id=post.post_id).delete()
+                PostComment.query.filter_by(post_id=post.post_id).delete()
+            CommunityPost.query.filter_by(community_id=community.community_id).delete()
+            # Delete the community
+            db.session.delete(community)
+        
+        # 15. Delete article post likes by the user
+        ArticlePostLike.query.filter_by(user_id=user_uuid).delete()
+        
+        # 16. Delete comments made by the user on posts
+        Comment.query.filter_by(user_id=user_uuid).delete()
+        
+        # 17. Delete posts by the user (with cascade)
+        user_posts = Post.query.filter_by(author_id=user_uuid).all()
+        for post in user_posts:
+            # Delete post likes
+            ArticlePostLike.query.filter_by(post_id=post.post_id).delete()
+            # Delete comments on the post
+            Comment.query.filter_by(post_id=post.post_id).delete()
+            # Delete the post
+            db.session.delete(post)
+        
+        # 18. Delete user's articles
+        Article.query.filter_by(author_id=user_uuid).delete()
+        
+        # 19. Finally, delete the user
+        db.session.delete(user)
+        
+        # Commit all deletions
         db.session.commit()
         
-        return create_success_response(message='User deactivated successfully')
+        current_app.logger.info(f"User {user_id} and all related data permanently deleted by admin {current_user.user_id}")
+        
+        return create_success_response(message='User and all related data permanently deleted successfully')
         
     except Exception as e:
-        current_app.logger.error(f"Error deleting user {user_id}: {str(e)}")
-        return create_error_response('SERVER_ERROR', 'Failed to delete user', status_code=500)
+        db.session.rollback()
+        current_app.logger.error(f"Error permanently deleting user {user_id}: {str(e)}")
+        import traceback
+        current_app.logger.error(f"Full traceback: {traceback.format_exc()}")
+        return create_error_response('SERVER_ERROR', f'Failed to delete user: {str(e)}', status_code=500)
 
 
 @token_required
@@ -222,49 +330,60 @@ def get_recent_activity(current_user):
     try:
         limit = min(int(request.args.get('limit', 10)), 50)
         
-        # Get recent users
-        recent_users = User.query.order_by(desc(User.created_at)).limit(5).all()
-        
-        # Get recent posts
-        recent_posts = Post.query.order_by(desc(Post.created_at)).limit(5).all()
-        
-        # Get recent communities
-        recent_communities = Community.query.order_by(desc(Community.created_at)).limit(5).all()
-        
         activity = []
         
-        # Add user registrations
-        for user in recent_users:
-            activity.append({
-                'id': f"user_{user.user_id}",
-                'type': 'user_registered',
-                'description': f"{user.first_name} {user.last_name} registered",
-                'user': f"{user.first_name} {user.last_name}",
-                'timestamp': user.created_at.isoformat(),
-                'details': {'role': user.role, 'email': user.email}
-            })
+        # Get recent users (with error handling)
+        try:
+            recent_users = User.query.order_by(desc(User.created_at)).limit(5).all()
+            for user in recent_users:
+                activity.append({
+                    'id': f"user_{user.user_id}",
+                    'type': 'user_registered',
+                    'description': f"{user.first_name or 'Unknown'} {user.last_name or 'User'} registered",
+                    'user': f"{user.first_name or 'Unknown'} {user.last_name or 'User'}",
+                    'timestamp': user.created_at.isoformat(),
+                    'details': {'role': user.role, 'email': user.email}
+                })
+        except Exception as e:
+            current_app.logger.error(f"Error fetching recent users: {str(e)}")
         
-        # Add post creations
-        for post in recent_posts:
-            activity.append({
-                'id': f"post_{post.id}",
-                'type': 'post_created',
-                'description': f"New post: {post.title}",
-                'user': f"{post.author.first_name} {post.author.last_name}" if post.author else "Unknown",
-                'timestamp': post.created_at.isoformat(),
-                'details': {'title': post.title, 'status': post.status}
-            })
+        # Get recent posts (with error handling)
+        try:
+            recent_posts = Post.query.order_by(desc(Post.created_at)).limit(5).all()
+            for post in recent_posts:
+                author_name = "Unknown"
+                if post.author:
+                    author_name = f"{post.author.first_name or 'Unknown'} {post.author.last_name or 'User'}"
+                
+                activity.append({
+                    'id': f"post_{post.post_id}",
+                    'type': 'post_created',
+                    'description': f"New post: {post.title}",
+                    'user': author_name,
+                    'timestamp': post.created_at.isoformat(),
+                    'details': {'title': post.title, 'status': post.status}
+                })
+        except Exception as e:
+            current_app.logger.error(f"Error fetching recent posts: {str(e)}")
         
-        # Add community creations
-        for community in recent_communities:
-            activity.append({
-                'id': f"community_{community.community_id}",
-                'type': 'community_created',
-                'description': f"New community: {community.name}",
-                'user': f"{community.creator.first_name} {community.creator.last_name}" if community.creator else "Unknown",
-                'timestamp': community.created_at.isoformat(),
-                'details': {'name': community.name}
-            })
+        # Get recent communities (with error handling)
+        try:
+            recent_communities = Community.query.order_by(desc(Community.created_at)).limit(5).all()
+            for community in recent_communities:
+                creator_name = "Unknown"
+                if community.creator:
+                    creator_name = f"{community.creator.first_name or 'Unknown'} {community.creator.last_name or 'User'}"
+                
+                activity.append({
+                    'id': f"community_{community.community_id}",
+                    'type': 'community_created',
+                    'description': f"New community: {community.name}",
+                    'user': creator_name,
+                    'timestamp': community.created_at.isoformat(),
+                    'details': {'name': community.name}
+                })
+        except Exception as e:
+            current_app.logger.error(f"Error fetching recent communities: {str(e)}")
         
         # Sort by timestamp (newest first) and limit
         activity.sort(key=lambda x: x['timestamp'], reverse=True)

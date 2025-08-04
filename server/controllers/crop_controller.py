@@ -159,7 +159,7 @@ def update_crop(current_user, crop_id):
 @token_required
 def delete_crop(current_user, crop_id):
     """
-    Delete a crop (admin only).
+    Delete a crop (admin only). Force delete removes all user crop records.
     """
     # Check if user is admin
     if current_user.role != 'admin':
@@ -170,17 +170,33 @@ def delete_crop(current_user, crop_id):
     if not crop:
         return jsonify({'message': 'Crop not found'}), 404
     
-    # Check if crop is being used by users
-    user_crop_count = UserCrop.query.filter_by(crop_id=crop_id).count()
-    if user_crop_count > 0:
-        return jsonify({
-            'message': f'Cannot delete crop. It is being used by {user_crop_count} user(s)'
-        }), 409
-    
-    db.session.delete(crop)
-    db.session.commit()
-    
-    return jsonify({'message': 'Crop deleted successfully'}), 200
+    try:
+        # Get force parameter
+        force = request.args.get('force', 'false').lower() == 'true'
+        
+        if not force:
+            # Check if crop is being used by users
+            user_crop_count = UserCrop.query.filter_by(crop_id=crop_id).count()
+            if user_crop_count > 0:
+                return jsonify({
+                    'message': f'Cannot delete crop. It is being used by {user_crop_count} user(s). Use force=true to delete anyway.',
+                    'user_crops': user_crop_count
+                }), 409
+        
+        else:
+            # Force delete - remove all user crop records
+            UserCrop.query.filter_by(crop_id=crop_id).delete()
+        
+        # Delete the crop
+        db.session.delete(crop)
+        db.session.commit()
+        
+        return jsonify({'message': 'Crop deleted successfully'}), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error deleting crop {crop_id}: {str(e)}")
+        return jsonify({'message': 'Failed to delete crop'}), 500
 
 
 # User Crop Management Functions

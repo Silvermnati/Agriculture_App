@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import PropTypes from 'prop-types';
-import { MoreHorizontal } from "lucide-react";
+import ProfilePicture from '../Profile/ProfilePicture';
 
 const CommentItem = ({ comment, currentUserId, onEdit, onDelete }) => {
   const [showOptions, setShowOptions] = useState(false);
@@ -26,10 +26,10 @@ const CommentItem = ({ comment, currentUserId, onEdit, onDelete }) => {
   
   return (
     <div className="flex space-x-3 py-3">
-      <img
-        src={comment.author.avatar}
-        alt={comment.author.name}
-        className="w-8 h-8 rounded-full object-cover"
+      <ProfilePicture 
+        imageUrl={comment.author.avatar}
+        userName={comment.author.name}
+        size="small"
       />
       <div className="flex-1">
         <div className="flex items-start justify-between">
@@ -50,7 +50,7 @@ const CommentItem = ({ comment, currentUserId, onEdit, onDelete }) => {
               </button>
               
               {showOptions && (
-                <div className="absolute right-0 mt-1 w-32 bg-white rounded-md shadow-lg z-10 py-1">
+                <div className="absolute right-0 mt-1 w-32 bg-white rounded-md shadow-lg z-10 py-1 ring-1 ring-black ring-opacity-5">
                   <button
                     className="block w-full text-left px-4 py-1 text-xs text-gray-700 hover:bg-gray-100"
                     onClick={handleEdit}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { notificationsAPI } from '../../utils/api';
+import { formatTimeAgo, formatDateTime, getCurrentUTCTimestamp } from '../../utils/timeHelpers';
 import './NotificationHistory.css';
 
 const NotificationHistory = () => {

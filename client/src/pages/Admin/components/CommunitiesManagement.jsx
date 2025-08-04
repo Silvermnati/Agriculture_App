@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, Eye, Edit, Trash2, Users } from 'lucide-react';
 import { communitiesAPI } from '../../../utils/api';
+import useToast from '../../../hooks/useToast';
+import ConfirmationModal from '../../../components/common/ConfirmationModal/ConfirmationModal';
+import { ToastContainer } from '../../../components/common/Toast/Toast';
 
 const CommunitiesManagement = () => {
   const [communities, setCommunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState(null);
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, community: null });
+  const [deleting, setDeleting] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     fetchCommunities();
@@ -44,16 +50,31 @@ const CommunitiesManagement = () => {
     community.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleDeleteCommunity = async (communityId) => {
-    if (window.confirm('Are you sure you want to delete this community?')) {
-      try {
-        // await communitiesAPI.deleteCommunity(communityId);
-        setCommunities(communities.filter(community => community.id !== communityId));
-      } catch (error) {
-        console.error('Failed to delete community:', error);
-        alert('Failed to delete community. Please try again.');
-      }
+  const handleDeleteCommunity = async () => {
+    if (!deleteModal.community) return;
+    
+    setDeleting(true);
+    try {
+      await communitiesAPI.deleteCommunity(deleteModal.community.community_id || deleteModal.community.id);
+      setCommunities(communities.filter(community => 
+        (community.community_id || community.id) !== (deleteModal.community.community_id || deleteModal.community.id)
+      ));
+      toast.success('Community deleted successfully!');
+      setDeleteModal({ isOpen: false, community: null });
+    } catch (error) {
+      console.error('Failed to delete community:', error);
+      toast.error('Failed to delete community. Please try again.');
+    } finally {
+      setDeleting(false);
     }
+  };
+
+  const openDeleteModal = (community) => {
+    setDeleteModal({ isOpen: true, community });
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal({ isOpen: false, community: null });
   };
 
   if (error) {
@@ -71,11 +92,11 @@ const CommunitiesManagement = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Communities Management</h1>
-        <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center space-x-2">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Communities Management</h1>
+        <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center justify-center space-x-2 w-full sm:w-auto">
           <Plus className="w-4 h-4" />
           <span>Create Community</span>
         </button>
@@ -118,7 +139,7 @@ const CommunitiesManagement = () => {
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => handleDeleteCommunity(community.id)}
+                      onClick={() => openDeleteModal(community)}
                       className="text-red-600 hover:text-red-900"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -148,6 +169,22 @@ const CommunitiesManagement = () => {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={handleDeleteCommunity}
+        title="Delete Community"
+        message={`Are you sure you want to delete "${deleteModal.community?.name}"? This action cannot be undone and will remove all posts, members, and data associated with this community.`}
+        confirmText="Delete Community"
+        cancelText="Cancel"
+        type="danger"
+        loading={deleting}
+      />
+
+      {/* Toast Container */}
+      <ToastContainer toasts={toast.toasts} removeToast={toast.removeToast} />
     </div>
   );
 };

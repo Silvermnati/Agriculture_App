@@ -111,12 +111,12 @@ const EditPostPage = () => {
   }
 
   return (
-    <div className="edit-post-page">
-      <div className="container">
-        <div className="page-header">
-          <h1>Edit Post</h1>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-800">Edit Post</h1>
           <button 
-            className="btn-secondary"
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
             onClick={() => navigate(-1)}
           >
             Cancel

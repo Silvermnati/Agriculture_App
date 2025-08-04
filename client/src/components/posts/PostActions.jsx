@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Edit, Trash2, MoreVertical } from 'lucide-react';
 import { deletePost } from '../../store/slices/postsSlice';
-import './PostActions.css';
+
 
 const PostActions = ({ post, onEdit }) => {
   const dispatch = useDispatch();
@@ -51,9 +51,9 @@ const PostActions = ({ post, onEdit }) => {
   };
 
   return (
-    <div className="post-actions">
+    <div className="relative">
       <button 
-        className="post-actions-trigger"
+        className="text-gray-500 hover:text-gray-700"
         onClick={() => setShowMenu(!showMenu)}
         aria-label="Post actions"
       >
@@ -61,41 +61,43 @@ const PostActions = ({ post, onEdit }) => {
       </button>
 
       {showMenu && (
-        <div className="post-actions-menu">
-          <button 
-            className="post-action-item edit"
-            onClick={handleEdit}
-            disabled={isLoading}
-          >
-            <Edit size={16} />
-            Edit Post
-          </button>
-          <button 
-            className="post-action-item delete"
-            onClick={handleDeleteClick}
-            disabled={isLoading}
-          >
-            <Trash2 size={16} />
-            Delete Post
-          </button>
+        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 ring-1 ring-black ring-opacity-5">
+          <div className="py-1">
+            <button 
+              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              onClick={handleEdit}
+              disabled={isLoading}
+            >
+              <Edit size={16} className="mr-3" />
+              Edit Post
+            </button>
+            <button 
+              className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+              onClick={handleDeleteClick}
+              disabled={isLoading}
+            >
+              <Trash2 size={16} className="mr-3" />
+              Delete Post
+            </button>
+          </div>
         </div>
       )}
 
       {showDeleteConfirm && (
-        <div className="delete-confirm-overlay">
-          <div className="delete-confirm-modal">
-            <h3>Delete Post</h3>
-            <p>Are you sure you want to delete "{post.title}"? This action cannot be undone.</p>
-            <div className="delete-confirm-actions">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 shadow-xl">
+            <h3 className="text-lg font-medium text-gray-900">Delete Post</h3>
+            <p className="mt-2 text-sm text-gray-500">Are you sure you want to delete "{post.title}"? This action cannot be undone.</p>
+            <div className="mt-4 flex justify-end space-x-3">
               <button 
-                className="btn-cancel"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                 onClick={() => setShowDeleteConfirm(false)}
                 disabled={isLoading}
               >
                 Cancel
               </button>
               <button 
-                className="btn-delete"
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"
                 onClick={handleDelete}
                 disabled={isLoading}
               >
@@ -109,7 +111,7 @@ const PostActions = ({ post, onEdit }) => {
       {/* Click outside to close menu */}
       {showMenu && (
         <div 
-          className="post-actions-backdrop"
+          className="fixed inset-0 z-0"
           onClick={() => setShowMenu(false)}
         />
       )}

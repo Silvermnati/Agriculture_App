@@ -1,12 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, Calendar } from 'lucide-react';
+import { Eye, Calendar, ArrowRight } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import PostActions from './PostActions';
 import PostInteraction from './PostInteraction';
-import Image from '../common/Image/Image';
+import ProfilePicture from '../Profile/ProfilePicture';
 import FollowButton from '../common/FollowButton/FollowButton';
-import './posts.css';
+import Image from '../common/Image/Image';
+
 
 const PostCard = ({ post, showActions = true }) => {
   const currentUser = useSelector(state => state.auth.user);
@@ -24,142 +25,71 @@ const PostCard = ({ post, showActions = true }) => {
   const isOwnPost = currentUser?.user_id === post.author?.user_id;
 
   return (
-    <article className="post-card">
-      {/* Featured Image */}
-      <div className="post-card-image">
+    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col h-full">
+      <div className="relative">
         <Link to={`/posts/${postId}`}>
           <Image 
             src={post.featured_image_url} 
             alt={post.title}
-            className="post-card-image-content"
+            className="w-full h-52 object-cover"
             fallbackType="post"
             optimize={true}
           />
         </Link>
+        <span className="absolute top-4 left-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+          {post.category?.name}
+        </span>
       </div>
-
-      <div className="post-card-content">
-        {/* Header with title and actions */}
-        <div className="post-card-header">
-          <div className="post-card-category">
-            {post.category?.name && (
-              <span className="category-badge">
-                {post.category.name}
-              </span>
-            )}
-          </div>
-          {showActions && <PostActions post={post} />}
+      
+      <div className="p-6 flex-grow flex flex-col">
+        <div className="flex items-center text-sm text-gray-500 mb-3">
+          <span>{formatDate(post.published_at)}</span>
+          {post.read_time && 
+            <>
+              <span className="mx-2">•</span>
+              <span>{post.read_time} min read</span>
+            </>
+          }
         </div>
-
-        {/* Title */}
-        <h2 className="post-card-title">
+        
+        <h3 className="text-xl font-bold text-gray-800 mb-2 hover:text-green-700 transition-colors duration-300">
           <Link to={`/posts/${postId}`}>
             {post.title}
           </Link>
-        </h2>
-
-        {/* Excerpt */}
-        {post.excerpt && (
-          <p className="post-card-excerpt">
-            {post.excerpt}
-          </p>
-        )}
-
-        {/* Agricultural Context */}
-        <div className="post-card-context">
-          {post.related_crops && post.related_crops.length > 0 && (
-            <div className="context-item">
-              <strong>Crops:</strong> {post.related_crops.slice(0, 3).join(', ')}
-              {post.related_crops.length > 3 && ` +${post.related_crops.length - 3} more`}
-            </div>
-          )}
-          
-          {post.applicable_locations && post.applicable_locations.length > 0 && (
-            <div className="context-item">
-              <strong>Locations:</strong> {post.applicable_locations.slice(0, 2).join(', ')}
-              {post.applicable_locations.length > 2 && ` +${post.applicable_locations.length - 2} more`}
-            </div>
-          )}
-          
-          {post.season_relevance && (
-            <div className="context-item">
-              <strong>Season:</strong> {post.season_relevance}
-            </div>
-          )}
+        </h3>
+        
+        <p className="text-gray-700 mb-4 flex-grow">{post.excerpt}</p>
+        
+        <div className="flex flex-wrap gap-2 mb-4">
+          {post.tags?.map((tag, index) => (
+            <span key={index} className="bg-gray-100 text-gray-600 text-xs py-1 px-2 rounded-full hover:bg-gray-200 cursor-pointer transition-colors duration-300">
+              #{tag}
+            </span>
+          ))}
         </div>
-
-        {/* Tags */}
-        {post.tags && post.tags.length > 0 && (
-          <div className="post-card-tags">
-            {post.tags.slice(0, 4).map((tag, index) => (
-              <span key={index} className="tag">
-                {tag}
-              </span>
-            ))}
-            {post.tags.length > 4 && (
-              <span className="tag-more">+{post.tags.length - 4}</span>
-            )}
+        
+        <div className="flex items-center mt-auto">
+          <div className="flex-shrink-0">
+            <ProfilePicture 
+              imageUrl={post.author?.avatar_url} 
+              userName={post.author?.name || 'Anonymous'}
+              size="small"
+            />
           </div>
-        )}
-
-        {/* Footer with author, stats, and date */}
-        <div className="post-card-footer">
-          <div className="post-author-section">
-            <div className="post-author">
-              <Image 
-                src={post.author?.avatar_url} 
-                alt={post.author?.name || 'Anonymous'}
-                className="author-avatar"
-                fallbackType="avatar"
-                optimize={true}
-              />
-              <div className="author-info">
-                <span className="author-name">{post.author?.name || 'Anonymous'}</span>
-                {post.author?.role && (
-                  <span className="author-role">{post.author.role}</span>
-                )}
-              </div>
-            </div>
-            
-            {/* Follow Button for post author */}
-            {currentUser && !isOwnPost && post.author?.user_id && (
-              <div className="post-author-follow">
-                <FollowButton 
-                  userId={post.author.user_id}
-                  initialFollowState={post.author.is_following || false}
-                  showStats={false}
-                  size="small"
-                />
-              </div>
-            )}
-          </div>
-
-          <div className="post-footer-right">
-            <div className="post-stats">
-              <PostInteraction post={post} />
-              <div className="stat-item">
-                <Eye size={16} />
-                <span>{post.view_count || 0}</span>
-              </div>
-            </div>
-
-            <div className="post-meta">
-              {post.published_at && (
-                <div className="meta-item">
-                  <Calendar size={14} />
-                  <span>{formatDate(post.published_at)}</span>
-                </div>
-              )}
-              {post.read_time && (
-                <div className="meta-item">
-                  <span>{post.read_time} min read</span>
-                </div>
-              )}
-            </div>
+          <div className="ml-3">
+            <p className="text-sm font-medium text-gray-800">{post.author?.name || 'Anonymous'}</p>
           </div>
         </div>
       </div>
-    </article>
+      
+      <div className="px-6 py-3 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
+        <PostInteraction post={post} />
+        <Link to={`/posts/${postId}`} className="text-green-600 hover:text-green-800 text-sm font-medium transition-colors duration-300 flex items-center">
+          Read Full Article
+          <ArrowRight className="w-4 h-4 ml-1" />
+        </Link>
+      </div>
+    </div>
   );
 };
 

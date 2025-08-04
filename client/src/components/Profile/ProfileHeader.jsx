@@ -5,7 +5,7 @@ import { setEditMode, setActiveTab, uploadProfilePicture } from '../../store/sli
 import ProfilePicture from './ProfilePicture';
 import ProfileCompletionIndicator from './ProfileCompletionIndicator';
 import Button from '../common/Button/Button';
-import './ProfileHeader.css';
+
 
 const ProfileHeader = ({ user }) => {
   const dispatch = useDispatch();
@@ -48,141 +48,126 @@ const ProfileHeader = ({ user }) => {
   };
 
   return (
-    <div className="profile-header">
-      <div className="profile-header-background">
-        {/* Overlay removed as per new design */}
-      </div>
+    <div className="bg-white p-6 rounded-lg shadow-md">
+      {/* Profile Completion Indicator */}
+      <ProfileCompletionIndicator 
+        user={user} 
+        onEditClick={() => dispatch(setActiveTab('edit'))}
+      />
       
-      <div className="profile-header-content">
-        {/* Profile Completion Indicator */}
-        <ProfileCompletionIndicator 
-          user={user} 
-          onEditClick={() => dispatch(setActiveTab('edit'))}
-        />
-        
-        <div className="profile-header-main">
-          <div className="profile-picture-section">
-            <ProfilePicture
-              imageUrl={user?.avatar_url}
-              userName={`${user?.first_name || ''} ${user?.last_name || ''}`.trim() || user?.email}
-              size="large"
-              editable={true}
-              onImageChange={handleImageUpload}
-              isUploading={isUploadingImage}
-            />
-            
-            <button 
-              className="profile-picture-edit-btn"
-              onClick={() => document.getElementById('profile-image-input')?.click()}
-              disabled={isUploadingImage}
-              aria-label="Change profile picture"
-            >
-              <Camera size={16} />
-            </button>
-          </div>
-          
-          <div className="profile-header-info">
-            <div className="profile-name-section">
-              <h1 className="profile-name">
-                {`${user?.first_name || ''} ${user?.last_name || ''}`.trim() || 'User'}
-              </h1>
-              
-              <div className="profile-role">
-                <span className={`role-badge role-${user?.role}`}>
-                  {getRoleDisplayName(user?.role)}
-                </span>
-                {user?.expert_profile?.is_verified && (
-                  <span className="verified-badge" title="Verified Expert">
-                    ✓
-                  </span>
-                )}
-              </div>
-            </div>
-            
-            <div className="profile-meta">
-              {user?.location && (
-                <div className="profile-meta-item">
-                  <MapPin size={16} />
-                  <span>{getLocationString(user.location)}</span>
-                </div>
-              )}
-              
-              {user?.email && (
-                <div className="profile-meta-item">
-                  <Mail size={16} />
-                  <span>{user.email}</span>
-                </div>
-              )}
-              
-              {user?.phone && (
-                <div className="profile-meta-item">
-                  <Phone size={16} />
-                  <span>{user.phone}</span>
-                </div>
-              )}
-              
-              {user?.created_at && (
-                <div className="profile-meta-item">
-                  <Calendar size={16} />
-                  <span>Joined {formatDate(user.created_at)}</span>
-                </div>
-              )}
-            </div>
-            
-            {user?.bio && (
-              <div className="profile-bio">
-                <p>{user.bio}</p>
-              </div>
-            )}
-          </div>
+      <div className="flex flex-col items-center text-center mt-4">
+        <div className="relative w-32 h-32 mb-4">
+          <ProfilePicture
+            imageUrl={user?.avatar_url}
+            userName={`${user?.first_name || ''} ${user?.last_name || ''}`.trim() || user?.email}
+            size="large"
+            editable={true}
+            onImageChange={handleImageUpload}
+            isUploading={isUploadingImage}
+          />
+          <button 
+            className="absolute bottom-0 right-0 bg-green-600 text-white rounded-full p-2 shadow-md hover:bg-green-700 transition-colors"
+            onClick={() => document.getElementById('profile-image-input')?.click()}
+            disabled={isUploadingImage}
+            aria-label="Change profile picture"
+          >
+            <Camera size={20} />
+          </button>
         </div>
         
+        <h1 className="text-3xl font-bold text-gray-800">
+          {`${user?.first_name || ''} ${user?.last_name || ''}`.trim() || 'User'}
+        </h1>
         
+        <div className="flex items-center justify-center space-x-2 mt-2">
+          <span className={`px-3 py-1 rounded-full text-sm font-medium ${user?.role === 'farmer' ? 'bg-green-100 text-green-800' : user?.role === 'expert' ? 'bg-blue-110 text-blue-800' : 'bg-gray-100 text-gray-800'}`}>
+            {getRoleDisplayName(user?.role)}
+          </span>
+          {user?.expert_profile?.is_verified && (
+            <span className="px-3 py-1 bg-green-500 text-white rounded-full text-xs font-medium">
+              Verified
+            </span>
+          )}
+        </div>
+        
+        {user?.bio && (
+          <p className="text-gray-600 mt-4 max-w-xl mx-auto">{user.bio}</p>
+        )}
+        
+        <div className="flex flex-wrap justify-center gap-4 mt-4 text-gray-600 text-sm">
+          {user?.location && (
+            <div className="flex items-center space-x-1">
+              <MapPin size={16} />
+              <span>{getLocationString(user.location)}</span>
+            </div>
+          )}
+          
+          {user?.email && (
+            <div className="flex items-center space-x-1">
+              <Mail size={16} />
+              <span>{user.email}</span>
+            </div>
+          )}
+          
+          {user?.phone && (
+            <div className="flex items-center space-x-1">
+              <Phone size={16} />
+              <span>{user.phone}</span>
+            </div>
+          )}
+          
+          {user?.created_at && (
+            <div className="flex items-center space-x-1">
+              <Calendar size={16} />
+              <span>Joined {formatDate(user.created_at)}</span>
+            </div>
+          )}
+        </div>
       </div>
       
       {/* Expert Profile Stats */}
       {user?.role === 'expert' && user?.expert_profile && (
-        <div className="expert-stats-bar">
-          <div className="expert-stat">
-            <span className="stat-value">{user.expert_profile.rating || 0}</span>
-            <span className="stat-label">Rating</span>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-gray-200">
+          <div className="text-center">
+            <p className="text-2xl font-bold text-gray-800">{user.expert_profile.rating || 0}</p>
+            <p className="text-sm text-gray-600">Rating</p>
           </div>
-          <div className="expert-stat">
-            <span className="stat-value">{user.expert_profile.review_count || 0}</span>
-            <span className="stat-label">Reviews</span>
+          <div className="text-center">
+            <p className="text-2xl font-bold text-gray-800">{user.expert_profile.review_count || 0}</p>
+            <p className="text-sm text-gray-600">Reviews</p>
           </div>
-          <div className="expert-stat">
-            <span className="stat-value">{user.expert_profile.consultation_count || 0}</span>
-            <span className="stat-label">Consultations</span>
+          <div className="text-center">
+            <p className="text-2xl font-bold text-gray-800">{user.expert_profile.consultation_count || 0}</p>
+            <p className="text-sm text-gray-600">Consultations</p>
           </div>
-          <div className="expert-stat">
-            <span className="stat-value">{user.expert_profile.years_experience || 0}</span>
-            <span className="stat-label">Years Experience</span>
+          <div className="text-center">
+            <p className="text-2xl font-bold text-gray-800">{user.expert_profile.years_experience || 0}</p>
+            <p className="text-sm text-gray-600">Years Experience</p>
           </div>
         </div>
       )}
       
       {/* Farming Profile Stats */}
       {user?.role === 'farmer' && (user?.farm_size || user?.farming_experience) && (
-        <div className="farmer-stats-bar">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-200">
           {user.farm_size && (
-            <div className="farmer-stat">
-              <span className="stat-value">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-gray-800">
                 {user.farm_size} {user.farm_size_unit || 'hectares'}
-              </span>
-              <span className="stat-label">Farm Size</span>
+              </p>
+              <p className="text-sm text-gray-600">Farm Size</p>
             </div>
           )}
           {user.farming_experience && (
-            <div className="farmer-stat">
-              <span className="stat-value">{user.farming_experience}</span>
-              <span className="stat-label">Years Experience</span>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-gray-800">{user.farming_experience}</p>
+              <p className="text-sm text-gray-600">Years Experience</p>
             </div>
           )}
           {user.farming_type && (
-            <div className="farmer-stat">
-              <span className="stat-value">{user.farming_type}</span>
-              <span className="stat-label">Farming Type</span>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-gray-800">{user.farming_type}</p>
+              <p className="text-sm text-gray-600">Farming Type</p>
             </div>
           )}
         </div>

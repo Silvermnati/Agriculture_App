@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Search } from 'lucide-react';
 import { locationsAPI } from '../../utils/api';
+import useToast from '../../hooks/useToast';
+import ConfirmationModal from '../common/ConfirmationModal/ConfirmationModal';
+import { ToastContainer } from '../common/Toast/Toast';
 
 const LocationManagement = () => {
   const [locations, setLocations] = useState([]);
@@ -12,6 +15,10 @@ const LocationManagement = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('locations');
+  const [selectedCountryForStates, setSelectedCountryForStates] = useState('');
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, item: null, type: null });
+  const [deleting, setDeleting] = useState(false);
+  const toast = useToast();
   
   const [locationForm, setLocationForm] = useState({
     country_id: '',
@@ -66,18 +73,55 @@ const LocationManagement = () => {
 
   const handleSubmitLocation = async (e) => {
     e.preventDefault();
+    
+    // Frontend validation
+    if (!locationForm.country_id || locationForm.country_id.trim() === '') {
+      toast.error('Please select a country');
+      return;
+    }
+    
+    if (!locationForm.city || locationForm.city.trim() === '') {
+      toast.error('Please enter a city name');
+      return;
+    }
+    
     try {
+      console.log('Submitting location form data:', locationForm);
+      
+      // Convert data types before sending to backend
+      const formattedData = {
+        country_id: parseInt(locationForm.country_id),
+        state_id: locationForm.state_id ? parseInt(locationForm.state_id) : null,
+        city: locationForm.city,
+        latitude: locationForm.latitude ? parseFloat(locationForm.latitude) : null,
+        longitude: locationForm.longitude ? parseFloat(locationForm.longitude) : null,
+        climate_zone: locationForm.climate_zone || null,
+        elevation: locationForm.elevation ? parseInt(locationForm.elevation) : null
+      };
+      
+      console.log('Formatted data for backend:', formattedData);
+      
       if (editingItem) {
-        // Update location - would need update endpoint
-        console.log('Update location not implemented in backend');
+        await locationsAPI.updateLocation(editingItem.location_id, formattedData);
+        toast.success('Location updated successfully!');
       } else {
-        await locationsAPI.createLocation(locationForm);
+        await locationsAPI.createLocation(formattedData);
+        toast.success('Location created successfully!');
       }
       await fetchData();
       handleCloseModal();
     } catch (error) {
       console.error('Failed to save location:', error);
-      alert(error.response?.data?.message || 'Failed to save location');
+      console.error('Error details:', error.response?.data);
+      console.error('Full error response:', JSON.stringify(error.response?.data, null, 2));
+      
+      // Handle different error response formats
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error?.message ||
+                          error.response?.data?.error?.details ||
+                          error.response?.data?.error ||
+                          'Failed to save location';
+      toast.error(errorMessage);
     }
   };
 
@@ -85,33 +129,51 @@ const LocationManagement = () => {
     e.preventDefault();
     try {
       if (editingItem) {
-        // Update country - would need update endpoint
-        console.log('Update country not implemented in backend');
+        await locationsAPI.updateCountry(editingItem.country_id, countryForm);
+        toast.success('Country updated successfully!');
       } else {
         await locationsAPI.createCountry(countryForm);
+        toast.success('Country created successfully!');
       }
       await fetchData();
       handleCloseModal();
     } catch (error) {
       console.error('Failed to save country:', error);
-      alert(error.response?.data?.message || 'Failed to save country');
+      toast.error(error.response?.data?.message || 'Failed to save country');
     }
   };
 
   const handleSubmitState = async (e) => {
     e.preventDefault();
     try {
+      // Convert data types for state form
+      const formattedStateData = {
+        country_id: parseInt(stateForm.country_id),
+        name: stateForm.name,
+        code: stateForm.code || null
+      };
+      
       if (editingItem) {
-        // Update state - would need update endpoint
-        console.log('Update state not implemented in backend');
+        await locationsAPI.updateState(editingItem.state_id, formattedStateData);
+        toast.success('State updated successfully!');
       } else {
-        await locationsAPI.createState(stateForm);
+        await locationsAPI.createState(formattedStateData);
+        toast.success(`State "${stateForm.name}" created successfully!`);
+      }
+      // Refresh states for the selected country
+      if (stateForm.country_id) {
+        await fetchStates(stateForm.country_id);
       }
       await fetchData();
       handleCloseModal();
     } catch (error) {
       console.error('Failed to save state:', error);
-      alert(error.response?.data?.message || 'Failed to save state');
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error?.message ||
+                          error.response?.data?.error?.details ||
+                          error.response?.data?.error || 
+                          'Failed to save state';
+      toast.error(errorMessage);
     }
   };
 
@@ -136,17 +198,74 @@ const LocationManagement = () => {
     setEditingItem(item);
     setShowModal(true);
     
-    if (item && type === 'location') {
-      setLocationForm({
-        country_id: item.country_id || '',
-        state_id: item.state_id || '',
-        city: item.city || '',
-        latitude: item.latitude || '',
-        longitude: item.longitude || '',
-        climate_zone: item.climate_zone || '',
-        elevation: item.elevation || ''
-      });
+    if (item) {
+      if (type === 'location') {
+        setLocationForm({
+          country_id: item.country_id || '',
+          state_id: item.state_id || '',
+          city: item.city || '',
+          latitude: item.latitude || '',
+          longitude: item.longitude || '',
+          climate_zone: item.climate_zone || '',
+          elevation: item.elevation || ''
+        });
+        
+        // Fetch states for the existing country when editing
+        if (item.country_id) {
+          fetchStates(item.country_id);
+        }
+      } else if (type === 'country') {
+        setCountryForm({
+          name: item.name || '',
+          code: item.code || ''
+        });
+      } else if (type === 'state') {
+        setStateForm({
+          country_id: item.country_id || '',
+          name: item.name || '',
+          code: item.code || ''
+        });
+      }
     }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteModal.item || !deleteModal.type) return;
+    
+    setDeleting(true);
+    try {
+      const { type, item } = deleteModal;
+      
+      if (type === 'location') {
+        await locationsAPI.deleteLocation(item.location_id);
+        toast.success('Location deleted successfully!');
+      } else if (type === 'country') {
+        await locationsAPI.deleteCountry(item.country_id);
+        toast.success('Country deleted successfully!');
+      } else if (type === 'state') {
+        await locationsAPI.deleteState(item.state_id);
+        toast.success('State deleted successfully!');
+        // Refresh states if we're viewing states for this country
+        if (selectedCountryForStates === item.country_id.toString()) {
+          await fetchStates(selectedCountryForStates);
+        }
+      }
+      await fetchData();
+      setDeleteModal({ isOpen: false, item: null, type: null });
+    } catch (error) {
+      console.error(`Failed to delete ${deleteModal.type}:`, error);
+      toast.error(error.response?.data?.message || `Failed to delete ${deleteModal.type}`);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const openDeleteModal = (type, item) => {
+    setDeleteModal({ isOpen: true, item, type });
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal({ isOpen: false, item: null, type: null });
   };
 
   const filteredLocations = locations.filter(location =>
@@ -155,6 +274,10 @@ const LocationManagement = () => {
 
   const filteredCountries = countries.filter(country =>
     country.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredStates = states.filter(state =>
+    state.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const renderLocationsTab = () => (
@@ -210,8 +333,16 @@ const LocationManagement = () => {
                     <button
                       onClick={() => openModal('location', location)}
                       className="text-blue-600 hover:text-blue-900"
+                      title="Edit location"
                     >
                       <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => openDeleteModal('location', location)}
+                      className="text-red-600 hover:text-red-900"
+                      title="Delete location"
+                    >
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </td>
@@ -253,8 +384,16 @@ const LocationManagement = () => {
                   <button
                     onClick={() => openModal('country', country)}
                     className="text-blue-600 hover:text-blue-900"
+                    title="Edit country"
                   >
                     <Edit className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => openDeleteModal('country', country)}
+                    className="text-red-600 hover:text-red-900"
+                    title="Delete country"
+                  >
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </td>
@@ -265,28 +404,123 @@ const LocationManagement = () => {
     </div>
   );
 
+  const renderStatesTab = () => (
+    <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="p-4 border-b border-gray-200 space-y-3">
+        <p className="text-sm text-gray-600">
+          Select a country from the dropdown to view its states, or add a new state.
+        </p>
+        <div className="flex items-center space-x-4">
+          <label className="text-sm font-medium text-gray-700">View states for:</label>
+          <select
+            value={selectedCountryForStates}
+            onChange={(e) => {
+              setSelectedCountryForStates(e.target.value);
+              if (e.target.value) {
+                fetchStates(e.target.value);
+              } else {
+                setStates([]);
+              }
+            }}
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            <option value="">Select a country</option>
+            {countries.map(country => (
+              <option key={country.country_id} value={country.country_id}>
+                {country.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Name
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Code
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Country
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
+          {loading ? (
+            <tr>
+              <td colSpan="4" className="px-6 py-4 text-center">Loading...</td>
+            </tr>
+          ) : filteredStates.length === 0 ? (
+            <tr>
+              <td colSpan="4" className="px-6 py-4 text-center text-gray-500">
+                No states found. Select a country or add a new state.
+              </td>
+            </tr>
+          ) : (
+            filteredStates.map((state) => (
+              <tr key={state.state_id}>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {state.name}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {state.code || '-'}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {state.country?.name || '-'}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => openModal('state', state)}
+                      className="text-blue-600 hover:text-blue-900"
+                      title="Edit state"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => openDeleteModal('state', state)}
+                      className="text-red-600 hover:text-red-900"
+                      title="Delete state"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Location Management</h2>
-        <div className="flex space-x-2">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Location Management</h2>
+        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
           <button
             onClick={() => openModal('country')}
-            className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            className="flex items-center justify-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 w-full sm:w-auto"
           >
             <Plus className="w-4 h-4" />
             <span>Add Country</span>
           </button>
           <button
             onClick={() => openModal('state')}
-            className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700"
+            className="flex items-center justify-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 w-full sm:w-auto"
           >
             <Plus className="w-4 h-4" />
             <span>Add State</span>
           </button>
           <button
             onClick={() => openModal('location')}
-            className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+            className="flex items-center justify-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 w-full sm:w-auto"
           >
             <Plus className="w-4 h-4" />
             <span>Add Location</span>
@@ -297,7 +531,7 @@ const LocationManagement = () => {
       {/* Tabs */}
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
-          {['locations', 'countries'].map((tab) => (
+          {['locations', 'countries', 'states'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -328,6 +562,7 @@ const LocationManagement = () => {
       {/* Content */}
       {activeTab === 'locations' && renderLocationsTab()}
       {activeTab === 'countries' && renderCountriesTab()}
+      {activeTab === 'states' && renderStatesTab()}
 
       {/* Modal */}
       {showModal && (
@@ -345,8 +580,16 @@ const LocationManagement = () => {
                     required
                     value={locationForm.country_id}
                     onChange={(e) => {
-                      setLocationForm({ ...locationForm, country_id: e.target.value });
-                      if (e.target.value) fetchStates(e.target.value);
+                      setLocationForm({ 
+                        ...locationForm, 
+                        country_id: e.target.value,
+                        state_id: '' // Clear state when country changes
+                      });
+                      if (e.target.value) {
+                        fetchStates(e.target.value);
+                      } else {
+                        setStates([]); // Clear states if no country selected
+                      }
                     }}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   >
@@ -533,6 +776,22 @@ const LocationManagement = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={handleDelete}
+        title={`Delete ${deleteModal.type ? deleteModal.type.charAt(0).toUpperCase() + deleteModal.type.slice(1) : ''}`}
+        message={`Are you sure you want to delete "${deleteModal.item?.name || deleteModal.item?.city}"? This action cannot be undone and may affect related data.`}
+        confirmText={`Delete ${deleteModal.type ? deleteModal.type.charAt(0).toUpperCase() + deleteModal.type.slice(1) : ''}`}
+        cancelText="Cancel"
+        type="danger"
+        loading={deleting}
+      />
+
+      {/* Toast Container */}
+      <ToastContainer toasts={toast.toasts} removeToast={toast.removeToast} />
     </div>
   );
 };

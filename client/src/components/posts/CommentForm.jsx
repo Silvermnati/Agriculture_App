@@ -38,14 +38,15 @@ const CommentForm = ({ postId }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="comment-form">
+    <form onSubmit={handleSubmit} className="mt-4">
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="Share your thoughts..."
         required
+        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
       />
-      <button type="submit" disabled={isLoading}>
+      <button type="submit" disabled={isLoading} className="mt-2 px-4 py-2 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 transition duration-300">
         {isLoading ? 'Submitting...' : 'Submit Comment'}
       </button>
     </form>

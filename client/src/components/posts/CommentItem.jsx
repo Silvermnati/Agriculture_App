@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { commentsAPI } from '../../utils/api';
 import Image from '../common/Image/Image';
+import { formatTimeAgo, formatDateTime, getCurrentUTCTimestamp } from '../../utils/timeHelpers';
+import './CommentItem.css';
 
 const CommentItem = ({ comment, onCommentUpdate, onDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -16,23 +18,7 @@ const CommentItem = ({ comment, onCommentUpdate, onDelete }) => {
   const canEdit = isAuthor && !comment.is_deleted;
   const canDelete = isAuthor && !comment.is_deleted;
 
-  const formatDate = (dateString) => {
-    if (!dateString) return 'Just now';
 
-    const date = new Date(dateString);
-    const now = new Date();
-    const seconds = Math.round((now - date) / 1000);
-    const minutes = Math.round(seconds / 60);
-    const hours = Math.round(minutes / 60);
-    const days = Math.round(hours / 24);
-
-    if (seconds < 60) return 'Just now';
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days < 7) return `${days}d ago`;
-
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
 
   const handleEdit = async () => {
     if (!editContent.trim()) return;
@@ -115,16 +101,18 @@ const CommentItem = ({ comment, onCommentUpdate, onDelete }) => {
   return (
     <div className="comment-item">
       <div className="comment-header">
-        <Image 
-          src={author?.avatar_url}
-          alt={author?.name || 'User'}
-          className="avatar"
-          fallbackType="avatar"
-        />
+        <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-200 flex-shrink-0">
+          <Image 
+            src={author?.avatar_url}
+            alt={author?.name || 'User'}
+            className="w-full h-full object-cover"
+            fallbackType="avatar"
+          />
+        </div>
         <div className="comment-author-info">
           <strong>{author?.name || 'Anonymous User'}</strong>
           <span className="comment-date">
-            {formatDate(comment.created_at)}
+            {formatTimeAgo(comment.created_at)}
             {comment.is_edited && (
               <span className="edited-indicator">
                 {' • edited'}
@@ -239,15 +227,6 @@ const CommentItem = ({ comment, onCommentUpdate, onDelete }) => {
 };
 
 const EditHistoryModal = ({ editHistory, onClose }) => {
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
 
   return (
     <div className="edit-history-modal" onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -267,7 +246,7 @@ const EditHistoryModal = ({ editHistory, onClose }) => {
               <div key={edit.edit_id || `edit-${index}`} className="edit-history-item">
                 <div className="edit-history-meta">
                   <span className="edit-number">Edit #{editHistory.length - index}</span>
-                  <span className="edit-date">{formatDate(edit.edited_at)}</span>
+                  <span className="edit-date">{formatDateTime(edit.edited_at)}</span>
                 </div>
                 
                 <div className="edit-changes">

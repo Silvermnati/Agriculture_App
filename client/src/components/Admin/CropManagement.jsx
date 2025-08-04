@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Search } from 'lucide-react';
 import { cropsAPI } from '../../utils/api';
+import useToast from '../../hooks/useToast';
+import ConfirmationModal from '../common/ConfirmationModal/ConfirmationModal';
+import { ToastContainer } from '../common/Toast/Toast';
 
 const CropManagement = () => {
   const [crops, setCrops] = useState([]);
@@ -8,6 +11,9 @@ const CropManagement = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingCrop, setEditingCrop] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, crop: null });
+  const [deleting, setDeleting] = useState(false);
+  const toast = useToast();
   const [formData, setFormData] = useState({
     name: '',
     scientific_name: '',
@@ -40,27 +46,42 @@ const CropManagement = () => {
     try {
       if (editingCrop) {
         await cropsAPI.updateCrop(editingCrop.crop_id, formData);
+        toast.success('Crop updated successfully!');
       } else {
         await cropsAPI.createCrop(formData);
+        toast.success('Crop created successfully!');
       }
       await fetchCrops();
       handleCloseModal();
     } catch (error) {
       console.error('Failed to save crop:', error);
-      alert(error.response?.data?.message || 'Failed to save crop');
+      toast.error(error.response?.data?.message || 'Failed to save crop');
     }
   };
 
-  const handleDelete = async (cropId) => {
-    if (window.confirm('Are you sure you want to delete this crop?')) {
-      try {
-        await cropsAPI.deleteCrop(cropId);
-        await fetchCrops();
-      } catch (error) {
-        console.error('Failed to delete crop:', error);
-        alert(error.response?.data?.message || 'Failed to delete crop');
-      }
+  const handleDelete = async () => {
+    if (!deleteModal.crop) return;
+    
+    setDeleting(true);
+    try {
+      await cropsAPI.deleteCrop(deleteModal.crop.crop_id);
+      await fetchCrops();
+      toast.success('Crop deleted successfully!');
+      setDeleteModal({ isOpen: false, crop: null });
+    } catch (error) {
+      console.error('Failed to delete crop:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete crop');
+    } finally {
+      setDeleting(false);
     }
+  };
+
+  const openDeleteModal = (crop) => {
+    setDeleteModal({ isOpen: true, crop });
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal({ isOpen: false, crop: null });
   };
 
   const handleEdit = (crop) => {
@@ -99,12 +120,12 @@ const CropManagement = () => {
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Crop Management</h2>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Crop Management</h2>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+          className="flex items-center justify-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 w-full sm:w-auto"
         >
           <Plus className="w-4 h-4" />
           <span>Add Crop</span>
@@ -186,7 +207,7 @@ const CropManagement = () => {
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => handleDelete(crop.crop_id)}
+                        onClick={() => openDeleteModal(crop)}
                         className="text-red-600 hover:text-red-900"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -298,6 +319,22 @@ const CropManagement = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={handleDelete}
+        title="Delete Crop"
+        message={`Are you sure you want to delete "${deleteModal.crop?.name}"? This action cannot be undone and may affect users who have this crop in their profiles.`}
+        confirmText="Delete Crop"
+        cancelText="Cancel"
+        type="danger"
+        loading={deleting}
+      />
+
+      {/* Toast Container */}
+      <ToastContainer toasts={toast.toasts} removeToast={toast.removeToast} />
     </div>
   );
 };

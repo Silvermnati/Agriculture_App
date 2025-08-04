@@ -67,10 +67,15 @@ class Location(db.Model):
         """Convert location to dictionary."""
         return {
             'location_id': self.location_id,
-            'country': self.country.name if self.country else None,
-            'state': self.state.name if self.state else None,
+            'country_id': self.country_id,
+            'state_id': self.state_id,
+            'country': self.country.to_dict() if self.country else None,
+            'state': self.state.to_dict() if self.state else None,
             'city': self.city,
+            'latitude': float(self.latitude) if self.latitude else None,
+            'longitude': float(self.longitude) if self.longitude else None,
             'climate_zone': self.climate_zone,
+            'elevation': self.elevation,
             'coordinates': {
                 'latitude': float(self.latitude) if self.latitude else None,
                 'longitude': float(self.longitude) if self.longitude else None

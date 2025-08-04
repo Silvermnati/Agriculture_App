@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { cropsAPI, locationsAPI, categoriesAPI } from '../../utils/api';
-import './posts.css';
+
 
 const PostFilters = ({ filters, onFilterChange }) => {
   const [availableCrops, setAvailableCrops] = useState([]);
@@ -126,48 +126,48 @@ const PostFilters = ({ filters, onFilterChange }) => {
   }
 
   return (
-    <div className="post-filters">
-      <div className="filter-group">
-        <strong>Crops</strong>
-        <select name="crop" onChange={handleSingleChange} value={filters.crop || ''}>
-          <option value="">All Crops</option>
-          {availableCrops.map(crop => (
-            <option key={crop} value={crop}>{crop}</option>
-          ))}
-        </select>
-      </div>
-
-      <div className="filter-group">
-        <strong>Locations</strong>
-        <select name="location" onChange={handleSingleChange} value={filters.location || ''}>
-          <option value="">All Locations</option>
-          {availableLocations.map(location => (
-            <option key={location} value={location}>{location}</option>
-          ))}
-        </select>
-      </div>
-
-      <div className="filter-group">
-        <strong>Season</strong>
-        <select name="season" onChange={handleSingleChange} value={filters.season || ''}>
-          <option key="all-seasons" value="">All Seasons</option>
-          <option key="spring" value="Spring">Spring</option>
-          <option key="summer" value="Summer">Summer</option>
-          <option key="fall" value="Fall">Fall</option>
-          <option key="winter" value="Winter">Winter</option>
-          <option key="dry" value="Dry">Dry</option>
-          <option key="wet" value="Wet">Wet</option>
-        </select>
-      </div>
-
-      <div className="filter-group">
-        <strong>Category</strong>
-        <select name="category" onChange={handleSingleChange} value={filters.category || ''}>
-          <option value="">All Categories</option>
-          {availableCategories.map(cat => (
-            <option key={cat.id} value={cat.name}>{cat.name}</option>
-          ))}
-        </select>
+    <div className="bg-white p-6 rounded-lg shadow-md">
+      <h3 className="text-lg font-semibold mb-4">Filter Posts</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div>
+          <label htmlFor="crop" className="block text-sm font-medium text-gray-700">Crop</label>
+          <select id="crop" name="crop" onChange={handleSingleChange} value={filters.crop || ''} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
+            <option value="">All Crops</option>
+            {availableCrops.map(crop => (
+              <option key={crop} value={crop}>{crop}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="location" className="block text-sm font-medium text-gray-700">Location</label>
+          <select id="location" name="location" onChange={handleSingleChange} value={filters.location || ''} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
+            <option value="">All Locations</option>
+            {availableLocations.map(location => (
+              <option key={location} value={location}>{location}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="season" className="block text-sm font-medium text-gray-700">Season</label>
+          <select id="season" name="season" onChange={handleSingleChange} value={filters.season || ''} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
+            <option value="">All Seasons</option>
+            <option value="Spring">Spring</option>
+            <option value="Summer">Summer</option>
+            <option value="Fall">Fall</option>
+            <option value="Winter">Winter</option>
+            <option value="Dry">Dry</option>
+            <option value="Wet">Wet</option>
+          </select>
+        </div>
+        <div>
+          <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
+          <select id="category" name="category" onChange={handleSingleChange} value={filters.category || ''} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
+            <option value="">All Categories</option>
+            {availableCategories.map(cat => (
+              <option key={cat.id} value={cat.name}>{cat.name}</option>
+            ))}
+          </select>
+        </div>
       </div>
     </div>
   );

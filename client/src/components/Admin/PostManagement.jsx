@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Eye, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
 import { postsAPI } from '../../utils/api';
+import useToast from '../../hooks/useToast';
+import ConfirmationModal from '../common/ConfirmationModal/ConfirmationModal';
+import { ToastContainer } from '../common/Toast/Toast';
 
 const PostManagement = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, post: null });
+  const [deleting, setDeleting] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     fetchPosts();
@@ -60,16 +66,29 @@ const PostManagement = () => {
     }
   };
 
-  const handleDeletePost = async (postId) => {
-    if (window.confirm('Are you sure you want to delete this post?')) {
-      try {
-        await postsAPI.deletePost(postId);
-        await fetchPosts();
-      } catch (error) {
-        console.error('Failed to delete post:', error);
-        alert(error.response?.data?.message || 'Failed to delete post');
-      }
+  const handleDeletePost = async () => {
+    if (!deleteModal.post) return;
+    
+    setDeleting(true);
+    try {
+      await postsAPI.deletePost(deleteModal.post.post_id);
+      await fetchPosts();
+      toast.success('Post deleted successfully!');
+      setDeleteModal({ isOpen: false, post: null });
+    } catch (error) {
+      console.error('Failed to delete post:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete post');
+    } finally {
+      setDeleting(false);
     }
+  };
+
+  const openDeleteModal = (post) => {
+    setDeleteModal({ isOpen: true, post });
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal({ isOpen: false, post: null });
   };
 
   const filteredPosts = posts.filter(post => {
@@ -227,21 +246,21 @@ const PostManagement = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
                       <button
-                        onClick={() => alert(`View post: ${post.title}`)}
+                        onClick={() => toast.info(`View post: ${post.title}`, { duration: 3000 })}
                         className="text-blue-600 hover:text-blue-900"
                         title="View Post"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => alert(`Edit post: ${post.title}`)}
+                        onClick={() => toast.info(`Edit post: ${post.title}`, { duration: 3000 })}
                         className="text-green-600 hover:text-green-900"
                         title="Edit Post"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => handleDeletePost(post.post_id)}
+                        onClick={() => openDeleteModal(post)}
                         className="text-red-600 hover:text-red-900"
                         title="Delete Post"
                       >
@@ -281,6 +300,22 @@ const PostManagement = () => {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={handleDeletePost}
+        title="Delete Post"
+        message={`Are you sure you want to delete "${deleteModal.post?.title}"? This action cannot be undone and will remove all comments and likes associated with this post.`}
+        confirmText="Delete Post"
+        cancelText="Cancel"
+        type="danger"
+        loading={deleting}
+      />
+
+      {/* Toast Container */}
+      <ToastContainer toasts={toast.toasts} removeToast={toast.removeToast} />
     </div>
   );
 };

@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Eye, Ban, CheckCircle } from 'lucide-react';
+import useToast from '../../hooks/useToast';
+import { ToastContainer } from '../common/Toast/Toast';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('');
+  const toast = useToast();
 
   useEffect(() => {
     // Since there's no users endpoint in the backend, we'll show a placeholder
@@ -203,14 +206,14 @@ const UserManagement = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
                       <button
-                        onClick={() => alert(`View user details for ${user.email}`)}
+                        onClick={() => toast.info(`View user details for ${user.email}`, { duration: 3000 })}
                         className="text-blue-600 hover:text-blue-900"
                         title="View Details"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => alert(`Toggle user status for ${user.email}`)}
+                        onClick={() => toast.info(`Toggle user status for ${user.email}`, { duration: 3000 })}
                         className="text-yellow-600 hover:text-yellow-900"
                         title="Toggle Status"
                       >
@@ -234,7 +237,7 @@ const UserManagement = () => {
             </h3>
             <div className="mt-2 text-sm text-yellow-700">
               <p>
-                The backend doesn't currently have a users management endpoint. 
+                The backend doesn&apos;t currently have a users management endpoint. 
                 This interface shows sample data. To fully implement user management, 
                 you would need to add user listing, update, and status management endpoints to the backend.
               </p>
@@ -242,6 +245,9 @@ const UserManagement = () => {
           </div>
         </div>
       </div>
+
+      {/* Toast Container */}
+      <ToastContainer toasts={toast.toasts} removeToast={toast.removeToast} />
     </div>
   );
 };

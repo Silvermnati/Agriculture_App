@@ -57,7 +57,7 @@ const ExpertFilters = ({ onFilterChange }) => {
           >
             <option value="">Any</option>
             <option value="available">Available</option>
-            <option value="busy">Busy</option>
+            <option value="unavailable">Unavailable</option>
           </select>
         </div>
       </div>

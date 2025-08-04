@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef } from "react";
 import ReactQuill from 'react-quill';
 import PropTypes from 'prop-types';
-import './posts.css';
+
 import 'react-quill/dist/quill.snow.css';
 
 const PostForm = ({ onSubmit, isLoading = false, initialData = null, isEdit = false, onSuccess = null }) => {
@@ -352,7 +352,7 @@ const PostForm = ({ onSubmit, isLoading = false, initialData = null, isEdit = fa
                             type="file" 
                             accept="image/jpeg,image/jpg,image/png,image/gif"
                             onChange={handleFileChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
                             disabled={isLoading}
                         />
                         {errors.featured_image && <span className="text-red-500 text-sm mt-1">{errors.featured_image}</span>}

@@ -1,5 +1,5 @@
 import React from "react";
-import { MoreHorizontal } from "lucide-react";
+import ProfilePicture from '../Profile/ProfilePicture';
 
 const PostHeader = ({ author, timestamp, isAuthor, isAdmin, onEdit, onDelete }) => {
   const [showOptions, setShowOptions] = React.useState(false);
@@ -10,10 +10,10 @@ const PostHeader = ({ author, timestamp, isAuthor, isAdmin, onEdit, onDelete }) 
 
   return (
     <div className="flex items-start space-x-3 mb-4">
-      <img
-        src={author.avatar}
-        alt={author.name}
-        className="w-10 h-10 rounded-full object-cover"
+      <ProfilePicture 
+        imageUrl={author.avatar}
+        userName={author.name}
+        size="small"
       />
       <div className="flex-1">
         <div className="flex items-center justify-between">

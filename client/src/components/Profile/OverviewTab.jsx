@@ -16,6 +16,7 @@ import {
   Clock
 } from 'lucide-react';
 import LoadingSpinner from '../common/LoadingSpinner/LoadingSpinner';
+import { formatTimeAgo } from '../../utils/timeHelpers';
 import './OverviewTab.css';
 
 const OverviewTab = ({ user, stats, recentActivity, isLoadingStats, isLoadingActivity }) => {
@@ -47,16 +48,7 @@ const OverviewTab = ({ user, stats, recentActivity, isLoadingStats, isLoadingAct
     }
   };
 
-  const getTimeAgo = (timestamp) => {
-    const now = new Date();
-    const time = new Date(timestamp);
-    const diffInHours = Math.floor((now - time) / (1000 * 60 * 60));
-    
-    if (diffInHours < 1) return 'Just now';
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`;
-    return `${Math.floor(diffInHours / 168)}w ago`;
-  };
+
 
 
 
@@ -375,7 +367,7 @@ const OverviewTab = ({ user, stats, recentActivity, isLoadingStats, isLoadingAct
                     <div className="activity-content">
                       <div className="activity-title">{activity.title}</div>
                       <div className="activity-description">{activity.description}</div>
-                      <div className="activity-time">{getTimeAgo(activity.timestamp)}</div>
+                      <div className="activity-time">{formatTimeAgo(activity.timestamp)}</div>
                     </div>
                     {activity.link && (
                       <a href={activity.link} className="activity-link">
